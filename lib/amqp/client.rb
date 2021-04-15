@@ -109,6 +109,38 @@ module AMQP
     end
   end
 
+  # AMQP Channel
+  class Channel
+    def initialize(connection, id)
+      @rpc = Queue.new
+      @connection = connection
+      @id = id
+    end
+
+    def open
+      @socket.write [
+        1, # type: method
+        id, # channel id
+        5, # frame size
+        20, # class: channel
+        10, # method: open
+        0, # reserved1
+        206 # frame end
+      ].pack("C S> L> S> S> C C")
+      frame, frame_id = @rpc.shift
+      frame == :channel_open_ok || raise("Unexpected frame #{frame}")
+      frame_id == id || raise("Unexpected frame id #{frame_id}")
+    end
+
+    def push(*args)
+      @rpc.push(args)
+    end
+
+    def basic_publish(body, exchange, routing_key, properties = {})
+      raise "Not yet implemented"
+    end
+  end
+
   # AMQP Connection
   class Connection
     def initialize(socket)
@@ -121,23 +153,17 @@ module AMQP
 
     def channel
       id = 1.upto(2048) { |i| break i unless @channels.key? i }
-      @socket.write [
-        1, # type: method
-        id, # channel id
-        5, # frame size
-        20, # class: channel
-        10, # method: open
-        0, # reserved1
-        206 # frame end
-      ].pack("C S> L> S> S> C C")
-      @rpc.shift == :channel_open_ok || raise("Unexpected frame")
+      ch = Channel.new(self, id)
+      @channels[id] = ch
+      ch.open
     end
 
     def close(reason = "", code = 200)
+      frame_size = 2 + 2 + 2 + 1 + reason.bytesize + 2 + 2
       @socket.write [
         1, # type: method
         0, # channel id
-        4, # frame size
+        frame_size, # frame size
         10, # class: connection
         50, # method: close
         code,
@@ -199,13 +225,11 @@ module AMQP
           when 20 # channel
             case method_id
             when 11 # channel#open-ok
-              @channels[channel_id] = Channel.new(self, channel_id)
-              @rpc.push [:channel_open_ok, channel_id]
+              @channels[channel_id].push [:channel_open_ok, channel_id]
             when 40 # channel#close
               @channels.delete(channel_id)&.closed!
             when 41 # channel#close-ok
               @channels.delete(channel_id)&.closed!
-              @rpc.push [:channel_close_ok, channel_id]
             else raise "Unsupported class/method: #{class_id} #{method_id}"
             end
           when 60 # basic
