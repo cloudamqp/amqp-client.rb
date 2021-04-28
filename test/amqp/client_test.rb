@@ -34,4 +34,11 @@ class AMQPClientTest < Minitest::Test
     channel.close
     assert channel
   end
+
+  def test_it_can_publish
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.basic_publish "foo", "", "bar"
+  end
 end

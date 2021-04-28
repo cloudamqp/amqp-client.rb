@@ -52,7 +52,47 @@ module AMQP
     def basic_publish(body, exchange, routing_key, properties = {})
       raise "Channel #{@id} already closed" if @closed
 
-      raise "Not yet implemented"
+      frame_size = 2 + 2 + 2 + 1 + exchange.bytesize + 1 + routing_key.bytesize + 1
+      @connection.write_frame [
+        1, # type: method
+        @id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        40, # method: publish
+        0, # reserved1
+        exchange.bytesize, exchange,
+        routing_key.bytesize, routing_key,
+        0, # bits, mandatory/immediate
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* C C")
+
+      # headers
+      frame_size = 2 + 2 + 8 + 2
+      @connection.write_frame [
+        2, # type: header
+        @id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        0, # weight
+        body.bytesize,
+        0, # properties
+        206 # frame end
+      ].pack("C S> L> S> S> Q> S> C")
+
+      # body frames, splitted on frame size
+      pos = 0
+      while pos < body.bytesize
+        len = [4096, body.bytesize - pos].min
+        body_part = body.byteslice(pos, len)
+        @connection.write_frame [
+          3, # type: body
+          @id, # channel id
+          len, # frame size
+          body_part,
+          206 # frame end
+        ].pack("C S> L> a* C")
+        pos += len
+      end
     end
   end
 end
