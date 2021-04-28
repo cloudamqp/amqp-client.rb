@@ -39,6 +39,33 @@ class AMQPClientTest < Minitest::Test
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
-    channel.basic_publish "foo", "", "bar"
+    channel.basic_publish "", "foo", "bar"
+  end
+
+  def test_it_can_declare_queue
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    resp = channel.queue_declare "foo"
+    assert_equal "foo", resp[:queue_name]
+  end
+
+  def test_it_can_get_from_empty_queue
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.queue_declare "e"
+    msg = channel.basic_get "e"
+    assert_nil msg
+  end
+
+  def test_it_can_get_from_queue
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.queue_declare "foo"
+    channel.basic_publish "", "foo", "bar"
+    msg = channel.basic_get "foo"
+    assert_equal "bar", msg.body
   end
 end

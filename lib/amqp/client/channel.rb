@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "./message"
+
 module AMQP
   # AMQP Channel
   class Channel
@@ -49,7 +51,82 @@ module AMQP
       @closed = true
     end
 
-    def basic_publish(body, exchange, routing_key, properties = {})
+    def queue_declare(name, passive: false, durable: true, exclusive: false, auto_delete: false, **args)
+      durable = false if name.empty?
+      exclusive = true if name.empty?
+      auto_delete = true if name.empty?
+      no_wait = false
+
+      bits = 0
+      bits |= (1 << 0) if passive
+      bits |= (1 << 1) if durable
+      bits |= (1 << 2) if exclusive
+      bits |= (1 << 3) if auto_delete
+      bits |= (1 << 4) if no_wait
+      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1 + 4
+      @connection.write_frame [
+        1, # type: method
+        @id, # channel id
+        frame_size, # frame size
+        50, # class: queue
+        10, # method: declare
+        0, # reserved1
+        name.bytesize, name,
+        bits,
+        0, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* C L> C")
+      frame, name, message_count, consumer_count = @rpc.shift
+      raise "unexpected frame" if frame != :queue_declare_ok
+
+      {
+        queue_name: name,
+        message_count: message_count,
+        consumer_count: consumer_count
+      }
+    end
+
+    def basic_get(queue_name, no_ack: true)
+      return if @closed
+
+      frame_size = 2 + 2 + 2 + 1 + queue_name.bytesize + 2 + 2
+      @connection.write_frame [
+        1, # type: method
+        @id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        70, # method: get
+        0, # reserved1
+        queue_name.bytesize, queue_name,
+        no_ack ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* C C")
+      resp = @rpc.shift
+      frame, = resp
+      case frame
+      when :basic_get_ok
+        _, exchange_name, routing_key, redelivered = resp
+        frame, body_size, properties = @rpc.shift
+        raise "unexpected frame #{frame}" if frame != :header
+
+        pos = 0
+        body = String.new("", capacity: body_size)
+        while pos < body_size
+          frame, body_part = @rpc.shift
+          raise "unexpected frame #{frame}" if frame != :body
+
+          [body_part].pack("@#{pos} a*", buffer: body)
+          pos += body_part.bytesize
+        end
+        Message.new(exchange_name, routing_key, properties, body, redelivered)
+      when :basic_get_empty
+        nil
+      else raise("Unexpected frame #{frame}")
+      end
+    end
+
+
+    def basic_publish(exchange, routing_key, body, properties = {})
       raise "Channel #{@id} already closed" if @closed
 
       frame_size = 2 + 2 + 2 + 1 + exchange.bytesize + 1 + routing_key.bytesize + 1
