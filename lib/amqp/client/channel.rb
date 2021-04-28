@@ -110,12 +110,12 @@ module AMQP
         raise "unexpected frame #{frame}" if frame != :header
 
         pos = 0
-        body = String.new("", capacity: body_size)
+        body = ""
         while pos < body_size
           frame, body_part = @rpc.shift
           raise "unexpected frame #{frame}" if frame != :body
 
-          [body_part].pack("@#{pos} a*", buffer: body)
+          body += body_part
           pos += body_part.bytesize
         end
         Message.new(exchange_name, routing_key, properties, body, redelivered)
