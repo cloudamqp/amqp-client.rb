@@ -19,4 +19,19 @@ class AMQPClientTest < Minitest::Test
     connection.close
     assert connection
   end
+
+  def test_it_can_open_channel
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    assert channel
+  end
+
+  def test_it_can_close_channel
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.close
+    assert channel
+  end
 end
