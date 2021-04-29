@@ -13,6 +13,13 @@ class AMQPClientTest < Minitest::Test
     assert connection
   end
 
+  def test_it_raises_on_bad_credentials
+    client = AMQP::Client.new("amqp://guest1:guest2@localhost")
+    assert_raises(AMQP::Client::Error) do
+      client.connect
+    end
+  end
+
   def test_it_can_disconnect
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
@@ -67,5 +74,15 @@ class AMQPClientTest < Minitest::Test
     channel.basic_publish "", "foo", "bar"
     msg = channel.basic_get "foo"
     assert_equal "bar", msg.body
+  end
+
+  def test_it_can_get_from_transiet_queue
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    channel.basic_publish "", q[:queue_name], "foobar"
+    msg = channel.basic_get q[:queue_name]
+    assert_equal "foobar", msg.body
   end
 end

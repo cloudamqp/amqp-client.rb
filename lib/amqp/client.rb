@@ -20,16 +20,17 @@ module AMQP
       @user = @uri.user || "guest"
       @password = @uri.password || "guest"
       @vhost = URI.decode_www_form_component(@uri.path[1..-1] || "/")
+      @options = URI.decode_www_form(@uri.query || "").to_h
     end
 
     def connect
-      socket = TCPSocket.new @host, @port
+      socket = Socket.tcp @host, @port, connect_timeout: 20, resolv_timeout: 5
+      enable_tcp_keepalive(socket)
       if @tls
         context = OpenSSL::SSL::SSLContext.new
-        # context.verify_mode = OpenSSL::SSL::VERIFY_PEER
-        socket = OpenSSL::SSL::SSLSocket.new(socket, context).tap do |tls_socket|
-          tls_socket.sync_close = true
-        end
+        context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless @options["verify_peer"] == "none"
+        socket = OpenSSL::SSL::SSLSocket.new(socket, context)
+        socket.sync_close = true # closing the TLS socket also closes the TCP socket
       end
       establish(socket, @user, @password, @vhost)
       Connection.new(socket)
@@ -39,29 +40,32 @@ module AMQP
 
     def establish(socket, user, password, vhost)
       socket.write "AMQP\x00\x00\x09\x01"
-      ibuf = String.new(capacity: 4096)
+      buf = String.new(capacity: 4096)
       loop do
-        socket.readpartial(4096, ibuf)
+        begin
+          socket.readpartial(4096, buf)
+        rescue EOFError, IOError, OpenSSL::Error => e
+          raise Error, "Could not establish AMQP connection: #{e.message}"
+        end
 
-        type, channel_id, frame_size = ibuf.unpack("CS>L>")
-        frame_end = ibuf.byteslice(frame_size + 7).unpack1("C")
-        raise AMQP::Client::Error, "Unexpected frame end" if frame_end != 206
+        type, channel_id, frame_size = buf.unpack("C S> L>")
+        frame_end = buf.unpack1("@#{frame_size + 7} C")
+        raise Error, "Unexpected frame end" if frame_end != 206
 
         case type
         when 1 # method frame
-          class_id, method_id = ibuf.unpack("@7S>S>")
+          class_id, method_id = buf.unpack("@7 S> S>")
           case class_id
           when 10 # connection
-            raise AMQP::Client::Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
+            raise Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
 
             case method_id
             when 10 # connection#start
               response = "\u0000#{user}\u0000#{password}"
-              frame_size = 4 + 4 + 6 + 4 + response.bytesize + 1
               socket.write [
                 1, # type: method
                 0, # channel id
-                frame_size,
+                4 + 4 + 6 + 4 + response.bytesize + 1, # frame size
                 10, # class id
                 11, # method id
                 0, # client props
@@ -71,9 +75,10 @@ module AMQP
                 206 # frame end
               ].pack("C S> L> S> S> L> Ca* L>a* Ca* C")
             when 30 # connection#tune
-              channel_max, frame_max, heartbeat = ibuf.unpack("@11S>L>S>")
-
-              # Connection#TuneOk
+              channel_max, frame_max, heartbeat = buf.unpack("@11 S> L> S>")
+              channel_max = [channel_max, 2048].min
+              frame_max = [frame_max, 4096].min
+              heartbeat = [heartbeat, 0].min
               socket.write [
                 1, # type: method
                 0, # channel id
@@ -82,16 +87,14 @@ module AMQP
                 31, # method: tune-ok
                 channel_max,
                 frame_max,
-                heartbeat + -heartbeat,
+                heartbeat,
                 206 # frame end
               ].pack("CS>L>S>S>S>L>S>C")
 
-              # Connection#Open
-              frame_size = 2 + 2 + 1 + vhost.bytesize + 1 + 1
               socket.write [
                 1, # type: method
                 0, # channel id
-                frame_size,
+                2 + 2 + 1 + vhost.bytesize + 1 + 1, # frame_size
                 10, # class: connection
                 40, # method: open
                 vhost.bytesize, vhost,
@@ -101,13 +104,38 @@ module AMQP
               ].pack("C S> L> S> S> Ca* CCC")
             when 41 # connection#open-ok
               return true
-            else raise "Unexpected class/method: #{class_id} #{method_id}"
+            when 50 # connection#close
+              code, text_len = buf.unpack("@11 S> C")
+              text, error_class_id, error_method_id = buf.unpack("@14 a#{text_len} S> S>")
+
+              socket.write [
+                1, # type: method
+                0, # channel id
+                4, # frame size
+                10, # class: connection
+                51, # method: close-ok
+                206 # frame end
+              ].pack("C S> L> S> S> C")
+              raise Error, "Could not establish AMQP connection: #{code} #{text} #{error_class_id} #{error_method_id}"
+            else raise Error, "Unexpected class/method: #{class_id} #{method_id}"
             end
-          else raise "Unexpected class/method: #{class_id} #{method_id}"
+          else raise Error, "Unexpected class/method: #{class_id} #{method_id}"
           end
-        else raise "Unexpected frame type: #{type}"
+        else raise Error, "Unexpected frame type: #{type}"
         end
       end
+    rescue StandardError
+      socket.close
+      raise
+    end
+
+    def enable_tcp_keepalive(socket)
+      socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
+      socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPIDLE, 60)
+      socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, 10)
+      socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, 3)
+    rescue => e
+      warn "amqp-client: Could not enable TCP keepalive on socket. #{e.inspect}"
     end
   end
 end

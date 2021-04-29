@@ -125,7 +125,6 @@ module AMQP
       end
     end
 
-
     def basic_publish(exchange, routing_key, body, properties = {})
       raise "Channel #{@id} already closed" if @closed
 

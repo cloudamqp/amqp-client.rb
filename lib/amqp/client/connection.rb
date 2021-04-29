@@ -58,87 +58,91 @@ module AMQP
           raise AMQP::Client::Error, "Unexpected frame end" if frame_end != 206
 
           buf = buffer.byteslice(buf_pos, frame_size + 8)
-          buf_pos += 8 + frame_size
-
-          case type
-          when 1 # method frame
-            class_id, method_id = buf.unpack("@7 S> S>")
-            case class_id
-            when 10 # connection
-              raise AMQP::Client::Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
-
-              case method_id
-              when 50 # connection#close
-                code, text_len = buf.unpack("@11 S> C")
-                text, error_class_id, error_method_id = buf.unpack("@14 a#{text_len} S> S>")
-                warn "Connection closed #{code} #{text} #{error_class_id} #{error_method_id}"
-                socket.write [
-                  1, # type: method
-                  0, # channel id
-                  4, # frame size
-                  10, # class: connection
-                  51, # method: close-ok
-                  206 # frame end
-                ].pack("C S> L> S> S> C")
-                socket.close
-                @closed = true
-                return
-              when 51 # connection#close-ok
-                socket.close
-                @closed = true
-                @rpc.push :close_ok
-                return
-              else raise "Unsupported class/method: #{class_id} #{method_id}"
-              end
-            when 20 # channel
-              case method_id
-              when 11 # channel#open-ok
-                @channels[channel_id].push :channel_open_ok
-              when 40 # channel#close
-                @channels.delete(channel_id)&.closed!
-              when 41 # channel#close-ok
-                @channels[channel_id].push :channel_close_ok
-              else raise "Unsupported class/method: #{class_id} #{method_id}"
-              end
-            when 50 # queue
-              case method_id
-              when 11 # queue#declare-ok
-                queue_name_len = buf.unpack1("@11 C")
-                queue_name, message_count, consumer_count = buf.unpack("@12 a#{queue_name_len} L> L>")
-                @channels[channel_id].push [:queue_declare_ok, queue_name, message_count, consumer_count]
-              else raise "Unsupported class/method: #{class_id} #{method_id}"
-              end
-            when 60 # basic
-              case method_id
-              when 71 # get-ok
-                pos = 11
-                delivery_tag, redelivered = buf.unpack("@11 Q> C")
-                pos += 8 + 1
-                exchange_name_len = buf.unpack1("@#{pos} C")
-                pos += 1
-                exchange_name = buf.unpack1("@#{pos} a#{exchange_name_len}")
-                pos += exchange_name_len
-                routing_key_len = buf.unpack1("@#{pos} C")
-                pos += 1
-                routing_key = buf.unpack1("@#{pos} a#{routing_key_len}")
-                pos += routing_key_len
-                message_count = buf.unpack1("@#{pos} L>")
-                @channels[channel_id].push [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
-              when 72 # get-empty
-                @channels[channel_id].push :basic_get_empty
-              else raise "Unsupported class/method: #{class_id} #{method_id}"
-              end
-            else raise "Unsupported class/method: #{class_id} #{method_id}"
-            end
-          when 2 # header
-            @channels[channel_id].push [:header, 3, nil]
-          when 3 # body
-            body = buf.unpack1("@7 a#{frame_size}")
-            @channels[channel_id].push [:body, body]
-          else raise "Unsupported frame type: #{type}"
-          end
+          buf_pos += frame_size + 8
+          parse_frame(type, channel_id, frame_size, buf) || return
         end
       end
+    ensure
+      @closed = true
+      begin
+        @socket.close
+      rescue IOError
+        nil
+      end
+    end
+
+    def parse_frame(type, channel_id, frame_size, buf)
+      case type
+      when 1 # method frame
+        class_id, method_id = buf.unpack("@7 S> S>")
+        case class_id
+        when 10 # connection
+          raise AMQP::Client::Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
+
+          case method_id
+          when 50 # connection#close
+            code, text_len = buf.unpack("@11 S> C")
+            text, error_class_id, error_method_id = buf.unpack("@14 a#{text_len} S> S>")
+            warn "Connection closed #{code} #{text} #{error_class_id} #{error_method_id}"
+            socket.write [
+              1, # type: method
+              0, # channel id
+              4, # frame size
+              10, # class: connection
+              51, # method: close-ok
+              206 # frame end
+            ].pack("C S> L> S> S> C")
+            return false
+          when 51 # connection#close-ok
+            @rpc.push :close_ok
+            return false
+          else raise "Unsupported class/method: #{class_id} #{method_id}"
+          end
+        when 20 # channel
+          case method_id
+          when 11 # channel#open-ok
+            @channels[channel_id].push :channel_open_ok
+          when 40 # channel#close
+            @channels.delete(channel_id)&.closed!
+          when 41 # channel#close-ok
+            @channels[channel_id].push :channel_close_ok
+          else raise "Unsupported class/method: #{class_id} #{method_id}"
+          end
+        when 50 # queue
+          case method_id
+          when 11 # queue#declare-ok
+            queue_name_len = buf.unpack1("@11 C")
+            queue_name, message_count, consumer_count = buf.unpack("@12 a#{queue_name_len} L> L>")
+            @channels[channel_id].push [:queue_declare_ok, queue_name, message_count, consumer_count]
+          else raise "Unsupported class/method: #{class_id} #{method_id}"
+          end
+        when 60 # basic
+          case method_id
+          when 71 # get-ok
+            delivery_tag, redelivered, exchange_name_len = buf.unpack("@11 Q> C C")
+            exchange_name = buf.byteslice(21, exchange_name_len)
+            pos = 21 + exchange_name_len
+            routing_key_len = buf.unpack1("@#{pos} C")
+            pos += 1
+            routing_key = buf.byteslice(pos, routing_key_len)
+            pos += routing_key_len
+            message_count = buf.unpack1("@#{pos} L>")
+            @channels[channel_id].push [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
+          when 72 # get-empty
+            @channels[channel_id].push :basic_get_empty
+          else raise "Unsupported class/method: #{class_id} #{method_id}"
+          end
+        else raise "Unsupported class/method: #{class_id} #{method_id}"
+        end
+      when 2 # header
+        body_size = buf.unpack1("@11 Q>")
+        @channels[channel_id].push [:header, body_size, nil]
+      when 3 # body
+        body = buf.byteslice(7, frame_size)
+        @channels[channel_id].push [:body, body]
+      else raise "Unsupported frame type: #{type}"
+      end
+      true
     end
   end
 end
