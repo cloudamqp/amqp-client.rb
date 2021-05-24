@@ -51,7 +51,7 @@ module AMQP
       @closed = true
     end
 
-    def queue_declare(name, passive: false, durable: true, exclusive: false, auto_delete: false, **args)
+    def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, **args)
       durable = false if name.empty?
       exclusive = true if name.empty?
       auto_delete = true if name.empty?
