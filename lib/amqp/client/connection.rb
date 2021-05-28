@@ -27,8 +27,8 @@ module AMQP
       @closed = true
     end
 
-    def write_bytes(bytes)
-      @socket.write bytes
+    def write_bytes(*bytes)
+      @socket.write(*bytes)
     end
 
     private

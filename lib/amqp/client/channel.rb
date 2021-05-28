@@ -125,10 +125,10 @@ module AMQP
       msgs.close
     end
 
-    def write_bytes(bytes)
+    def write_bytes(*bytes)
       raise AMQP::Client::ChannelClosedError, @id if @closed
 
-      @connection.write_bytes bytes
+      @connection.write_bytes(*bytes)
     end
 
     def expect(expected_frame_type, queue = @rpc)
