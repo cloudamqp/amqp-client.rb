@@ -20,7 +20,17 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require "amqp-client"
+
+c = AMQP::Client.new("amqp://guest:guest@localhost")
+conn = c.connect
+ch = conn.channel
+q = ch.queue_declare
+ch.basic_publish "Hello World!", "", q[:queue_name]
+msg = ch.basic_get q[:queue_name]
+puts msg.body
+```
 
 ## Development
 
