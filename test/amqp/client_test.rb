@@ -85,4 +85,16 @@ class AMQPClientTest < Minitest::Test
     msg = channel.basic_get q[:queue_name]
     assert_equal "foobar", msg.body
   end
+
+  def test_it_can_consume
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    channel.basic_publish "", q[:queue_name], "foobar"
+    channel.basic_consume(q[:queue_name]) do |msg|
+      assert_equal "foobar", msg.body
+      channel.basic_cancel msg.consumer_tag
+    end
+  end
 end

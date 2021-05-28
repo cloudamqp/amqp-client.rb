@@ -101,10 +101,25 @@ module AMQP
             queue_name_len = buf.unpack1("@11 C")
             queue_name, message_count, consumer_count = buf.unpack("@12 a#{queue_name_len} L> L>")
             @channels[channel_id].push [:queue_declare_ok, queue_name, message_count, consumer_count]
-          else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
+          else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
         when 60 # basic
           case method_id
+          when 21 # consume-ok
+            tag_len = buf.unpack1("@11 C")
+            tag = buf.unpack1("@12 a#{tag_len}")
+            @channels[channel_id].push [:basic_consume_ok, tag]
+          when 31 # cancel-ok
+            tag_len = buf.unpack1("@11 C")
+            tag = buf.unpack1("@12 a#{tag_len}")
+            consumer = @channels[channel_id].consumers.delete(tag)
+            consumer.close
+          when 60 # deliver
+            ctag_len = buf.unpack1("@11 C")
+            consumer_tag, delivery_tag, redelivered, exchange_len = buf.unpack("@12 a#{ctag_len} L> C C")
+            exchange, rk_len = buf.unpack("@#{12 + ctag_len + 4 + 1 + 1} a#{exchange_len} C")
+            routing_key = buf.unpack1("@#{12 + ctag_len + 4 + 1 + 1 + exchange_len + 1} a#{rk_len}")
+            @channels[channel_id].consumers[consumer_tag].push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
           when 71 # get-ok
             delivery_tag, redelivered, exchange_name_len = buf.unpack("@11 Q> C C")
             exchange_name = buf.byteslice(21, exchange_name_len)
@@ -117,9 +132,9 @@ module AMQP
             @channels[channel_id].push [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
           when 72 # get-empty
             @channels[channel_id].push [:basic_get_empty]
-          else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
+          else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
-        else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
+        else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
         end
       when 2 # header
         body_size = buf.unpack1("@11 Q>")
@@ -134,7 +149,7 @@ module AMQP
 
     def expect(expected_frame_type)
       frame_type, args = @rpc.shift
-      frame_type == expected_frame_type || raise(UnexpectedFrame, expected_frame_type, frame_type)
+      frame_type == expected_frame_type || raise(UnexpectedFrame.new(expected_frame_type, frame_type))
       args
     end
   end

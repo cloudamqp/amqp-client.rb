@@ -182,5 +182,43 @@ module AMQP
         206 # frame end
       ].pack("C S> L> a* C")
     end
+
+    def basic_consume(id, queue, tag, no_ack, exclusive, arguments)
+      no_local = false
+      no_wait = false
+      bits = 0
+      bits |= (1 << 0) if no_local
+      bits |= (1 << 1) if no_ack
+      bits |= (1 << 2) if exclusive
+      bits |= (1 << 3) if no_wait
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + tag.bytesize + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        20, # method: consume
+        0, # reserved1
+        queue.bytesize, queue,
+        tag.bytesize, tag,
+        bits, # bits
+        0, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* C L> C")
+    end
+
+    def basic_cancel(id, consumer_tag, no_wait: false)
+      frame_size = 2 + 2 + 1 + consumer_tag.bytesize + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        30, # method: consume
+        consumer_tag.bytesize, consumer_tag,
+        no_wait ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> Ca* C C")
+    end
   end
 end
