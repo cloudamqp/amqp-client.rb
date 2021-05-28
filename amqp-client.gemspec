@@ -6,13 +6,13 @@ Gem::Specification.new do |spec|
   spec.name          = "amqp-client"
   spec.version       = AMQP::Client::VERSION
   spec.authors       = ["Carl Hörberg"]
-  spec.email         = ["carl@84codes.com"]
+  spec.email         = ["carl@cloudamqp.com"]
 
   spec.summary       = "AMQP 0-9-1 client"
   spec.description   = "Work in progress"
   spec.homepage      = "https://github.com/cloudamqp/amqp-client.rb"
   spec.license       = "MIT"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.4.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.5.0")
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "#{spec.homepage}.git"
