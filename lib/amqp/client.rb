@@ -4,14 +4,14 @@ require "socket"
 require "uri"
 require "openssl"
 require_relative "client/version"
+require_relative "client/errors"
+require_relative "client/frames"
 require_relative "client/connection"
 require_relative "client/channel"
 
 module AMQP
   # AMQP 0-9-1 Client
   class Client
-    class Error < StandardError; end
-
     def initialize(uri)
       @uri = URI.parse(uri)
       @tls = @uri.scheme == "amqps"
@@ -32,13 +32,14 @@ module AMQP
         socket = OpenSSL::SSL::SSLSocket.new(socket, context)
         socket.sync_close = true # closing the TLS socket also closes the TCP socket
       end
-      establish(socket, @user, @password, @vhost)
-      Connection.new(socket)
+      channel_max, frame_max, heartbeat = establish(socket)
+      Connection.new(socket, channel_max, frame_max, heartbeat)
     end
 
     private
 
-    def establish(socket, user, password, vhost)
+    def establish(socket)
+      channel_max, frame_max, heartbeat = nil
       socket.write "AMQP\x00\x00\x09\x01"
       buf = String.new(capacity: 4096)
       loop do
@@ -50,7 +51,7 @@ module AMQP
 
         type, channel_id, frame_size = buf.unpack("C S> L>")
         frame_end = buf.unpack1("@#{frame_size + 7} C")
-        raise Error, "Unexpected frame end" if frame_end != 206
+        raise UnexpectedFrameEndError, frame_end if frame_end != 206
 
         case type
         when 1 # method frame
@@ -61,61 +62,20 @@ module AMQP
 
             case method_id
             when 10 # connection#start
-              response = "\u0000#{user}\u0000#{password}"
-              socket.write [
-                1, # type: method
-                0, # channel id
-                4 + 4 + 6 + 4 + response.bytesize + 1, # frame size
-                10, # class id
-                11, # method id
-                0, # client props
-                5, "PLAIN", # mechanism
-                response.bytesize, response,
-                0, "", # locale
-                206 # frame end
-              ].pack("C S> L> S> S> L> Ca* L>a* Ca* C")
+              socket.write FrameBytes.connection_start_ok "\u0000#{@user}\u0000#{@password}"
             when 30 # connection#tune
               channel_max, frame_max, heartbeat = buf.unpack("@11 S> L> S>")
               channel_max = [channel_max, 2048].min
               frame_max = [frame_max, 4096].min
               heartbeat = [heartbeat, 0].min
-              socket.write [
-                1, # type: method
-                0, # channel id
-                12, # frame size
-                10, # class: connection
-                31, # method: tune-ok
-                channel_max,
-                frame_max,
-                heartbeat,
-                206 # frame end
-              ].pack("CS>L>S>S>S>L>S>C")
-
-              socket.write [
-                1, # type: method
-                0, # channel id
-                2 + 2 + 1 + vhost.bytesize + 1 + 1, # frame_size
-                10, # class: connection
-                40, # method: open
-                vhost.bytesize, vhost,
-                0, # reserved1
-                0, # reserved2
-                206 # frame end
-              ].pack("C S> L> S> S> Ca* CCC")
+              socket.write FrameBytes.connection_tune_ok(channel_max, frame_max, heartbeat)
+              socket.write FrameBytes.connection_open(@vhost)
             when 41 # connection#open-ok
-              return true
+              return [channel_max, frame_max, heartbeat]
             when 50 # connection#close
               code, text_len = buf.unpack("@11 S> C")
               text, error_class_id, error_method_id = buf.unpack("@14 a#{text_len} S> S>")
-
-              socket.write [
-                1, # type: method
-                0, # channel id
-                4, # frame size
-                10, # class: connection
-                51, # method: close-ok
-                206 # frame end
-              ].pack("C S> L> S> S> C")
+              socket.write FrameBytes.connection_close_ok
               raise Error, "Could not establish AMQP connection: #{code} #{text} #{error_class_id} #{error_method_id}"
             else raise Error, "Unexpected class/method: #{class_id} #{method_id}"
             end
