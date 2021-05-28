@@ -12,6 +12,8 @@ module AMQP
       @closed = false
     end
 
+    attr_reader :id
+
     def open
       write_bytes FrameBytes.channel_open(@id)
       expect(:channel_open_ok)
