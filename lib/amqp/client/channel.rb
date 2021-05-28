@@ -62,9 +62,9 @@ module AMQP
       end
     end
 
-    def basic_publish(exchange, routing_key, body, properties = {})
-      write_bytes FrameBytes.basic_publish(@id, exchange, routing_key)
-      write_bytes FrameBytes.header(@id, body.bytesize, properties)
+    def basic_publish(body, exchange, routing_key, properties = {})
+      write_bytes FrameBytes.basic_publish(@id, exchange, routing_key),
+                  FrameBytes.header(@id, body.bytesize, properties)
 
       # body frames, splitted on frame size
       pos = 0
