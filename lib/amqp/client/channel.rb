@@ -60,6 +60,11 @@ module AMQP
       expect :queue_bind_ok
     end
 
+    def queue_unbind(name, exchange, binding_key, **arguments)
+      write_bytes FrameBytes.queue_unbind(@id, name, exchange, binding_key, arguments)
+      expect :queue_unbind_ok
+    end
+
     def basic_get(queue_name, no_ack: true)
       write_bytes FrameBytes.basic_get(@id, queue_name, no_ack)
       frame, *rest = @rpc.shift

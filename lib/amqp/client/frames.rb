@@ -176,6 +176,23 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L> C")
     end
 
+    def queue_unbind(id, queue, exchange, binding_key, arguments)
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 4
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        50, # class: queue
+        50, # method: unbind
+        0, # reserved1
+        queue.bytesize, queue,
+        exchange.bytesize, exchange,
+        binding_key.bytesize, binding_key,
+        0, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* Ca* L> C")
+    end
+
     def basic_get(id, queue, no_ack)
       frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 2 + 2
       [

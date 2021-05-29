@@ -108,6 +108,8 @@ module AMQP
           when 41 # delete-ok
             message_count = buf.unpack1("@11 L>")
             @channels[channel_id].push [:queue_delete, message_count]
+          when 51 # unbind-ok
+            @channels[channel_id].push [:queue_unbind_ok]
           else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
         when 60 # basic
