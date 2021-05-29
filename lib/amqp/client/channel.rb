@@ -137,9 +137,9 @@ module AMQP
       end
     end
 
-    def basic_cancel(consumer_tag)
+    def basic_cancel(consumer_tag, no_wait: false)
       write_bytes FrameBytes.basic_cancel(@id, consumer_tag)
-      expect(:basic_cancel_ok)
+      expect(:basic_cancel_ok) unless no_wait
       consumer = @consumers.delete(consumer_tag)
       consumer.close
     end
