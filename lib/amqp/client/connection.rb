@@ -46,14 +46,14 @@ module AMQP
           break
         end
 
-        buf_pos = 0
-        while buf_pos < buffer.bytesize
-          type, channel_id, frame_size = buffer.unpack("@#{buf_pos}C S> L>")
-          frame_end = buffer.unpack1("@#{buf_pos + 7 + frame_size} C")
+        pos = 0
+        while pos < buffer.bytesize
+          type, channel_id, frame_size = buffer.unpack("@#{pos}C S> L>")
+          frame_end = buffer.unpack1("@#{pos + 7 + frame_size} C")
           raise AMQP::Client::UnexpectedFrameEnd if frame_end != 206
 
-          buf = buffer.byteslice(buf_pos, frame_size + 8)
-          buf_pos += frame_size + 8
+          buf = buffer.byteslice(pos, frame_size + 8)
+          pos += frame_size + 8
           parse_frame(type, channel_id, frame_size, buf) || return
         end
       end
