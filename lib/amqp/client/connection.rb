@@ -131,7 +131,11 @@ module AMQP
             exchange, rk_len = buf.unpack("@#{12 + ctag_len + 4 + 1 + 1} a#{exchange_len} C")
             routing_key = buf.unpack1("@#{12 + ctag_len + 4 + 1 + 1 + exchange_len + 1} a#{rk_len}")
             consumer = @channels[channel_id].consumers[consumer_tag]
-            consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
+            if consumer
+              consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
+            else
+              warn "missing consumer #{consumer_tag} on channel #{channel_id}"
+            end
           when 71 # get-ok
             delivery_tag, redelivered, exchange_name_len = buf.unpack("@11 Q> C C")
             exchange_name, routing_key_len = buf.unpack("@21 a#{exchange_name_len} C")
