@@ -6,7 +6,7 @@ module AMQP
   # AMQP Channel
   class Channel
     def initialize(connection, id)
-      @rpc = Queue.new
+      @replies = Queue.new
       @connection = connection
       @id = id
       @consumers = {}
@@ -30,7 +30,7 @@ module AMQP
     def closed!(code, reason, classid, methodid)
       write_bytes FrameBytes.channel_close_ok(@id)
       @closed = [code, reason, classid, methodid]
-      @rpc.close
+      @replies.close
       @consumers.each(&:close)
       @consumers.clear
     end
@@ -67,7 +67,7 @@ module AMQP
 
     def basic_get(queue_name, no_ack: true)
       write_bytes FrameBytes.basic_get(@id, queue_name, no_ack)
-      frame, *rest = @rpc.shift
+      frame, *rest = @replies.shift
       case frame
       when :basic_get_ok
         delivery_tag, exchange_name, routing_key, _message_count, redelivered = rest
@@ -162,8 +162,8 @@ module AMQP
       false
     end
 
-    def push(*args)
-      @rpc.push(*args)
+    def reply(*args)
+      @replies.push(*args)
     end
 
     def confirm(*args)
@@ -195,7 +195,7 @@ module AMQP
     end
 
     def expect(expected_frame_type)
-      frame_type, args = @rpc.shift
+      frame_type, args = @replies.shift
       raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
       raise UnexpectedFrame.new(expected_frame_type, frame_type) if frame_type != expected_frame_type
 

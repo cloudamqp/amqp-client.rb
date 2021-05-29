@@ -10,7 +10,7 @@ module AMQP
       @heartbeat = heartbeat
       @channels = {}
       @closed = false
-      @rpc = Queue.new
+      @replies = Queue.new
       Thread.new { read_loop }
     end
 
@@ -82,21 +82,21 @@ module AMQP
             write_bytes FrameBytes.connection_close_ok
             return false
           when 51 # connection#close-ok
-            @rpc.push [:close_ok]
+            @replies.push [:close_ok]
             return false
           else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
           end
         when 20 # channel
           case method_id
           when 11 # channel#open-ok
-            @channels[channel_id].push [:channel_open_ok]
+            @channels[channel_id].reply [:channel_open_ok]
           when 40 # channel#close
             reply_code, reply_text_len = buf.unpack("@11 S> C")
             reply_text, classid, methodid = buf.unpack("@14 a#{reply_text_len} S> S>")
             channel = @channels.delete(channel_id)
             channel.closed!(reply_code, reply_text, classid, methodid)
           when 41 # channel#close-ok
-            @channels[channel_id].push [:channel_close_ok]
+            @channels[channel_id].reply [:channel_close_ok]
           else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
           end
         when 50 # queue
@@ -104,14 +104,14 @@ module AMQP
           when 11 # declare-ok
             queue_name_len = buf.unpack1("@11 C")
             queue_name, message_count, consumer_count = buf.unpack("@12 a#{queue_name_len} L> L>")
-            @channels[channel_id].push [:queue_declare_ok, queue_name, message_count, consumer_count]
+            @channels[channel_id].reply [:queue_declare_ok, queue_name, message_count, consumer_count]
           when 21 # bind-ok
-            @channels[channel_id].push [:queue_bind_ok]
+            @channels[channel_id].reply [:queue_bind_ok]
           when 41 # delete-ok
             message_count = buf.unpack1("@11 L>")
-            @channels[channel_id].push [:queue_delete, message_count]
+            @channels[channel_id].reply [:queue_delete, message_count]
           when 51 # unbind-ok
-            @channels[channel_id].push [:queue_unbind_ok]
+            @channels[channel_id].reply [:queue_unbind_ok]
           else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
         when 60 # basic
@@ -119,7 +119,7 @@ module AMQP
           when 21 # consume-ok
             tag_len = buf.unpack1("@11 C")
             tag = buf.unpack1("@12 a#{tag_len}")
-            @channels[channel_id].push [:basic_consume_ok, tag]
+            @channels[channel_id].reply [:basic_consume_ok, tag]
           when 31 # cancel-ok
             tag_len = buf.unpack1("@11 C")
             tag = buf.unpack1("@12 a#{tag_len}")
@@ -140,9 +140,9 @@ module AMQP
             delivery_tag, redelivered, exchange_name_len = buf.unpack("@11 Q> C C")
             exchange_name, routing_key_len = buf.unpack("@21 a#{exchange_name_len} C")
             routing_key, message_count = buf.unpack("@#{22 + exchange_name_len} a#{routing_key_len} L>")
-            @channels[channel_id].push [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
+            @channels[channel_id].reply [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
           when 72 # get-empty
-            @channels[channel_id].push [:basic_get_empty]
+            @channels[channel_id].reply [:basic_get_empty]
           when 80 # ack
             delivery_tag, multiple = buf.unpack1("@11 Q> C")
             @channels[channel_id].confirm [:ack, delivery_tag, multiple]
@@ -154,24 +154,24 @@ module AMQP
         when 85 # confirm
           case method_id
           when 11 # select-ok
-            @channels[channel_id].push [:confirm_select_ok]
+            @channels[channel_id].reply [:confirm_select_ok]
           else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
         else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
         end
       when 2 # header
         body_size = buf.unpack1("@11 Q>")
-        @channels[channel_id].push [:header, body_size, nil]
+        @channels[channel_id].reply [:header, body_size, nil]
       when 3 # body
         body = buf.byteslice(7, frame_size)
-        @channels[channel_id].push [:body, body]
+        @channels[channel_id].reply [:body, body]
       else raise AMQP::Client::UnsupportedFrameType, type
       end
       true
     end
 
     def expect(expected_frame_type)
-      frame_type, args = @rpc.shift
+      frame_type, args = @replies.shift
       frame_type == expected_frame_type || raise(UnexpectedFrame.new(expected_frame_type, frame_type))
       args
     end
