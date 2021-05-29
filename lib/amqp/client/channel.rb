@@ -55,12 +55,17 @@ module AMQP
       message_count
     end
 
+    def queue_bind(name, exchange, binding_key, **arguments)
+      write_bytes FrameBytes.queue_bind(@id, name, exchange, binding_key, false, arguments)
+      expect :queue_bind_ok
+    end
+
     def basic_get(queue_name, no_ack: true)
       write_bytes FrameBytes.basic_get(@id, queue_name, no_ack)
-      frame, rest = @rpc.shift
+      frame, *rest = @rpc.shift
       case frame
       when :basic_get_ok
-        delivery_tag, exchange_name, routing_key, redelivered = rest
+        delivery_tag, exchange_name, routing_key, _message_count, redelivered = rest
         body_size, properties = expect(:header)
         pos = 0
         body = String.new("", capacity: body_size)

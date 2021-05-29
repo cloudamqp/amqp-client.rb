@@ -103,6 +103,8 @@ module AMQP
             queue_name_len = buf.unpack1("@11 C")
             queue_name, message_count, consumer_count = buf.unpack("@12 a#{queue_name_len} L> L>")
             @channels[channel_id].push [:queue_declare_ok, queue_name, message_count, consumer_count]
+          when 21 # bind-ok
+            @channels[channel_id].push [:queue_bind_ok]
           when 41 # delete-ok
             message_count = buf.unpack1("@11 L>")
             @channels[channel_id].push [:queue_delete, message_count]
