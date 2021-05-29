@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require_relative "../test_helper"
 
 class AMQPClientTest < Minitest::Test
   def test_that_it_has_a_version_number
@@ -57,6 +57,18 @@ class AMQPClientTest < Minitest::Test
     assert_equal "foo", resp[:queue_name]
   end
 
+  def test_it_can_delete_queue
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.queue_declare "foo"
+    message_count = channel.queue_delete("foo")
+    assert_equal 0, message_count
+    assert_raises(AMQP::Client::Error, /exists/) do
+      channel.queue_declare "foo", passive: true
+    end
+  end
+
   def test_it_can_get_from_empty_queue
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
@@ -71,7 +83,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     channel.queue_declare "foo"
-    channel.basic_publish "", "foo", "bar"
+    channel.basic_publish "bar", "", "foo"
     msg = channel.basic_get "foo"
     assert_equal "bar", msg.body
   end
@@ -81,7 +93,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_publish "", q[:queue_name], "foobar"
+    channel.basic_publish "foobar", "", q[:queue_name]
     msg = channel.basic_get q[:queue_name]
     assert_equal "foobar", msg.body
   end
@@ -91,7 +103,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_publish "", q[:queue_name], "foobar"
+    channel.basic_publish "foobar", "", q[:queue_name]
     channel.basic_consume(q[:queue_name]) do |msg|
       assert_equal "foobar", msg.body
       channel.basic_cancel msg.consumer_tag

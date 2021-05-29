@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AMQP
   class Client
     class Error < StandardError; end
@@ -29,8 +31,8 @@ module AMQP
     end
 
     class ChannelClosedError < Error
-      def initialize(id)
-        super "Channel #{id} already closed"
+      def initialize(id, code, reason, classid = 0, methodid = 0)
+        super "Channel[#{id}] closed (#{code}) #{reason} (#{classid}/#{methodid})"
       end
     end
   end

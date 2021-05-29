@@ -10,7 +10,7 @@ module AMQP
       @connection = connection
       @id = id
       @consumers = {}
-      @closed = false
+      @closed = nil
     end
 
     attr_reader :id, :consumers
@@ -24,7 +24,15 @@ module AMQP
     def close(reason = "", code = 200)
       write_bytes FrameBytes.channel_close(@id, reason, code)
       expect :channel_close_ok
-      @closed = true
+      @closed = [code, reason]
+    end
+
+    def closed!(code, reason, classid, methodid)
+      write_bytes FrameBytes.channel_close_ok(@id)
+      @closed = [code, reason, classid, methodid]
+      @rpc.close
+      @consumers.each(&:close)
+      @consumers.clear
     end
 
     def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, **args)
@@ -32,13 +40,19 @@ module AMQP
       exclusive = true if name.empty?
       auto_delete = true if name.empty?
 
-      write_bytes FrameBytes.queue_declare(@id, name, passive, durable, exclusive, auto_delete)
+      write_bytes FrameBytes.queue_declare(@id, name, passive, durable, exclusive, auto_delete, args)
       name, message_count, consumer_count = expect(:queue_declare_ok)
       {
         queue_name: name,
         message_count: message_count,
         consumer_count: consumer_count
       }
+    end
+
+    def queue_delete(name, if_unused: false, if_empty: false, no_wait: false)
+      write_bytes FrameBytes.queue_delete(@id, name, if_unused, if_empty, no_wait)
+      message_count, = expect :queue_delete
+      message_count
     end
 
     def basic_get(queue_name, no_ack: true)
@@ -56,9 +70,9 @@ module AMQP
           pos += body_part.bytesize
         end
         Message.new(delivery_tag, exchange_name, routing_key, properties, body, redelivered)
-      when :basic_get_empty
-        nil
-      else raise AMQP::Client::UnexpectedFrame, %i[basic_get_ok basic_get_empty], frame
+      when :basic_get_empty then nil
+      when nil              then raise AMQP::Client::ChannelClosedError.new(@id, *@closed)
+      else raise AMQP::Client::UnexpectedFrame.new(%i[basic_get_ok basic_get_empty], frame)
       end
     end
 
@@ -111,7 +125,7 @@ module AMQP
 
     def recv_deliveries(consumer_tag, deliver_queue, msgs)
       loop do
-        delivery_tag, redelivered, exchange, routing_key = expect(:deliver, deliver_queue)
+        _, delivery_tag, redelivered, exchange, routing_key = deliver_queue.shift || raise(ClosedQueueError)
         body_size, properties = expect(:header)
         body = String.new("", capacity: body_size)
         while body.bytesize < body_size
@@ -126,16 +140,16 @@ module AMQP
     end
 
     def write_bytes(*bytes)
-      raise AMQP::Client::ChannelClosedError, @id if @closed
+      raise AMQP::Client::ChannelClosedError, @id, *@closed if @closed
 
       @connection.write_bytes(*bytes)
     end
 
-    def expect(expected_frame_type, queue = @rpc)
-      frame_type, args = queue.shift
-      raise ClosedQueueError if frame_type.nil?
+    def expect(expected_frame_type)
+      frame_type, args = @rpc.shift
+      raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
+      raise UnexpectedFrame.new(expected_frame_type, frame_type) if frame_type != expected_frame_type
 
-      frame_type == expected_frame_type || raise(UnexpectedFrame, expected_frame_type, frame_type)
       args
     end
   end

@@ -89,18 +89,23 @@ module AMQP
           when 11 # channel#open-ok
             @channels[channel_id].push [:channel_open_ok]
           when 40 # channel#close
+            reply_code, reply_text_len = buf.unpack("@11 S> C")
+            reply_text, classid, methodid = buf.unpack("@14 a#{reply_text_len} S> S>")
             channel = @channels.delete(channel_id)
-            channel&.closed!
+            channel.closed!(reply_code, reply_text, classid, methodid)
           when 41 # channel#close-ok
             @channels[channel_id].push [:channel_close_ok]
           else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
           end
         when 50 # queue
           case method_id
-          when 11 # queue#declare-ok
+          when 11 # declare-ok
             queue_name_len = buf.unpack1("@11 C")
             queue_name, message_count, consumer_count = buf.unpack("@12 a#{queue_name_len} L> L>")
             @channels[channel_id].push [:queue_declare_ok, queue_name, message_count, consumer_count]
+          when 41 # delete-ok
+            message_count = buf.unpack1("@11 L>")
+            @channels[channel_id].push [:queue_delete, message_count]
           else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
         when 60 # basic
@@ -119,16 +124,12 @@ module AMQP
             consumer_tag, delivery_tag, redelivered, exchange_len = buf.unpack("@12 a#{ctag_len} L> C C")
             exchange, rk_len = buf.unpack("@#{12 + ctag_len + 4 + 1 + 1} a#{exchange_len} C")
             routing_key = buf.unpack1("@#{12 + ctag_len + 4 + 1 + 1 + exchange_len + 1} a#{rk_len}")
-            @channels[channel_id].consumers[consumer_tag].push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
+            consumer = @channels[channel_id].consumers[consumer_tag]
+            consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
           when 71 # get-ok
             delivery_tag, redelivered, exchange_name_len = buf.unpack("@11 Q> C C")
-            exchange_name = buf.byteslice(21, exchange_name_len)
-            pos = 21 + exchange_name_len
-            routing_key_len = buf.unpack1("@#{pos} C")
-            pos += 1
-            routing_key = buf.byteslice(pos, routing_key_len)
-            pos += routing_key_len
-            message_count = buf.unpack1("@#{pos} L>")
+            exchange_name, routing_key_len = buf.unpack("@21 a#{exchange_name_len} C")
+            routing_key, message_count = buf.unpack("@#{22 + exchange_name_len} a#{routing_key_len} L>")
             @channels[channel_id].push [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
           when 72 # get-empty
             @channels[channel_id].push [:basic_get_empty]
