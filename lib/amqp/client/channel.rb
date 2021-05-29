@@ -87,16 +87,23 @@ module AMQP
     end
 
     def basic_publish(body, exchange, routing_key, mandatory: false, **properties)
-      write_bytes FrameBytes.basic_publish(@id, exchange, routing_key, mandatory),
-                  FrameBytes.header(@id, body.bytesize, properties)
+      frame_max = @connection.frame_max - 8
+      id = @id
 
-      # body frames, splitted on frame size
-      frame_max = @connection.frame_max
+      if 0 < body.bytesize && body.bytesize <= frame_max
+        write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
+                    FrameBytes.header(id, body.bytesize, properties),
+                    FrameBytes.body(id, body)
+        return @confirm ? @confirm += 1 : nil
+      end
+
+      write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
+                  FrameBytes.header(id, body.bytesize, properties)
       pos = 0
-      while pos < body.bytesize
+      while pos < body.bytesize # split body into multiple frame_max frames
         len = [frame_max, body.bytesize - pos].min
         body_part = body.byteslice(pos, len)
-        write_bytes FrameBytes.body(@id, body_part)
+        write_bytes FrameBytes.body(id, body_part)
         pos += len
       end
       @confirm += 1 if @confirm
@@ -144,7 +151,8 @@ module AMQP
     end
 
     def wait_for_confirm(id)
-      return true if @last_confirmed >= delivery_tag
+      raise ArgumentError, "Confirm id has to a positive number" unless id&.positive?
+      return true if @last_confirmed && @last_confirmed >= id
 
       loop do
         ack, delivery_tag, multiple = @confirms.shift || break
@@ -181,7 +189,7 @@ module AMQP
     end
 
     def write_bytes(*bytes)
-      raise AMQP::Client::ChannelClosedError, @id, *@closed if @closed
+      raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if @closed
 
       @connection.write_bytes(*bytes)
     end
