@@ -208,7 +208,7 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* C C")
     end
 
-    def basic_publish(id, exchange, routing_key)
+    def basic_publish(id, exchange, routing_key, mandatory)
       frame_size = 2 + 2 + 2 + 1 + exchange.bytesize + 1 + routing_key.bytesize + 1
       [
         1, # type: method
@@ -219,7 +219,7 @@ module AMQP
         0, # reserved1
         exchange.bytesize, exchange,
         routing_key.bytesize, routing_key,
-        0, # bits, mandatory/immediate
+        mandatory ? 1 : 0, # bits, mandatory/immediate
         206 # frame end
       ].pack("C S> L> S> S> S> Ca* Ca* C C")
     end

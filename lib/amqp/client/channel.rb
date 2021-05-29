@@ -86,8 +86,8 @@ module AMQP
       end
     end
 
-    def basic_publish(body, exchange, routing_key, properties = {})
-      write_bytes FrameBytes.basic_publish(@id, exchange, routing_key),
+    def basic_publish(body, exchange, routing_key, mandatory: false, **properties)
+      write_bytes FrameBytes.basic_publish(@id, exchange, routing_key, mandatory),
                   FrameBytes.header(@id, body.bytesize, properties)
 
       # body frames, splitted on frame size
@@ -100,6 +100,11 @@ module AMQP
         pos += len
       end
       @confirm += 1 if @confirm
+    end
+
+    def basic_publish_confirm(body, exchange, routing_key, mandatory, **properties)
+      id = basic_publish(body, exchange, routing_key, mandatory, properties)
+      wait_for_confirm(id)
     end
 
     def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {},
@@ -139,8 +144,11 @@ module AMQP
     end
 
     def wait_for_confirm(id)
+      return true if @last_confirmed >= delivery_tag
+
       loop do
         ack, delivery_tag, multiple = @confirms.shift || break
+        @last_confirmed = delivery_tag
         return ack if delivery_tag == id || (delivery_tag > id && multiple)
       end
       false
