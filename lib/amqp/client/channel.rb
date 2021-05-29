@@ -165,12 +165,12 @@ module AMQP
       false
     end
 
-    def reply(*args)
-      @replies.push(*args)
+    def reply(args)
+      @replies.push(args)
     end
 
-    def confirm(*args)
-      @confirms.push(*args)
+    def confirm(args)
+      @confirms.push(args)
     end
 
     private
