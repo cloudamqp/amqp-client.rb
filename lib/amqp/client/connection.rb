@@ -120,11 +120,16 @@ module AMQP
             tag_len = buf.unpack1("@11 C")
             tag = buf.unpack1("@12 a#{tag_len}")
             @channels[channel_id].reply [:basic_consume_ok, tag]
+          when 30 # cancel
+            tag_len = buf.unpack1("@11 C")
+            tag, no_wait = buf.unpack("@12 a#{tag_len} C")
+            consumer = @channels[channel_id].consumers.delete(tag)
+            consumer.close
+            write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait == 1
           when 31 # cancel-ok
             tag_len = buf.unpack1("@11 C")
             tag = buf.unpack1("@12 a#{tag_len}")
-            consumer = @channels[channel_id].consumers.delete(tag)
-            consumer.close
+            @channels[channel_id].reply [:basic_cancel_ok, tag]
           when 60 # deliver
             ctag_len = buf.unpack1("@11 C")
             consumer_tag, delivery_tag, redelivered, exchange_len = buf.unpack("@12 a#{ctag_len} L> C C")

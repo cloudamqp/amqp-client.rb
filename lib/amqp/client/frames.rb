@@ -279,11 +279,24 @@ module AMQP
         id, # channel id
         frame_size, # frame size
         60, # class: basic
-        30, # method: consume
+        30, # method: cancel
         consumer_tag.bytesize, consumer_tag,
         no_wait ? 1 : 0,
         206 # frame end
       ].pack("C S> L> S> S> Ca* C C")
+    end
+
+    def basic_cancel_ok(id, consumer_tag)
+      frame_size = 2 + 2 + 1 + consumer_tag.bytesize + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        31, # method: cancel-ok
+        consumer_tag.bytesize, consumer_tag,
+        206 # frame end
+      ].pack("C S> L> S> S> Ca* C")
     end
 
     def confirm_select(id, no_wait)
