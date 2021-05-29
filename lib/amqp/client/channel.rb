@@ -91,9 +91,10 @@ module AMQP
                   FrameBytes.header(@id, body.bytesize, properties)
 
       # body frames, splitted on frame size
+      frame_max = @connection.frame_max
       pos = 0
       while pos < body.bytesize
-        len = [4096, body.bytesize - pos].min
+        len = [frame_max, body.bytesize - pos].min
         body_part = body.byteslice(pos, len)
         write_bytes FrameBytes.body(@id, body_part)
         pos += len

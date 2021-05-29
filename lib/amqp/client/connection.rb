@@ -14,6 +14,8 @@ module AMQP
       Thread.new { read_loop }
     end
 
+    attr_reader :frame_max
+
     def channel
       id = 1.upto(@channel_max) { |i| break i unless @channels.key? i }
       ch = Channel.new(self, id)
