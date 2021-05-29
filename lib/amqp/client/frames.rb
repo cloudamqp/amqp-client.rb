@@ -285,5 +285,17 @@ module AMQP
         206 # frame end
       ].pack("C S> L> S> S> Ca* C C")
     end
+
+    def confirm_select(id, no_wait)
+      [
+        1, # type: method
+        id, # channel id
+        5, # frame size
+        85, # class: confirm
+        10, # method: select
+        no_wait ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> C C")
+    end
   end
 end

@@ -99,6 +99,7 @@ module AMQP
         write_bytes FrameBytes.body(@id, body_part)
         pos += len
       end
+      @confirm += 1 if @confirm
     end
 
     def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {},
@@ -128,8 +129,29 @@ module AMQP
       write_bytes FrameBytes.basic_cancel(@id, consumer_tag)
     end
 
+    def confirm_select(no_wait: false)
+      return if @confirm
+
+      write_bytes FrameBytes.confirm_select(@id, no_wait)
+      expect :confirm_select_ok unless no_wait
+      @confirms = Queue.new
+      @confirm = 0
+    end
+
+    def wait_for_confirm(id)
+      loop do
+        ack, delivery_tag, multiple = @confirms.shift || break
+        return ack if delivery_tag == id || (delivery_tag > id && multiple)
+      end
+      false
+    end
+
     def push(*args)
       @rpc.push(*args)
+    end
+
+    def confirm(*args)
+      @confirms.push(*args)
     end
 
     private

@@ -139,6 +139,18 @@ module AMQP
             @channels[channel_id].push [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
           when 72 # get-empty
             @channels[channel_id].push [:basic_get_empty]
+          when 80 # ack
+            delivery_tag, multiple = buf.unpack1("@11 Q> C")
+            @channels[channel_id].confirm [:ack, delivery_tag, multiple]
+          when 120 # nack
+            delivery_tag, multiple, requeue = buf.unpack1("@11 Q> C C")
+            @channels[channel_id].confirm [:nack, delivery_tag, multiple == 1, requeue == 1]
+          else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
+          end
+        when 85 # confirm
+          case method_id
+          when 11 # select-ok
+            @channels[channel_id].push [:confirm_select_ok]
           else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
         else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id

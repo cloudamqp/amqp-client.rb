@@ -133,4 +133,13 @@ class AMQPClientTest < Minitest::Test
     msg = channel.basic_get q[:queue_name]
     assert_nil msg
   end
+
+  def test_it_can_select_confirm
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.confirm_select
+    id = channel.basic_publish "foo", "amq.direct", "bar"
+    assert channel.wait_for_confirm id
+  end
 end
