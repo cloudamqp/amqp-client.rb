@@ -66,7 +66,7 @@ module AMQP
             when 30 # connection#tune
               channel_max, frame_max, heartbeat = buf.unpack("@11 S> L> S>")
               channel_max = [channel_max, 2048].min
-              frame_max = [frame_max, 4096].min
+              frame_max = [frame_max, 131_072].min
               heartbeat = [heartbeat, 0].min
               socket.write FrameBytes.connection_tune_ok(channel_max, frame_max, heartbeat)
               socket.write FrameBytes.connection_open(@vhost)
