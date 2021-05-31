@@ -139,7 +139,7 @@ module AMQP
             @channels[channel_id].reply [:basic_cancel_ok, tag]
           when 60 # deliver
             ctag_len = buf.unpack1("@11 C")
-            consumer_tag, delivery_tag, redelivered, exchange_len = buf.unpack("@12 a#{ctag_len} L> C C")
+            consumer_tag, delivery_tag, redelivered, exchange_len = buf.unpack("@12 a#{ctag_len} Q> C C")
             exchange, rk_len = buf.unpack("@#{12 + ctag_len + 4 + 1 + 1} a#{exchange_len} C")
             routing_key = buf.unpack1("@#{12 + ctag_len + 4 + 1 + 1 + exchange_len + 1} a#{rk_len}")
             consumer = @channels[channel_id].consumers[consumer_tag]
