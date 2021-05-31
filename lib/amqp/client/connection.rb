@@ -48,9 +48,16 @@ module AMQP
 
         pos = 0
         while pos < buffer.bytesize
-          type, channel_id, frame_size = buffer.unpack("@#{pos}C S> L>")
-          frame_end = buffer.unpack1("@#{pos + 7 + frame_size} C")
-          raise AMQP::Client::UnexpectedFrameEnd if frame_end != 206
+          buffer += socket.read(pos + 8 - buffer.bytesize) if pos + 8 > buffer.bytesize
+          type, channel_id, frame_size = buffer.unpack("@#{pos} C S> L>")
+          if frame_size > frame_max
+            raise AMQP::Client::Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}"
+          end
+
+          frame_end_pos = pos + 7 + frame_size
+          buffer += socket.read(frame_end_pos - buffer.bytesize + 1) if frame_end_pos + 1 > buffer.bytesize
+          frame_end = buffer.unpack1("@#{frame_end_pos} C")
+          raise AMQP::Client::UnexpectedFrameEnd, frame_end if frame_end != 206
 
           buf = buffer.byteslice(pos, frame_size + 8)
           pos += frame_size + 8
