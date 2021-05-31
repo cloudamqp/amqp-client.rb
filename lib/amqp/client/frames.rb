@@ -256,7 +256,7 @@ module AMQP
       bits |= (1 << 1) if no_ack
       bits |= (1 << 2) if exclusive
       bits |= (1 << 3) if no_wait
-      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + tag.bytesize + 1
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + tag.bytesize + 1 + 4
       [
         1, # type: method
         id, # channel id
