@@ -198,11 +198,13 @@ module AMQP
     end
 
     def expect(expected_frame_type)
-      frame_type, args = @replies.shift
-      raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
-      raise AMQP::Client::UnexpectedFrame.new(expected_frame_type, frame_type) if frame_type != expected_frame_type
+      loop do
+        frame_type, args = @replies.shift
+        raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
+        return args if frame_type == expected_frame_type
 
-      args
+        @replies.push [frame_type, *args]
+      end
     end
   end
 end
