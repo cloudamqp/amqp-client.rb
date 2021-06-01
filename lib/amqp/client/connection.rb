@@ -130,8 +130,7 @@ module AMQP
           when 30 # cancel
             tag_len = buf.unpack1("@11 C")
             tag, no_wait = buf.unpack("@12 a#{tag_len} C")
-            consumer = @channels[channel_id].consumers.delete(tag)
-            consumer.close
+            @channels[channel_id].consumers.fetch(tag).close
             write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait == 1
           when 31 # cancel-ok
             tag_len = buf.unpack1("@11 C")
@@ -142,11 +141,14 @@ module AMQP
             consumer_tag, delivery_tag, redelivered, exchange_len = buf.unpack("@12 a#{ctag_len} Q> C C")
             exchange, rk_len = buf.unpack("@#{12 + ctag_len + 4 + 1 + 1} a#{exchange_len} C")
             routing_key = buf.unpack1("@#{12 + ctag_len + 4 + 1 + 1 + exchange_len + 1} a#{rk_len}")
-            consumer = @channels[channel_id].consumers[consumer_tag]
-            if consumer
-              consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
-            else
-              warn "missing consumer #{consumer_tag} on channel #{channel_id}"
+            loop do
+              if (consumer = @channels[channel_id].consumers[consumer_tag])
+                consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
+                break
+              else
+                warn "missing consumer #{consumer_tag} on channel #{channel_id} delivery_tag=#{delivery_tag}"
+                Thread.pass
+              end
             end
           when 71 # get-ok
             delivery_tag, redelivered, exchange_name_len = buf.unpack("@11 Q> C C")
