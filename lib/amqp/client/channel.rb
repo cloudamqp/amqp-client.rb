@@ -55,12 +55,12 @@ module AMQP
       message_count
     end
 
-    def queue_bind(name, exchange, binding_key, **arguments)
+    def queue_bind(name, exchange, binding_key, arguments = {})
       write_bytes FrameBytes.queue_bind(@id, name, exchange, binding_key, false, arguments)
       expect :queue_bind_ok
     end
 
-    def queue_unbind(name, exchange, binding_key, **arguments)
+    def queue_unbind(name, exchange, binding_key, arguments = {})
       write_bytes FrameBytes.queue_unbind(@id, name, exchange, binding_key, arguments)
       expect :queue_unbind_ok
     end
@@ -75,7 +75,7 @@ module AMQP
         pos = 0
         body = String.new("", capacity: body_size)
         while pos < body_size
-          body_part = expect(:body)
+          body_part, = expect(:body)
           body += body_part
           pos += body_part.bytesize
         end
@@ -183,7 +183,7 @@ module AMQP
         body_size, properties = expect(:header)
         body = String.new("", capacity: body_size)
         while body.bytesize < body_size
-          body_part = expect(:body)
+          body_part, = expect(:body)
           body += body_part
         end
         msgs.push Message.new(delivery_tag, exchange, routing_key, properties, body,
@@ -201,7 +201,7 @@ module AMQP
 
     def expect(expected_frame_type)
       loop do
-        frame_type, args = @replies.shift
+        frame_type, *args = @replies.shift
         raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
         return args if frame_type == expected_frame_type
 

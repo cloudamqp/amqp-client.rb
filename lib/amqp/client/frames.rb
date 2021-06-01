@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require_relative "./properties"
+require_relative "./table"
+
 module AMQP
   # Generate binary data for different frames
   # Each frame type implemented as a method
@@ -116,7 +119,7 @@ module AMQP
       ].pack("C S> L> S> S> C")
     end
 
-    def queue_declare(id, name, passive, durable, exclusive, auto_delete, _arguments)
+    def queue_declare(id, name, passive, durable, exclusive, auto_delete, arguments)
       no_wait = false
       bits = 0
       bits |= (1 << 0) if passive
@@ -124,7 +127,8 @@ module AMQP
       bits |= (1 << 2) if exclusive
       bits |= (1 << 3) if auto_delete
       bits |= (1 << 4) if no_wait
-      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1 + 4
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1 + 4 + tbl.bytesize
       [
         1, # type: method
         id, # channel id
@@ -134,9 +138,9 @@ module AMQP
         0, # reserved1
         name.bytesize, name,
         bits,
-        0, # arguments
+        tbl.bytesize, tbl, # arguments
         206 # frame end
-      ].pack("C S> L> S> S> S> Ca* C L> C")
+      ].pack("C S> L> S> S> S> Ca* C L>a* C")
     end
 
     def queue_delete(id, name, if_unused, if_empty, no_wait)
@@ -158,8 +162,9 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* C C")
     end
 
-    def queue_bind(id, queue, exchange, binding_key, no_wait, _arguments)
-      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 1 + 4
+    def queue_bind(id, queue, exchange, binding_key, no_wait, arguments)
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 1 + 4 + tbl.bytesize
       [
         1, # type: method
         id, # channel id
@@ -171,13 +176,14 @@ module AMQP
         exchange.bytesize, exchange,
         binding_key.bytesize, binding_key,
         no_wait ? 1 : 0,
-        0, # arguments
+        tbl.bytesize, tbl, # arguments
         206 # frame end
-      ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L> C")
+      ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L>a* C")
     end
 
-    def queue_unbind(id, queue, exchange, binding_key, _arguments)
-      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 4
+    def queue_unbind(id, queue, exchange, binding_key, arguments)
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 4 + tbl.bytesize
       [
         1, # type: method
         id, # channel id
@@ -188,9 +194,9 @@ module AMQP
         queue.bytesize, queue,
         exchange.bytesize, exchange,
         binding_key.bytesize, binding_key,
-        0, # arguments
+        tbl.bytesize, tbl, # arguments
         206 # frame end
-      ].pack("C S> L> S> S> S> Ca* Ca* Ca* L> C")
+      ].pack("C S> L> S> S> S> Ca* Ca* Ca* L>a* C")
     end
 
     def basic_get(id, queue, no_ack)
@@ -224,8 +230,9 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* Ca* C C")
     end
 
-    def header(id, body_size, _properties)
-      frame_size = 2 + 2 + 8 + 2
+    def header(id, body_size, properties)
+      props = Properties.encode(properties)
+      frame_size = 2 + 2 + 8 + props.bytesize
       [
         2, # type: header
         id, # channel id
@@ -233,9 +240,9 @@ module AMQP
         60, # class: basic
         0, # weight
         body_size,
-        0, # properties
+        props, # properties
         206 # frame end
-      ].pack("C S> L> S> S> Q> S> C")
+      ].pack("C S> L> S> S> Q> a* C")
     end
 
     def body(id, body_part)
@@ -248,7 +255,7 @@ module AMQP
       ].pack("C S> L> a* C")
     end
 
-    def basic_consume(id, queue, tag, no_ack, exclusive, _arguments)
+    def basic_consume(id, queue, tag, no_ack, exclusive, arguments)
       no_local = false
       no_wait = false
       bits = 0
@@ -256,7 +263,8 @@ module AMQP
       bits |= (1 << 1) if no_ack
       bits |= (1 << 2) if exclusive
       bits |= (1 << 3) if no_wait
-      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + tag.bytesize + 1 + 4
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + tag.bytesize + 1 + 4 + tbl.bytesize
       [
         1, # type: method
         id, # channel id
@@ -267,9 +275,9 @@ module AMQP
         queue.bytesize, queue,
         tag.bytesize, tag,
         bits, # bits
-        0, # arguments
+        tbl.bytesize, tbl, # arguments
         206 # frame end
-      ].pack("C S> L> S> S> S> Ca* Ca* C L> C")
+      ].pack("C S> L> S> S> S> Ca* Ca* C L>a* C")
     end
 
     def basic_cancel(id, consumer_tag, no_wait: false)

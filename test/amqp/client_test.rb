@@ -142,4 +142,16 @@ class AMQPClientTest < Minitest::Test
     id = channel.basic_publish "foo", "amq.direct", "bar"
     assert channel.wait_for_confirm id
   end
+
+  def test_it_can_generate_tables
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    channel.queue_bind q[:queue_name], "amq.headers", "", { a: "b" }
+    channel.basic_publish "foo", "amq.headers", "bar", headers: { a: "b" }
+    msg = channel.basic_get q[:queue_name]
+    assert_equal "foo", msg.body
+    assert_equal({ "a" => "b" }, msg.properties[:headers])
+  end
 end

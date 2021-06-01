@@ -137,10 +137,16 @@ module AMQP
             tag = buf.unpack1("@12 a#{tag_len}")
             @channels[channel_id].reply [:basic_cancel_ok, tag]
           when 60 # deliver
-            ctag_len = buf.unpack1("@11 C")
-            consumer_tag, delivery_tag, redelivered, exchange_len = buf.unpack("@12 a#{ctag_len} Q> C C")
-            exchange, rk_len = buf.unpack("@#{12 + ctag_len + 4 + 1 + 1} a#{exchange_len} C")
-            routing_key = buf.unpack1("@#{12 + ctag_len + 4 + 1 + 1 + exchange_len + 1} a#{rk_len}")
+            ctag_len = buf[11].ord
+            consumer_tag = buf.byteslice(12, ctag_len).force_encoding("utf-8")
+            pos = 12 + ctag_len
+            delivery_tag, redelivered, exchange_len = buf.byteslice(pos, 10).unpack("Q> C C")
+            pos += 8 + 1 + 1
+            exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
+            pos += exchange_len
+            rk_len = buf[pos].ord
+            pos += 1
+            routing_key = buf.byteslice(pos, rk_len).force_encoding("utf-8")
             loop do
               if (consumer = @channels[channel_id].consumers[consumer_tag])
                 consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
@@ -151,8 +157,14 @@ module AMQP
             end
           when 71 # get-ok
             delivery_tag, redelivered, exchange_len = buf.unpack("@11 Q> C C")
-            exchange, routing_key_len = buf.unpack("@21 a#{exchange_len} C")
-            routing_key, message_count = buf.unpack("@#{22 + exchange_len} a#{routing_key_len} L>")
+            pos = 21
+            exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
+            pos += exchange_len
+            routing_key_len = buf[pos].ord
+            pos += 1
+            routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
+            pos += routing_key_len
+            message_count = buf.byteslice(pos, 4).unpack1("L>")
             redelivered = redelivered == 1
             @channels[channel_id].reply [:basic_get_ok, delivery_tag, exchange, routing_key, message_count, redelivered]
           when 72 # get-empty
@@ -175,7 +187,8 @@ module AMQP
         end
       when 2 # header
         body_size = buf.unpack1("@11 Q>")
-        @channels[channel_id].reply [:header, body_size, nil]
+        properties = Properties.decode(buf.byteslice(19, buf.bytesize - 20))
+        @channels[channel_id].reply [:header, body_size, properties]
       when 3 # body
         body = buf.byteslice(7, frame_size)
         @channels[channel_id].reply [:body, body]
