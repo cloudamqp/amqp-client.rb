@@ -24,7 +24,6 @@ jobs:
         ruby-version: 3.0.0
     - name: Run the default task
       run: |
-        gem install bundler -v 2.2.15
         bundle install
         bundle exec rake
       env:
