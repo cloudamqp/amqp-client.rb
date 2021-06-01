@@ -164,7 +164,8 @@ module AMQP
 
     def queue_bind(id, queue, exchange, binding_key, no_wait, arguments)
       tbl = Table.encode(arguments)
-      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 1 + 4 + tbl.bytesize
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 +
+                   binding_key.bytesize + 1 + 4 + tbl.bytesize
       [
         1, # type: method
         id, # channel id
