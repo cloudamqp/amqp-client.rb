@@ -5,6 +5,17 @@ on: [push,pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      rabbitmq:
+        image: rabbitmq:latest
+        ports:
+        - 5672/tcp
+        # needed because the rabbitmq container does not provide a healthcheck
+        options: >-
+          --health-cmd "rabbitmqctl node_health_check"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
@@ -16,3 +27,6 @@ jobs:
         gem install bundler -v 2.2.15
         bundle install
         bundle exec rake
+      env:
+        AMQP_PORT: ${{ job.services.rabbitmq.ports[5672] }}
+

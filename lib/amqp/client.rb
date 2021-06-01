@@ -15,7 +15,7 @@ module AMQP
     def initialize(uri)
       @uri = URI.parse(uri)
       @tls = @uri.scheme == "amqps"
-      @port = @uri.port || @tls ? 5671 : 5672
+      @port = port_from_env || @uri.port || (@tls ? 5671 : 5672)
       @host = @uri.host || "localhost"
       @user = @uri.user || "guest"
       @password = @uri.password || "guest"
@@ -96,6 +96,12 @@ module AMQP
       socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, 3)
     rescue => e
       warn "amqp-client: Could not enable TCP keepalive on socket. #{e.inspect}"
+    end
+
+    def port_from_env
+      port = ENV["AMQP_PORT"]
+
+      port.nil? ? nil : port.to_i
     end
   end
 end
