@@ -18,18 +18,21 @@ module AMQP
       end
     end
 
+    # Should never be raised as we support all offical frame types
     class UnsupportedFrameType < Error
       def initialize(type)
         super "Unsupported frame type '#{type}'"
       end
     end
 
+    # Raised if a frame is received but not implemented
     class UnsupportedMethodFrame < Error
       def initialize(class_id, method_id)
         super "Unsupported class/method: #{class_id} #{method_id}"
       end
     end
 
+    # Raised if channel is already closed
     class ChannelClosedError < Error
       def initialize(id, code, reason, classid = 0, methodid = 0)
         super "Channel[#{id}] closed (#{code}) #{reason} (#{classid}/#{methodid})"

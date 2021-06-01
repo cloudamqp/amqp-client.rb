@@ -42,7 +42,7 @@ module AMQP
       loop do
         begin
           socket.readpartial(frame_max, buffer)
-        rescue IOError, EOFError
+        rescue IOError, OpenSSL::OpenSSLError, SystemCallError
           break
         end
 
@@ -150,10 +150,11 @@ module AMQP
               end
             end
           when 71 # get-ok
-            delivery_tag, redelivered, exchange_name_len = buf.unpack("@11 Q> C C")
-            exchange_name, routing_key_len = buf.unpack("@21 a#{exchange_name_len} C")
-            routing_key, message_count = buf.unpack("@#{22 + exchange_name_len} a#{routing_key_len} L>")
-            @channels[channel_id].reply [:basic_get_ok, delivery_tag, exchange_name, routing_key, message_count, redelivered == 1]
+            delivery_tag, redelivered, exchange_len = buf.unpack("@11 Q> C C")
+            exchange, routing_key_len = buf.unpack("@21 a#{exchange_len} C")
+            routing_key, message_count = buf.unpack("@#{22 + exchange_len} a#{routing_key_len} L>")
+            redelivered = redelivered == 1
+            @channels[channel_id].reply [:basic_get_ok, delivery_tag, exchange, routing_key, message_count, redelivered]
           when 72 # get-empty
             @channels[channel_id].reply [:basic_get_empty]
           when 80 # ack

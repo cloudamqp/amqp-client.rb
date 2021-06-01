@@ -158,7 +158,7 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* C C")
     end
 
-    def queue_bind(id, queue, exchange, binding_key, no_wait, arguments)
+    def queue_bind(id, queue, exchange, binding_key, no_wait, _arguments)
       frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 1 + 4
       [
         1, # type: method
@@ -176,7 +176,7 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L> C")
     end
 
-    def queue_unbind(id, queue, exchange, binding_key, arguments)
+    def queue_unbind(id, queue, exchange, binding_key, _arguments)
       frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 4
       [
         1, # type: method
@@ -224,7 +224,7 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* Ca* C C")
     end
 
-    def header(id, body_size, properties)
+    def header(id, body_size, _properties)
       frame_size = 2 + 2 + 8 + 2
       [
         2, # type: header
@@ -248,7 +248,7 @@ module AMQP
       ].pack("C S> L> a* C")
     end
 
-    def basic_consume(id, queue, tag, no_ack, exclusive, arguments)
+    def basic_consume(id, queue, tag, no_ack, exclusive, _arguments)
       no_local = false
       no_wait = false
       bits = 0

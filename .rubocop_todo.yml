@@ -13,19 +13,6 @@
 Layout/LineLength:
   Max: 130
 
-# Offense count: 2
-Lint/ShadowedException:
-  Exclude:
-    - 'lib/amqp/client.rb'
-    - 'lib/amqp/client/connection.rb'
-
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: AllowUnusedKeywordArguments, IgnoreEmptyMethods, IgnoreNotImplementedMethods.
-Lint/UnusedMethodArgument:
-  Exclude:
-    - 'lib/amqp/client/frames.rb'
-
 # Offense count: 8
 # Configuration parameters: IgnoredMethods, CountRepeatedAttributes.
 Metrics/AbcSize:
@@ -55,7 +42,7 @@ Metrics/CyclomaticComplexity:
 # Offense count: 21
 # Configuration parameters: CountComments, CountAsOne, ExcludedMethods, IgnoredMethods.
 Metrics/MethodLength:
-  Max: 106
+  Max: 107
 
 # Offense count: 1
 # Configuration parameters: CountComments, CountAsOne.
@@ -78,7 +65,6 @@ Style/Documentation:
   Exclude:
     - 'spec/**/*'
     - 'test/**/*'
-    - 'lib/amqp/client/errors.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.
