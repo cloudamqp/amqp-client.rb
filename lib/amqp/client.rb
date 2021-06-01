@@ -45,7 +45,7 @@ module AMQP
       loop do
         begin
           socket.readpartial(4096, buf)
-        rescue EOFError, IOError, OpenSSL::OpenSSLError => e
+        rescue Errno::ECONNRESET, EOFError, IOError, OpenSSL::OpenSSLError => e
           raise Error, "Could not establish AMQP connection: #{e.message}"
         end
 
