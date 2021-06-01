@@ -10,6 +10,7 @@ module AMQP
       @connection = connection
       @id = id
       @consumers = {}
+      @confirm = nil
       @closed = nil
     end
 
