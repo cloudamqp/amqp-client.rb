@@ -146,7 +146,6 @@ module AMQP
                 consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
                 break
               else
-                warn "missing consumer #{consumer_tag} on channel #{channel_id} delivery_tag=#{delivery_tag}"
                 Thread.pass
               end
             end
