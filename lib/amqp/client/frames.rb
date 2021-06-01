@@ -194,7 +194,7 @@ module AMQP
     end
 
     def basic_get(id, queue, no_ack)
-      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 2 + 2
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1
       [
         1, # type: method
         id, # channel id
