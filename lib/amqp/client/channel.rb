@@ -11,6 +11,7 @@ module AMQP
       @id = id
       @consumers = {}
       @confirm = nil
+      @last_confirmed = 0
       @closed = nil
     end
 
@@ -158,7 +159,7 @@ module AMQP
 
     def wait_for_confirm(id)
       raise ArgumentError, "Confirm id has to a positive number" unless id&.positive?
-      return true if @last_confirmed && @last_confirmed >= id
+      return true if @last_confirmed >= id
 
       loop do
         ack, delivery_tag, multiple = @confirms.shift || break
