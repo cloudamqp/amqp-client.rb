@@ -27,6 +27,7 @@ module AMQP
       write_bytes FrameBytes.connection_close(code, reason)
       expect(:close_ok)
       @closed = true
+      @socket.close
     end
 
     def write_bytes(*bytes)
@@ -106,6 +107,12 @@ module AMQP
             channel.closed!(reply_code, reply_text, classid, methodid)
           when 41 # channel#close-ok
             @channels[channel_id].reply [:channel_close_ok]
+          else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
+          end
+        when 40 # exchange
+          case method_id
+          when 11 # declare-ok
+            @channels[channel_id].reply [:exchange_declare_ok]
           else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
           end
         when 50 # queue

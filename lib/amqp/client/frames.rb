@@ -256,7 +256,7 @@ module AMQP
       ].pack("C S> L> a* C")
     end
 
-    def basic_consume(id, queue, tag, no_ack, exclusive, arguments)
+    def basic_consume(id, queue, tag, no_ack, exclusive, _arguments)
       no_local = false
       no_wait = false
       bits = 0
