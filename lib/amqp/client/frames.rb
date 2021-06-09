@@ -143,6 +143,24 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* Ca* C L> C")
     end
 
+    def exchange_delete(id, name, if_unused, no_wait)
+      bits = 0
+      bits |= (1 << 0) if if_unused
+      bits |= (1 << 1) if no_wait
+      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        40, # class: exchange
+        20, # method: delete
+        0, # reserved1
+        name.bytesize, name,
+        bits,
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* C C")
+    end
+
     def queue_declare(id, name, passive, durable, exclusive, auto_delete, arguments)
       no_wait = false
       bits = 0

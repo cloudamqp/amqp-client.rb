@@ -42,6 +42,11 @@ module AMQP
       expect(:exchange_declare_ok)
     end
 
+    def exchange_delete(name, if_unused: false, no_wait: false)
+      write_bytes FrameBytes.exchange_delete(@id, name, if_unused, no_wait)
+      expect(:exchange_delete_ok)
+    end
+
     def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, **args)
       durable = false if name.empty?
       exclusive = true if name.empty?

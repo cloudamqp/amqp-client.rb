@@ -61,6 +61,20 @@ class AMQPClientTest < Minitest::Test
     assert_equal "foo", msg.exchange_name
   end
 
+  def test_it_can_delete_exchange
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.exchange_declare "foo", "fanout"
+    q = channel.queue_declare ""
+    channel.queue_bind q[:queue_name], "foo", ""
+    channel.exchange_delete "foo"
+    channel.basic_publish "foo", "foo", ""
+    assert_raises(AMQP::Client::ChannelClosedError) do
+      channel.basic_get q[:queue_name]
+    end
+  end
+
   def test_it_can_declare_queue
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
