@@ -90,6 +90,21 @@ class AMQPClientTest < Minitest::Test
     assert_equal "foo", msg.body
   end
 
+  def test_it_can_unbind_exchanges
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    channel.exchange_declare "foo", "fanout"
+    channel.exchange_declare "bar", "fanout"
+    q = channel.queue_declare ""
+    channel.queue_bind q[:queue_name], "bar", ""
+    channel.exchange_bind "bar", "foo", ""
+    channel.exchange_unbind "bar", "foo", ""
+    channel.basic_publish "foo", "foo", ""
+    msg = channel.basic_get q[:queue_name]
+    assert_nil msg
+  end
+
   def test_it_can_declare_queue
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect

@@ -52,6 +52,11 @@ module AMQP
       expect :exchange_bind_ok
     end
 
+    def exchange_unbind(destination, source, binding_key, arguments = {})
+      write_bytes FrameBytes.exchange_unbind(@id, destination, source, binding_key, false, arguments)
+      expect :exchange_unbind_ok
+    end
+
     def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, **args)
       durable = false if name.empty?
       exclusive = true if name.empty?
