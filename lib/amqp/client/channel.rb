@@ -39,12 +39,17 @@ module AMQP
 
     def exchange_declare(name, type, passive: false, durable: true, auto_delete: false, internal: false, **args)
       write_bytes FrameBytes.exchange_declare(@id, name, type, passive, durable, auto_delete, internal, args)
-      expect(:exchange_declare_ok)
+      expect :exchange_declare_ok
     end
 
     def exchange_delete(name, if_unused: false, no_wait: false)
       write_bytes FrameBytes.exchange_delete(@id, name, if_unused, no_wait)
-      expect(:exchange_delete_ok)
+      expect :exchange_delete_ok
+    end
+
+    def exchange_bind(destination, source, binding_key, arguments = {})
+      write_bytes FrameBytes.exchange_bind(@id, destination, source, binding_key, false, arguments)
+      expect :exchange_bind_ok
     end
 
     def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, **args)

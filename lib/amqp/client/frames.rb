@@ -161,6 +161,26 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* C C")
     end
 
+    def exchange_bind(id, destination, source, binding_key, no_wait, arguments)
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
+                   binding_key.bytesize + 1 + 4 + tbl.bytesize
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        40, # class: exchange
+        30, # method: bind
+        0, # reserved1
+        destination.bytesize, destination,
+        source.bytesize, source,
+        binding_key.bytesize, binding_key,
+        no_wait ? 1 : 0,
+        tbl.bytesize, tbl, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L>a* C")
+    end
+
     def queue_declare(id, name, passive, durable, exclusive, auto_delete, arguments)
       no_wait = false
       bits = 0
