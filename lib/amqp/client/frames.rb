@@ -119,6 +119,30 @@ module AMQP
       ].pack("C S> L> S> S> C")
     end
 
+    def exchange_declare(id, name, type, passive, durable, auto_delete, internal, _arguments)
+      no_wait = false
+      bits = 0
+      bits |= (1 << 0) if passive
+      bits |= (1 << 1) if durable
+      bits |= (1 << 2) if auto_delete
+      bits |= (1 << 3) if internal
+      bits |= (1 << 4) if no_wait
+      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1 + type.bytesize + 1 + 4
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        40, # class: exchange
+        10, # method: declare
+        0, # reserved1
+        name.bytesize, name,
+        type.bytesize, type,
+        bits,
+        0, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* C L> C")
+    end
+
     def queue_declare(id, name, passive, durable, exclusive, auto_delete, arguments)
       no_wait = false
       bits = 0
@@ -256,7 +280,7 @@ module AMQP
       ].pack("C S> L> a* C")
     end
 
-    def basic_consume(id, queue, tag, no_ack, exclusive, _arguments)
+    def basic_consume(id, queue, tag, no_ack, exclusive, arguments)
       no_local = false
       no_wait = false
       bits = 0
