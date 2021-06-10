@@ -129,6 +129,8 @@ module AMQP
             @channels[channel_id].reply [:queue_declare_ok, queue_name, message_count, consumer_count]
           when 21 # bind-ok
             @channels[channel_id].reply [:queue_bind_ok]
+          when 31 # purge-ok
+            @channels[channel_id].reply [:queue_purge_ok]
           when 41 # delete-ok
             message_count = buf.unpack1("@11 L>")
             @channels[channel_id].reply [:queue_delete, message_count]

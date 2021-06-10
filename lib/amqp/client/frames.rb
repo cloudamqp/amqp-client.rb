@@ -283,6 +283,21 @@ module AMQP
       ].pack("C S> L> S> S> S> Ca* Ca* Ca* L>a* C")
     end
 
+    def queue_purge(id, queue, no_wait)
+      frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        50, # class: queue
+        30, # method: purge
+        0, # reserved1
+        queue.bytesize, queue,
+        no_wait ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* C C")
+    end
+
     def basic_get(id, queue, no_ack)
       frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1
       [

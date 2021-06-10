@@ -82,6 +82,11 @@ module AMQP
       expect :queue_bind_ok
     end
 
+    def queue_purge(name, no_wait: false)
+      write_bytes FrameBytes.queue_purge(@id, name, no_wait)
+      expect :queue_purge_ok
+    end
+
     def queue_unbind(name, exchange, binding_key, arguments = {})
       write_bytes FrameBytes.queue_unbind(@id, name, exchange, binding_key, arguments)
       expect :queue_unbind_ok
