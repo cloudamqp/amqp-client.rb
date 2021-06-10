@@ -25,7 +25,7 @@ module AMQP
 
     def connect
       socket = Socket.tcp @host, @port, connect_timeout: 20, resolv_timeout: 5
-      # enable_tcp_keepalive(socket)
+      enable_tcp_keepalive(socket)
       if @tls
         context = OpenSSL::SSL::SSLContext.new
         context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless @options["verify_peer"] == "none"
@@ -94,7 +94,7 @@ module AMQP
       socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPIDLE, 60)
       socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, 10)
       socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, 3)
-    rescue => e
+    rescue StandardError => e
       warn "amqp-client: Could not enable TCP keepalive on socket. #{e.inspect}"
     end
 
