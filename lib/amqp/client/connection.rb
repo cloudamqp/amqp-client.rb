@@ -108,6 +108,18 @@ module AMQP
             @channels[channel_id].reply [:channel_close_ok]
           else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
           end
+        when 40 # exchange
+          case method_id
+          when 11 # declare-ok
+            @channels[channel_id].reply [:exchange_declare_ok]
+          when 21 # delete-ok
+            @channels[channel_id].reply [:exchange_delete_ok]
+          when 31 # bind-ok
+            @channels[channel_id].reply [:exchange_bind_ok]
+          when 51 # unbind-ok
+            @channels[channel_id].reply [:exchange_unbind_ok]
+          else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
+          end
         when 50 # queue
           case method_id
           when 11 # declare-ok

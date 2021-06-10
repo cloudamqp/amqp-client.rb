@@ -119,6 +119,89 @@ module AMQP
       ].pack("C S> L> S> S> C")
     end
 
+    def exchange_declare(id, name, type, passive, durable, auto_delete, internal, arguments)
+      no_wait = false
+      bits = 0
+      bits |= (1 << 0) if passive
+      bits |= (1 << 1) if durable
+      bits |= (1 << 2) if auto_delete
+      bits |= (1 << 3) if internal
+      bits |= (1 << 4) if no_wait
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1 + type.bytesize + 1 + 4 + tbl.bytesize
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        40, # class: exchange
+        10, # method: declare
+        0, # reserved1
+        name.bytesize, name,
+        type.bytesize, type,
+        bits,
+        tbl.bytesize, tbl, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* C L>a* C")
+    end
+
+    def exchange_delete(id, name, if_unused, no_wait)
+      bits = 0
+      bits |= (1 << 0) if if_unused
+      bits |= (1 << 1) if no_wait
+      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        40, # class: exchange
+        20, # method: delete
+        0, # reserved1
+        name.bytesize, name,
+        bits,
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* C C")
+    end
+
+    def exchange_bind(id, destination, source, binding_key, no_wait, arguments)
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
+                   binding_key.bytesize + 1 + 4 + tbl.bytesize
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        40, # class: exchange
+        30, # method: bind
+        0, # reserved1
+        destination.bytesize, destination,
+        source.bytesize, source,
+        binding_key.bytesize, binding_key,
+        no_wait ? 1 : 0,
+        tbl.bytesize, tbl, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L>a* C")
+    end
+
+    def exchange_unbind(id, destination, source, binding_key, no_wait, arguments)
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
+                   binding_key.bytesize + 1 + 4 + tbl.bytesize
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        40, # class: exchange
+        40, # method: unbind
+        0, # reserved1
+        destination.bytesize, destination,
+        source.bytesize, source,
+        binding_key.bytesize, binding_key,
+        no_wait ? 1 : 0,
+        tbl.bytesize, tbl, # arguments
+        206 # frame end
+      ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L>a* C")
+    end
+
     def queue_declare(id, name, passive, durable, exclusive, auto_delete, arguments)
       no_wait = false
       bits = 0
