@@ -119,7 +119,7 @@ module AMQP
       ].pack("C S> L> S> S> C")
     end
 
-    def exchange_declare(id, name, type, passive, durable, auto_delete, internal, _arguments)
+    def exchange_declare(id, name, type, passive, durable, auto_delete, internal, arguments)
       no_wait = false
       bits = 0
       bits |= (1 << 0) if passive
@@ -127,7 +127,8 @@ module AMQP
       bits |= (1 << 2) if auto_delete
       bits |= (1 << 3) if internal
       bits |= (1 << 4) if no_wait
-      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1 + type.bytesize + 1 + 4
+      tbl = Table.encode(arguments)
+      frame_size = 2 + 2 + 2 + 1 + name.bytesize + 1 + type.bytesize + 1 + 4 + tbl.bytesize
       [
         1, # type: method
         id, # channel id
@@ -138,9 +139,9 @@ module AMQP
         name.bytesize, name,
         type.bytesize, type,
         bits,
-        0, # arguments
+        tbl.bytesize, tbl, # arguments
         206 # frame end
-      ].pack("C S> L> S> S> S> Ca* Ca* C L> C")
+      ].pack("C S> L> S> S> S> Ca* Ca* C L>a* C")
     end
 
     def exchange_delete(id, name, if_unused, no_wait)
