@@ -27,7 +27,6 @@ module AMQP
       write_bytes FrameBytes.connection_close(code, reason)
       expect(:close_ok)
       @closed = true
-      @socket.close
     end
 
     def write_bytes(*bytes)

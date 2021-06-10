@@ -183,7 +183,8 @@ module AMQP
 
     def exchange_unbind(id, destination, source, binding_key, no_wait, arguments)
       tbl = Table.encode(arguments)
-      frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 + binding_key.bytesize + 1 + 4 + tbl.bytesize
+      frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
+                   binding_key.bytesize + 1 + 4 + tbl.bytesize
       [
         1, # type: method
         id, # channel id
