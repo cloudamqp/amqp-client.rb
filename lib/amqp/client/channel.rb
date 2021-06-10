@@ -84,7 +84,7 @@ module AMQP
 
     def queue_purge(name, no_wait: false)
       write_bytes FrameBytes.queue_purge(@id, name, no_wait)
-      expect :queue_purge_ok
+      expect :queue_purge_ok unless no_wait
     end
 
     def queue_unbind(name, exchange, binding_key, arguments = {})
