@@ -140,6 +140,8 @@ module AMQP
           end
         when 60 # basic
           case method_id
+          when 11 # qos-ok
+            @channels[channel_id].reply [:basic_qos_ok]
           when 21 # consume-ok
             tag_len = buf.unpack1("@11 C")
             tag = buf.byteslice(12, tag_len).force_encoding("utf-8")
@@ -190,6 +192,9 @@ module AMQP
           when 80 # ack
             delivery_tag, multiple = buf.unpack1("@11 Q> C")
             @channels[channel_id].confirm [:ack, delivery_tag, multiple]
+          when 90 # reject
+            delivery_tag, requeue = buf.unpack1("@11 Q> C")
+            @channels[channel_id].confirm [:reject, delivery_tag, requeue == 1]
           when 120 # nack
             delivery_tag, multiple, requeue = buf.unpack1("@11 Q> C C")
             @channels[channel_id].confirm [:nack, delivery_tag, multiple == 1, requeue == 1]

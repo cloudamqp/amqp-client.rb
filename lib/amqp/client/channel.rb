@@ -173,6 +173,23 @@ module AMQP
       consumer.close
     end
 
+    def basic_ack(delivery_tag, multiple: false)
+      write_bytes FrameBytes.basic_ack(@id, delivery_tag, multiple)
+    end
+
+    def basic_nack(delivery_tag, multiple: false, requeue: false)
+      write_bytes FrameBytes.basic_nack(@id, delivery_tag, multiple, requeue)
+    end
+
+    def basic_reject(delivery_tag, requeue: false)
+      write_bytes FrameBytes.basic_reject(@id, delivery_tag, requeue)
+    end
+
+    def basic_qos(prefetch_size, prefetch_count, global: false)
+      write_bytes FrameBytes.basic_qos(@id, prefetch_size, prefetch_count, global)
+      expect :basic_qos_ok
+    end
+
     def confirm_select(no_wait: false)
       return if @confirm
 
