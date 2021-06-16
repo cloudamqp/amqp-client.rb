@@ -193,7 +193,7 @@ module AMQP
             delivery_tag, multiple = buf.unpack("@11 Q> C")
             @channels[channel_id].confirm [:ack, delivery_tag, multiple]
           when 90 # reject
-            delivery_tag, requeue = buf.unpack1("@11 Q> C")
+            delivery_tag, requeue = buf.unpack("@11 Q> C")
             @channels[channel_id].confirm [:reject, delivery_tag, requeue == 1]
           when 120 # nack
             delivery_tag, multiple, requeue = buf.unpack("@11 Q> C C")

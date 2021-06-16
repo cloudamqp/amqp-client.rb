@@ -202,18 +202,33 @@ class AMQPClientTest < Minitest::Test
     assert_nil msg
   end
 
+  def test_it_can_qos
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    channel.basic_qos 1
+    channel.basic_publish "foo", "", q[:queue_name]
+    channel.basic_publish "bar", "", q[:queue_name]
+    i = 0
+    channel.basic_consume(q[:queue_name], no_ack: false) do
+      i += 1
+    end
+    sleep(0.1)
+    assert_equal 1, i
+  end
+
   def test_it_can_ack
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_qos 0, 1
+    channel.basic_qos 1
     channel.basic_publish "foo", "", q[:queue_name]
     channel.basic_publish "bar", "", q[:queue_name]
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
       channel.basic_ack msg.delivery_tag
-      channel.basic_cancel msg.consumer_tag
       i += 1
     end
     sleep(0.1)
@@ -225,7 +240,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_qos 0, 1
+    channel.basic_qos 1
     channel.basic_publish "foo", "", q[:queue_name]
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
@@ -234,7 +249,6 @@ class AMQPClientTest < Minitest::Test
       else
         channel.basic_ack msg.delivery_tag
       end
-      channel.basic_cancel msg.consumer_tag
       i += 1
     end
     sleep(0.1)
@@ -246,7 +260,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_qos 0, 1
+    channel.basic_qos 1
     channel.basic_publish "foo", "", q[:queue_name]
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
@@ -255,7 +269,6 @@ class AMQPClientTest < Minitest::Test
       else
         channel.basic_ack msg.delivery_tag
       end
-      channel.basic_cancel msg.consumer_tag
       i += 1
     end
     sleep(0.1)
@@ -370,21 +383,6 @@ class AMQPClientTest < Minitest::Test
     channel.tx_commit
     msg = channel.basic_get q[:queue_name]
     assert_equal "bar", msg.body
-  def test_it_can_qos
-    client = AMQP::Client.new("amqp://localhost")
-    connection = client.connect
-    channel = connection.channel
-    q = channel.queue_declare ""
-    channel.basic_qos 0, 1
-    channel.basic_publish "foo", "", q[:queue_name]
-    channel.basic_publish "bar", "", q[:queue_name]
-    i = 0
-    channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
-      channel.basic_cancel msg.consumer_tag
-      i += 1
-    end
-    sleep(0.1)
-    assert_equal 1, i
   end
 
   def test_it_can_generate_tables
