@@ -220,8 +220,7 @@ class AMQPClientTest < Minitest::Test
     channel.basic_publish "foo", "", q[:queue_name]
     channel.basic_publish "bar", "", q[:queue_name]
     i = 0
-    channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
-      channel.basic_cancel msg.consumer_tag
+    channel.basic_consume(q[:queue_name], no_ack: false) do
       i += 1
     end
     sleep(0.1)
@@ -239,7 +238,6 @@ class AMQPClientTest < Minitest::Test
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
       channel.basic_ack msg.delivery_tag
-      channel.basic_cancel msg.consumer_tag
       i += 1
     end
     sleep(0.1)
@@ -260,7 +258,6 @@ class AMQPClientTest < Minitest::Test
       else
         channel.basic_ack msg.delivery_tag
       end
-      channel.basic_cancel msg.consumer_tag
       i += 1
     end
     sleep(0.1)
@@ -281,7 +278,6 @@ class AMQPClientTest < Minitest::Test
       else
         channel.basic_ack msg.delivery_tag
       end
-      channel.basic_cancel msg.consumer_tag
       i += 1
     end
     sleep(0.1)

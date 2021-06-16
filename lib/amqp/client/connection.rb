@@ -190,13 +190,13 @@ module AMQP
           when 72 # get-empty
             @channels[channel_id].reply [:basic_get_empty]
           when 80 # ack
-            delivery_tag, multiple = buf.unpack1("@11 Q> C")
+            delivery_tag, multiple = buf.unpack("@11 Q> C")
             @channels[channel_id].confirm [:ack, delivery_tag, multiple]
           when 90 # reject
-            delivery_tag, requeue = buf.unpack1("@11 Q> C")
+            delivery_tag, requeue = buf.unpack("@11 Q> C")
             @channels[channel_id].confirm [:reject, delivery_tag, requeue == 1]
           when 120 # nack
-            delivery_tag, multiple, requeue = buf.unpack1("@11 Q> C C")
+            delivery_tag, multiple, requeue = buf.unpack("@11 Q> C C")
             @channels[channel_id].confirm [:nack, delivery_tag, multiple == 1, requeue == 1]
           else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
