@@ -185,7 +185,7 @@ module AMQP
       write_bytes FrameBytes.basic_reject(@id, delivery_tag, requeue)
     end
 
-    def basic_qos(prefetch_size, prefetch_count, global: false)
+    def basic_qos(prefetch_count, prefetch_size: 0, global: false)
       write_bytes FrameBytes.basic_qos(@id, prefetch_size, prefetch_count, global)
       expect :basic_qos_ok
     end

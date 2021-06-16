@@ -216,7 +216,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_qos 0, 1
+    channel.basic_qos 1
     channel.basic_publish "foo", "", q[:queue_name]
     channel.basic_publish "bar", "", q[:queue_name]
     i = 0
@@ -232,7 +232,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_qos 0, 1
+    channel.basic_qos 1
     channel.basic_publish "foo", "", q[:queue_name]
     channel.basic_publish "bar", "", q[:queue_name]
     i = 0
@@ -249,7 +249,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_qos 0, 1
+    channel.basic_qos 1
     channel.basic_publish "foo", "", q[:queue_name]
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
@@ -269,7 +269,7 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_qos 0, 1
+    channel.basic_qos 1
     channel.basic_publish "foo", "", q[:queue_name]
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
