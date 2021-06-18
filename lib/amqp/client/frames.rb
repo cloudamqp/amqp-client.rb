@@ -417,5 +417,41 @@ module AMQP
         206 # frame end
       ].pack("C S> L> S> S> C C")
     end
+
+    def tx_select(id)
+      frame_size = 2 + 2
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        90, # class: tx
+        10, # method: select
+        206 # frame end
+      ].pack("C S> L> S> S> C")
+    end
+
+    def tx_commit(id)
+      frame_size = 2 + 2
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        90, # class: tx
+        20, # method: commit
+        206 # frame end
+      ].pack("C S> L> S> S> C")
+    end
+
+    def tx_rollback(id)
+      frame_size = 2 + 2
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        90, # class: tx
+        30, # method: rollback
+        206 # frame end
+      ].pack("C S> L> S> S> C")
+    end
   end
 end

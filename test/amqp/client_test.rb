@@ -211,6 +211,34 @@ class AMQPClientTest < Minitest::Test
     assert channel.wait_for_confirm id
   end
 
+  def test_it_can_commit_tx
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare "foo"
+    channel.tx_select
+    channel.basic_publish "foo", "", "foo"
+    channel.tx_commit
+    msg = channel.basic_get q[:queue_name]
+    assert_equal "foo", msg.body
+  end
+
+  def test_it_can_rollback_tx
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare "foo"
+    channel.tx_select
+    channel.basic_publish "bar", "", "foo"
+    channel.tx_rollback
+    msg = channel.basic_get q[:queue_name]
+    assert_nil msg
+    channel.basic_publish "bar", "", "foo"
+    channel.tx_commit
+    msg = channel.basic_get q[:queue_name]
+    assert_equal "bar", msg.body
+  end
+
   def test_it_can_generate_tables
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
