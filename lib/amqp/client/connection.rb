@@ -201,6 +201,16 @@ module AMQP
             @channels[channel_id].reply [:confirm_select_ok]
           else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
           end
+        when 90 # tx
+          case method_id
+          when 11 # select-ok
+            @channels[channel_id].reply [:tx_select_ok]
+          when 21 # commit-ok
+            @channels[channel_id].reply [:tx_commit_ok]
+          when 31 # rollback-ok
+            @channels[channel_id].reply [:tx_rollback_ok]
+          else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
+          end
         else raise AMQP::Client::UnsupportedMethodFrame.new class_id, method_id
         end
       when 2 # header

@@ -194,6 +194,21 @@ module AMQP
       false
     end
 
+    def tx_select
+      write_bytes FrameBytes.tx_select(@id)
+      expect :tx_select_ok
+    end
+
+    def tx_commit
+      write_bytes FrameBytes.tx_commit(@id)
+      expect :tx_commit_ok
+    end
+
+    def tx_rollback
+      write_bytes FrameBytes.tx_rollback(@id)
+      expect :tx_rollback_ok
+    end
+
     def reply(args)
       @replies.push(args)
     end
