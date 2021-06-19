@@ -406,6 +406,66 @@ module AMQP
       ].pack("C S> L> S> S> Ca* C")
     end
 
+    def basic_ack(id, delivery_tag, multiple)
+      frame_size = 2 + 2 + 8 + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        80, # method: ack
+        delivery_tag,
+        multiple ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> Q> C C")
+    end
+
+    def basic_nack(id, delivery_tag, multiple, requeue)
+      bits = 0
+      bits |= (1 << 0) if multiple
+      bits |= (1 << 1) if requeue
+      frame_size = 2 + 2 + 8 + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        120, # method: nack
+        delivery_tag,
+        bits,
+        206 # frame end
+      ].pack("C S> L> S> S> Q> C C")
+    end
+
+    def basic_reject(id, delivery_tag, requeue)
+      frame_size = 2 + 2 + 8 + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        90, # method: reject
+        delivery_tag,
+        requeue ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> Q> C C")
+    end
+
+    def basic_qos(id, prefetch_size, prefetch_count, global)
+      frame_size = 2 + 2 + 4 + 2 + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        10, # method: qos
+        prefetch_size,
+        prefetch_count,
+        global ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> L> S> C C")
+    end
+
     def confirm_select(id, no_wait)
       [
         1, # type: method
