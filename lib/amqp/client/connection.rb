@@ -195,6 +195,8 @@ module AMQP
           when 90 # reject
             delivery_tag, requeue = buf.unpack("@11 Q> C")
             @channels[channel_id].confirm [:reject, delivery_tag, requeue == 1]
+          when 111 # recover-ok
+            @channels[channel_id].reply [:basic_recover_ok]
           when 120 # nack
             delivery_tag, multiple, requeue = buf.unpack("@11 Q> C C")
             @channels[channel_id].confirm [:nack, delivery_tag, multiple == 1, requeue == 1]

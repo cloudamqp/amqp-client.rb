@@ -173,6 +173,11 @@ module AMQP
       consumer.close
     end
 
+    def basic_qos(prefetch_count, prefetch_size: 0, global: false)
+      write_bytes FrameBytes.basic_qos(@id, prefetch_size, prefetch_count, global)
+      expect :basic_qos_ok
+    end
+
     def basic_ack(delivery_tag, multiple: false)
       write_bytes FrameBytes.basic_ack(@id, delivery_tag, multiple)
     end
@@ -185,9 +190,9 @@ module AMQP
       write_bytes FrameBytes.basic_reject(@id, delivery_tag, requeue)
     end
 
-    def basic_qos(prefetch_count, prefetch_size: 0, global: false)
-      write_bytes FrameBytes.basic_qos(@id, prefetch_size, prefetch_count, global)
-      expect :basic_qos_ok
+    def basic_recover
+      write_bytes FrameBytes.basic_recover(@id, requeue: false)
+      expect :basic_recover_ok
     end
 
     def confirm_select(no_wait: false)

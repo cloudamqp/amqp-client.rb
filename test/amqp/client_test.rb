@@ -275,6 +275,27 @@ class AMQPClientTest < Minitest::Test
     assert_equal 2, i
   end
 
+  def test_it_can_recover
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    channel.basic_publish "foo", "", q[:queue_name]
+    i = 0
+    channel.basic_consume(q[:queue_name], no_ack: false) do
+      i += 1
+    end
+    sleep(0.1)
+    assert_equal 1, i
+    channel.basic_recover
+    channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
+      channel.basic_ack msg.delivery_tag
+      i += 1
+    end
+    sleep(0.1)
+    assert_equal 2, i
+  end
+
   def test_it_can_select_confirm
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
