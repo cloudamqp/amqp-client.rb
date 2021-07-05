@@ -13,6 +13,7 @@ module AMQP
       @confirm = nil
       @last_confirmed = 0
       @closed = nil
+      @on_return = nil
     end
 
     attr_reader :id, :consumers
@@ -237,6 +238,18 @@ module AMQP
 
     def confirm(args)
       @confirms.push(args)
+    end
+
+    def return(args)
+      if @on_return.nil?
+        puts "on_return nil #{args}"
+      else
+        @on_return.call(args)
+      end
+    end
+
+    def on_return(&block)
+      @on_return = block
     end
 
     private

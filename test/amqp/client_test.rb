@@ -296,6 +296,19 @@ class AMQPClientTest < Minitest::Test
     assert_equal 2, i
   end
 
+  def test_it_can_return
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    channel = connection.channel
+    routing_key = nil
+    channel.on_return do |msg|
+      routing_key = msg.routing_key
+    end
+    channel.basic_publish "foo", "amq.topic", "bar", mandatory: true
+    sleep(0.1)
+    assert_equal "bar", routing_key
+  end
+
   def test_it_can_select_confirm
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect

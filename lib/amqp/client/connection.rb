@@ -156,6 +156,19 @@ module AMQP
             tag_len = buf.unpack1("@11 C")
             tag = buf.byteslice(12, tag_len).force_encoding("utf-8")
             @channels[channel_id].reply [:basic_cancel_ok, tag]
+          when 50 # return
+            reply_code, reply_text_len = buf.unpack("@11 S> C")
+            pos = 14
+            reply_text = buf.byteslice(pos, reply_text_len).force_encoding("utf-8")
+            pos += reply_text_len
+            exchange_len = buf[pos].ord
+            pos += 1
+            exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
+            pos += exchange_len
+            routing_key_len = buf[pos].ord
+            pos += 1
+            routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
+            @channels[channel_id].return ReturnMessage.new(reply_code, reply_text, exchange, routing_key)
           when 60 # deliver
             ctag_len = buf[11].ord
             consumer_tag = buf.byteslice(12, ctag_len).force_encoding("utf-8")
