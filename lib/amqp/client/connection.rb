@@ -168,7 +168,7 @@ module AMQP
             routing_key_len = buf[pos].ord
             pos += 1
             routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
-            @channels[channel_id].return ReturnMessage.new(reply_code, reply_text, exchange, routing_key)
+            @channels[channel_id].message_returned(reply_code, reply_text, exchange, routing_key)
           when 60 # deliver
             ctag_len = buf[11].ord
             consumer_tag = buf.byteslice(12, ctag_len).force_encoding("utf-8")

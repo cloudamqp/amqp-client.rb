@@ -240,11 +240,21 @@ module AMQP
       @confirms.push(args)
     end
 
-    def return(args)
-      if on_return = @on_return
-        on_return.call(args)
-      else
-        puts "on_return nil #{args}"
+    def message_returned(reply_code, reply_text, exchange, routing_key)
+      Thread.new do
+        body_size, properties = expect(:header)
+        body = String.new("", capacity: body_size)
+        while body.bytesize < body_size
+          body_part, = expect(:body)
+          body += body_part
+        end
+        msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key, properties, body)
+
+        if @on_return
+          @on_return.call(msg)
+        else
+          puts "[WARN] Message returned: #{msg.inspect}"
+        end
       end
     end
 
