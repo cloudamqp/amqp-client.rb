@@ -191,8 +191,8 @@ module AMQP
       write_bytes FrameBytes.basic_reject(@id, delivery_tag, requeue)
     end
 
-    def basic_recover
-      write_bytes FrameBytes.basic_recover(@id, requeue: false)
+    def basic_recover(requeue: false)
+      write_bytes FrameBytes.basic_recover(@id, requeue: requeue)
       expect :basic_recover_ok
     end
 

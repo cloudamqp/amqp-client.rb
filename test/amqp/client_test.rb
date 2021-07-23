@@ -288,10 +288,6 @@ class AMQPClientTest < Minitest::Test
     sleep(0.1)
     assert_equal 1, i
     channel.basic_recover
-    channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
-      channel.basic_ack msg.delivery_tag
-      i += 1
-    end
     sleep(0.1)
     assert_equal 2, i
   end
