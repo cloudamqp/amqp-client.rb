@@ -241,10 +241,10 @@ module AMQP
     end
 
     def return(args)
-      if @on_return.nil?
-        puts "on_return nil #{args}"
+      if on_return = @on_return
+        on_return.call(args)
       else
-        @on_return.call(args)
+        puts "on_return nil #{args}"
       end
     end
 
