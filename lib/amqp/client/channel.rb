@@ -13,6 +13,7 @@ module AMQP
       @confirm = nil
       @last_confirmed = 0
       @closed = nil
+      @on_return = nil
     end
 
     attr_reader :id, :consumers
@@ -173,6 +174,11 @@ module AMQP
       consumer.close
     end
 
+    def basic_qos(prefetch_count, prefetch_size: 0, global: false)
+      write_bytes FrameBytes.basic_qos(@id, prefetch_size, prefetch_count, global)
+      expect :basic_qos_ok
+    end
+
     def basic_ack(delivery_tag, multiple: false)
       write_bytes FrameBytes.basic_ack(@id, delivery_tag, multiple)
     end
@@ -185,9 +191,9 @@ module AMQP
       write_bytes FrameBytes.basic_reject(@id, delivery_tag, requeue)
     end
 
-    def basic_qos(prefetch_count, prefetch_size: 0, global: false)
-      write_bytes FrameBytes.basic_qos(@id, prefetch_size, prefetch_count, global)
-      expect :basic_qos_ok
+    def basic_recover(requeue: false)
+      write_bytes FrameBytes.basic_recover(@id, requeue: requeue)
+      expect :basic_recover_ok
     end
 
     def confirm_select(no_wait: false)
@@ -232,6 +238,28 @@ module AMQP
 
     def confirm(args)
       @confirms.push(args)
+    end
+
+    def message_returned(reply_code, reply_text, exchange, routing_key)
+      Thread.new do
+        body_size, properties = expect(:header)
+        body = String.new("", capacity: body_size)
+        while body.bytesize < body_size
+          body_part, = expect(:body)
+          body += body_part
+        end
+        msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key, properties, body)
+
+        if @on_return
+          @on_return.call(msg)
+        else
+          puts "[WARN] Message returned: #{msg.inspect}"
+        end
+      end
+    end
+
+    def on_return(&block)
+      @on_return = block
     end
 
     private

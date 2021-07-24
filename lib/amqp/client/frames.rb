@@ -466,6 +466,19 @@ module AMQP
       ].pack("C S> L> S> S> L> S> C C")
     end
 
+    def basic_recover(id, requeue)
+      frame_size = 2 + 2 + 1
+      [
+        1, # type: method
+        id, # channel id
+        frame_size, # frame size
+        60, # class: basic
+        110, # method: recover
+        requeue ? 1 : 0,
+        206 # frame end
+      ].pack("C S> L> S> S> C C")
+    end
+
     def confirm_select(id, no_wait)
       [
         1, # type: method
