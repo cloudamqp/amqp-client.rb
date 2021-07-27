@@ -137,7 +137,8 @@ module AMQP
       @confirm += 1 if @confirm
     end
 
-    def basic_publish_confirm(body, exchange, routing_key, mandatory, **properties)
+    def basic_publish_confirm(body, exchange, routing_key, mandatory: false, **properties)
+      confirm_select(no_wait: true)
       id = basic_publish(body, exchange, routing_key, mandatory, properties)
       wait_for_confirm(id)
     end
