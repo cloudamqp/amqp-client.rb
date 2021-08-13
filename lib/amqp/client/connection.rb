@@ -16,10 +16,13 @@ module AMQP
 
     attr_reader :frame_max
 
-    def channel
-      id = 1.upto(@channel_max) { |i| break i unless @channels.key? i }
-      ch = Channel.new(self, id)
-      @channels[id] = ch
+    def channel(id = nil)
+      if id
+        ch = @channels[id] ||= Channel.new(self, id)
+      else
+        id = 1.upto(@channel_max) { |i| break i unless @channels.key? i }
+        ch = @channels[id] = Channel.new(self, id)
+      end
       ch.open
     end
 
