@@ -121,18 +121,18 @@ module AMQP
       end
     end
 
-    def basic_publish(body, exchange, routing_key, mandatory: false, **properties)
+    def basic_publish(body, exchange, routing_key, **properties)
       frame_max = @connection.frame_max - 8
       id = @id
 
       if 0 < body.bytesize && body.bytesize <= frame_max
-        write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
+        write_bytes FrameBytes.basic_publish(id, exchange, routing_key, properties.delete(:mandatory) || false),
                     FrameBytes.header(id, body.bytesize, properties),
                     FrameBytes.body(id, body)
         return @confirm ? @confirm += 1 : nil
       end
 
-      write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
+      write_bytes FrameBytes.basic_publish(id, exchange, routing_key, properties.delete(:mandatory) || false),
                   FrameBytes.header(id, body.bytesize, properties)
       pos = 0
       while pos < body.bytesize # split body into multiple frame_max frames
@@ -144,9 +144,9 @@ module AMQP
       @confirm += 1 if @confirm
     end
 
-    def basic_publish_confirm(body, exchange, routing_key, mandatory: false, **properties)
+    def basic_publish_confirm(body, exchange, routing_key, **properties)
       confirm_select(no_wait: true)
-      id = basic_publish(body, exchange, routing_key, mandatory, properties)
+      id = basic_publish(body, exchange, routing_key, **properties)
       wait_for_confirm(id)
     end
 
