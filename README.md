@@ -20,6 +20,8 @@ Or install it yourself as:
 
 ## Usage
 
+Low level API
+
 ```ruby
 require "amqp-client"
 
@@ -30,6 +32,25 @@ q = ch.queue_declare
 ch.basic_publish "Hello World!", "", q[:queue_name]
 msg = ch.basic_get q[:queue_name]
 puts msg.body
+```
+
+High level API, is an easier and safer API, that only deal with durable queues and persisted messages. All methods are blocking in the case of connection loss etc. It's also fully thread-safe. Don't expect it to be extreme throughput, be expect 100% delivery guarantees (messages might be deliviered twice, in the unlikely event of a connection loss between message publish and message confirmed by the server).
+
+```ruby
+AMQP = AMQP::Client.new("amqp://localhost")
+AMQP.start
+
+q = AMQP.queue("myqueue")
+q.bind("amq.topic", "my.events.*")
+q.subscribe(prefetch: 20) do |msg|
+  process(JSON.parse(msg.body))
+end
+
+# Publish directly to the queue
+q.publish { foo: "bar }".to_json
+
+# Publish to any exchange
+AMQP.publish("my message", "amq.topic", "topic.foo")
 ```
 
 ## Development

@@ -3,6 +3,7 @@
 require "socket"
 require "uri"
 require "openssl"
+require "set"
 require_relative "client/version"
 require_relative "client/errors"
 require_relative "client/frames"
@@ -21,6 +22,10 @@ module AMQP
       @password = @uri.password || "guest"
       @vhost = URI.decode_www_form_component(@uri.path[1..-1] || "/")
       @options = URI.decode_www_form(@uri.query || "").to_h
+
+      @queues = {}
+      @subscriptions = Set.new
+      @connq = SizedQueue.new(1)
     end
 
     def connect
@@ -36,7 +41,144 @@ module AMQP
       Connection.new(socket, channel_max, frame_max, heartbeat)
     end
 
+    def queue(name)
+      q = @queues[name]
+      unless q
+        q = @queues[name] = Queue.new(self, name)
+        with_connection do |conn|
+          conn.channel(1).queue_declare(name)
+        end
+      end
+      q
+    end
+
+    def start
+      @connq << connect
+    end
+
+    def stop
+      conn = @connq.pop
+      conn.close
+    end
+
+    def subscribe(queue_name, prefetch: 1, arguments: {}, &blk)
+      @subscriptions.add? [queue_name, prefetch, arguments, blk]
+
+      with_connection do |conn|
+        ch = conn.channel
+        ch.basic_qos(prefetch)
+        ch.basic_consume(queue_name, no_ack: false, arguments: arguments) do |msg|
+          blk.call(msg)
+          ch.basic_ack msg.delivery_tag
+        rescue => e
+          warn "AMQP-Client subscribe #{queue_name} error: #{e.inspect}"
+          sleep 1
+          ch.basic_reject msg.delivery_tag, requeue: true
+        end
+      end
+    end
+
+    def publish(body, exchange, routing_key, **properties)
+      loop do
+        with_connection do |conn|
+          # Use channel 1 for publishes
+          conn.channel(1).basic_publish_confirm(body, exchange, routing_key, **properties)
+        end
+        return
+      rescue => e
+        warn "AMQP-Client error publishing, retrying (#{e.inspect})"
+      end
+    end
+
+    def bind(queue, exchange, routing_key, **headers)
+      with_connection do |conn|
+        conn.channel(1).queue_bind(queue, exchange, routing_key, **headers)
+      end
+    end
+
+    def unbind(queue, exchange, routing_key, **headers)
+      with_connection do |conn|
+        conn.channel(1).queue_unbind(queue, exchange, routing_key, **headers)
+      end
+    end
+
+    def purge(queue)
+      with_connection do |conn|
+        conn.channel(1).queue_purge(queue)
+      end
+    end
+
+    def delete_queue(queue)
+      with_connection do |conn|
+        conn.channel(1).queue_delete(queue)
+      end
+    end
+
+    # Queue abstraction
+    class Queue
+      def initialize(client, name)
+        @client = client
+        @name = name
+      end
+
+      def publish(body, **properties)
+        @client.publish(body, "", @name, **properties)
+        self
+      end
+
+      def subscribe(prefetch: 1, arguments: {}, &blk)
+        @client.subscribe(@name, prefetch: prefetch, arguments: arguments, &blk)
+        self
+      end
+
+      def bind(exchange, routing_key, **headers)
+        @client.bind(@name, exchange, routing_key, **headers)
+        self
+      end
+
+      def unbind(exchange, routing_key, **headers)
+        @client.unbind(@name, exchange, routing_key, **headers)
+        self
+      end
+
+      def purge
+        @client.purge(@name)
+        self
+      end
+
+      def delete
+        @client.delete_queue(@name)
+        nil
+      end
+    end
+
     private
+
+    def with_connection
+      conn = @connq.pop
+      begin
+        yield conn
+      ensure
+        conn = reconnect if conn.closed?
+        @connq << conn
+      end
+    end
+
+    def reconnect
+      loop do
+        conn = connect
+        restore_connection_state(conn)
+        return conn
+      rescue e
+        warn "AMQP-Client reconnect error: #{e.inspect}"
+        sleep 1
+      end
+    end
+
+    def restore_connection_state(conn)
+      conn.channel(1) # reserve channel 1 for publishes
+      @subscriptions.each { |args| subscribe(*args) }
+    end
 
     def establish(socket)
       channel_max, frame_max, heartbeat = nil
