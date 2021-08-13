@@ -14,27 +14,34 @@ module AMQP
       @last_confirmed = 0
       @closed = nil
       @on_return = nil
+      @open = false
     end
 
     attr_reader :id, :consumers
 
     def open
+      return self if @open
+
       write_bytes FrameBytes.channel_open(@id)
       expect(:channel_open_ok)
+      @open = true
       self
     end
 
     def close(reason = "", code = 200)
+      return if @closed
+
       write_bytes FrameBytes.channel_close(@id, reason, code)
       expect :channel_close_ok
       @closed = [code, reason]
     end
 
+    # Called when closed by server
     def closed!(code, reason, classid, methodid)
       write_bytes FrameBytes.channel_close_ok(@id)
       @closed = [code, reason, classid, methodid]
       @replies.close
-      @consumers.each(&:close)
+      @consumers.each { |_, q| q.close }
       @consumers.clear
     end
 
