@@ -40,17 +40,26 @@ High level API, is an easier and safer API, that only deal with durable queues a
 AMQP = AMQP::Client.new("amqp://localhost")
 AMQP.start
 
+# Declares a durable queue
 q = AMQP.queue("myqueue")
+
+# Bind the queue to any exchange, with any binding key
 q.bind("amq.topic", "my.events.*")
+
+# Messages are acked when the block returns and doesn't throw an exception.
+# If the message handler does raise an exception the message is requeued after 1s.
+# The message will be reprocessed if the client lost connection to the server
+# between the message arrived and the message was supposed to be ack:ed.
 q.subscribe(prefetch: 20) do |msg|
   process(JSON.parse(msg.body))
 end
 
 # Publish directly to the queue
-q.publish { foo: "bar }".to_json
+q.publish { foo: "bar" }.to_json, content_type: "application/json"
 
 # Publish to any exchange
-AMQP.publish("my message", "amq.topic", "topic.foo")
+AMQP.publish("my message", "amq.topic", "topic.foo", headers: { foo: 'bar' })
+AMQP.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
 ```
 
 ## Development

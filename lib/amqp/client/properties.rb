@@ -4,88 +4,113 @@ require_relative "./table"
 
 module AMQP
   # Encode/decode AMQP Properties
-  module Properties
-    module_function
-
-    def encode(hash)
+  Properties = Struct.new(:content_type, :content_encoding, :headers, :delivery_mode, :priority, :correlation_id,
+                          :reply_to, :expiration, :message_id, :timestamp, :type, :user_id, :app_id,
+                          keyword_init: true) do
+    def encode
       flags = 0
       arr = [flags]
       fmt = String.new("S>")
 
-      if (content_type = hash[:content_type])
+      if content_type
+        content_type.is_a?(String) || raise(ArgumentError, "content_type must be a string")
+
         flags |= (1 << 15)
         arr << content_type.bytesize << content_type
         fmt << "Ca*"
       end
 
-      if (content_encoding = hash[:content_encoding])
+      if content_encoding
+        content_encoding.is_a?(String) || raise(ArgumentError, "content_encoding must be a string")
+
         flags |= (1 << 14)
         arr << content_encoding.bytesize << content_encoding
         fmt << "Ca*"
       end
 
-      if (headers = hash[:headers])
+      if headers
+        headers.is_a?(Hash) || raise(ArgumentError, "headers must be a hash")
+
         flags |= (1 << 13)
         tbl = Table.encode(headers)
         arr << tbl.bytesize << tbl
         fmt << "L>a*"
       end
 
-      if (delivery_mode = hash[:delivery_mode])
+      if delivery_mode
+        headers.is_a?(Integer) || raise(ArgumentError, "delivery_mode must be an int")
+
         flags |= (1 << 12)
         arr << delivery_mode
         fmt << "C"
       end
 
-      if (priority = hash[:priority])
+      if priority
+        priority.is_a?(Integer) || raise(ArgumentError, "priority must be an int")
         flags |= (1 << 11)
         arr << priority
         fmt << "C"
       end
 
-      if (correlation_id = hash[:correlation_id])
+      if correlation_id
+        priority.is_a?(String) || raise(ArgumentError, "correlation_id must be a string")
+
         flags |= (1 << 10)
         arr << correlation_id.bytesize << correlation_id
         fmt << "Ca*"
       end
 
-      if (reply_to = hash[:reply_to])
+      if reply_to
+        reply_to.is_a?(String) || raise(ArgumentError, "reply_to must be a string")
+
         flags |= (1 << 9)
         arr << reply_to.bytesize << reply_to
         fmt << "Ca*"
       end
 
-      if (expiration = hash[:expiration])
+      if expiration
+        expiration.is_a?(String) || raise(ArgumentError, "expiration must be a string")
+
         flags |= (1 << 8)
         arr << expiration.bytesize << expiration
         fmt << "Ca*"
       end
 
-      if (message_id = hash[:message_id])
+      if message_id
+        message_id.is_a?(String) || raise(ArgumentError, "message_id must be a string")
+
         flags |= (1 << 7)
         arr << message_id.bytesize << message_id
         fmt << "Ca*"
       end
 
-      if (timestamp = hash[:timestamp])
+      if timestamp
+        timestamp.is_a?(Time) || raise(ArgumentError, "timestamp must be a time")
+
         flags |= (1 << 6)
         arr << timestamp.to_i
         fmt << "Q>"
       end
 
-      if (type = hash[:type])
+      if type
+        type.is_a?(String) || raise(ArgumentError, "type must be a string")
+
         flags |= (1 << 5)
         arr << type.bytesize << type
         fmt << "Ca*"
       end
 
-      if (user_id = hash[:user_id])
+      if user_id
+        user_id.is_a?(String) || raise(ArgumentError, "user_id must be a string")
+
         flags |= (1 << 4)
         arr << user_id.bytesize << user_id
         fmt << "Ca*"
       end
 
-      if (app_id = hash[:app_id])
+      if app_id
+        app_id.is_a?(String) || raise(ArgumentError, "app_id must be a string")
+
         flags |= (1 << 3)
         arr << app_id.bytesize << app_id
         fmt << "Ca*"
@@ -95,8 +120,8 @@ module AMQP
       arr.pack(fmt)
     end
 
-    def decode(bytes)
-      h = {}
+    def self.decode(bytes)
+      h = new
       flags = bytes.unpack1("S>")
       pos = 2
       if (flags & 0x8000).positive?

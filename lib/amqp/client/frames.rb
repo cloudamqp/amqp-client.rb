@@ -330,7 +330,7 @@ module AMQP
     end
 
     def header(id, body_size, properties)
-      props = Properties.encode(properties)
+      props = Properties.new(**properties).encode
       frame_size = 2 + 2 + 8 + props.bytesize
       [
         2, # type: header
