@@ -154,10 +154,10 @@ module AMQP
 
     def with_connection
       conn = @connq.pop
+      conn = reconnect if conn.closed?
       begin
         yield conn
       ensure
-        conn = reconnect if conn.closed?
         @connq << conn
       end
     end
