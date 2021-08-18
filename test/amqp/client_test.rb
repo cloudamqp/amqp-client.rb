@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative "../test_helper"
+require "net/http"
+require "json"
 
 class AMQPClientTest < Minitest::Test
   def test_that_it_has_a_version_number
@@ -352,5 +354,24 @@ class AMQPClientTest < Minitest::Test
     msg = channel.basic_get q[:queue_name]
     assert_equal "foo", msg.body
     assert_equal({ "a" => "b" }, msg.properties[:headers])
+  end
+
+  def test_set_connection_name
+    client = AMQP::Client.new("amqp://localhost", connection_name: "foobar")
+    client.connect
+
+    req = Net::HTTP::Get.new("/api/connections?columns=client_properties")
+    req.basic_auth "guest", "guest"
+    http = Net::HTTP.new("localhost", 15_672)
+    loop do
+      sleep 0.1
+      res = http.request(req)
+      assert_equal Net::HTTPOK, res.class
+      connections = JSON.parse(res.body)
+      next if connections.empty?
+
+      assert(connections.find { |conn| conn.dig("client_properties", "connection_name") == "foobar" })
+      break
+    end
   end
 end

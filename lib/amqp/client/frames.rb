@@ -10,19 +10,20 @@ module AMQP
   module FrameBytes
     module_function
 
-    def connection_start_ok(response)
+    def connection_start_ok(response, properties)
+      prop_tbl = Table.encode(properties)
       [
         1, # type: method
         0, # channel id
-        4 + 4 + 6 + 4 + response.bytesize + 1, # frame size
+        2 + 2 + 4 + prop_tbl.bytesize + 6 + 4 + response.bytesize + 1, # frame size
         10, # class id
         11, # method id
-        0, # client props
+        prop_tbl.bytesize, prop_tbl, # client props
         5, "PLAIN", # mechanism
         response.bytesize, response,
         0, "", # locale
         206 # frame end
-      ].pack("C S> L> S> S> L> Ca* L>a* Ca* C")
+      ].pack("C S> L> S> S> L>a* Ca* L>a* Ca* C")
     end
 
     def connection_tune_ok(channel_max, frame_max, heartbeat)

@@ -13,7 +13,7 @@ require_relative "client/channel"
 module AMQP
   # AMQP 0-9-1 Client
   class Client
-    def initialize(uri)
+    def initialize(uri, **options)
       @uri = URI.parse(uri)
       @tls = @uri.scheme == "amqps"
       @port = port_from_env || @uri.port || (@tls ? 5671 : 5672)
@@ -21,7 +21,7 @@ module AMQP
       @user = @uri.user || "guest"
       @password = @uri.password || "guest"
       @vhost = URI.decode_www_form_component(@uri.path[1..-1] || "/")
-      @options = URI.decode_www_form(@uri.query || "").to_h
+      @options = URI.decode_www_form(@uri.query || "").to_h.merge(options)
 
       @queues = {}
       @subscriptions = Set.new
@@ -204,7 +204,10 @@ module AMQP
 
             case method_id
             when 10 # connection#start
-              socket.write FrameBytes.connection_start_ok "\u0000#{@user}\u0000#{@password}"
+              properties = CLIENT_PROPERTIES.merge({
+                connection_name: @options[:connection_name]
+              })
+              socket.write FrameBytes.connection_start_ok "\u0000#{@user}\u0000#{@password}", properties
             when 30 # connection#tune
               channel_max, frame_max, heartbeat = buf.unpack("@11 S> L> S>")
               channel_max = [channel_max, 2048].min
@@ -241,9 +244,24 @@ module AMQP
     end
 
     def port_from_env
-      port = ENV["AMQP_PORT"]
+      return unless (port = ENV["AMQP_PORT"])
 
-      port.nil? ? nil : port.to_i
+      port.to_i
     end
+
+    CLIENT_PROPERTIES = {
+      capabilities: {
+        authentication_failure_close: true,
+        publisher_confirms: true,
+        consumer_cancel_notify: true,
+        exchange_exchange_bindings: true,
+        "basic.nack": true,
+        "connection.blocked": true
+      },
+      product: "amqp-client.rb",
+      platform: RUBY_DESCRIPTION,
+      version: VERSION,
+      information: "http://github.com/cloudamqp/amqp-client.rb"
+    }.freeze
   end
 end

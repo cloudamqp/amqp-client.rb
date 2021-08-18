@@ -49,7 +49,7 @@ module AMQP
         bytes = value.map { |e| encode_field(e) }.join
         ["A", bytes.bytesize, bytes].pack("a L> a*")
       when Hash
-        bytes = table(value)
+        bytes = Table.encode(value)
         ["F", bytes.bytesize, bytes].pack("a L> a*")
       when true
         ["t", 1].pack("a C")
