@@ -79,15 +79,13 @@ module AMQP
     end
 
     def publish(body, exchange, routing_key, **properties)
-      loop do
-        with_connection do |conn|
-          # Use channel 1 for publishes
-          conn.channel(1).basic_publish_confirm(body, exchange, routing_key, **properties)
-        end
-        return
-      rescue => e
-        warn "AMQP-Client error publishing, retrying (#{e.inspect})"
+      with_connection do |conn|
+        # Use channel 1 for publishes
+        conn.channel(1).basic_publish_confirm(body, exchange, routing_key, **properties)
       end
+    rescue => e
+      warn "AMQP-Client error publishing, retrying (#{e.inspect})"
+      retry
     end
 
     def bind(queue, exchange, routing_key, **headers)
@@ -165,14 +163,13 @@ module AMQP
     end
 
     def reconnect
-      loop do
-        conn = connect
-        restore_connection_state(conn)
-        return conn
-      rescue e
-        warn "AMQP-Client reconnect error: #{e.inspect}"
-        sleep 1
-      end
+      conn = connect
+      restore_connection_state(conn)
+      conn
+    rescue e
+      warn "AMQP-Client reconnect error: #{e.inspect}"
+      sleep 1
+      retry
     end
 
     def restore_connection_state(conn)
