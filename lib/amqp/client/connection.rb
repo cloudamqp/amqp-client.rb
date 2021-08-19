@@ -25,10 +25,15 @@ module AMQP
       socket = Socket.tcp host, port, connect_timeout: 20, resolv_timeout: 5
       enable_tcp_keepalive(socket)
       if tls
+        cert_store = OpenSSL::X509::Store.new
+        cert_store.set_default_paths
         context = OpenSSL::SSL::SSLContext.new
+        context.cert_store = cert_store
         context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless [false, "false", "none"].include? options[:verify_peer]
         socket = OpenSSL::SSL::SSLSocket.new(socket, context)
         socket.sync_close = true # closing the TLS socket also closes the TCP socket
+        socket.hostname = host # SNI host
+        socket.connect
       end
       channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, **options)
       Connection.new(socket, channel_max, frame_max, heartbeat, read_loop_thread: read_loop_thread)
