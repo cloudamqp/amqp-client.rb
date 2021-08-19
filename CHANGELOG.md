@@ -1,6 +1,10 @@
 ## [Unreleased]
 
 
+## [0.2.2] - 2021-08-19
+
+- TLS port issue fixed
+
 ## [0.2.1] - 2021-08-19
 
 - More arguments to be passed to AMQP::Client::Queue
