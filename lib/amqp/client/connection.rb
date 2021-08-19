@@ -1,9 +1,40 @@
 # frozen_string_literal: true
 
+require "socket"
+require "uri"
+require "openssl"
+require_relative "./frames"
+require_relative "./channel"
+require_relative "./errors"
+
 module AMQP
-  # AMQP Connection
+  # Represents a single AMQP connection
   class Connection
-    def initialize(socket, channel_max, frame_max, heartbeat)
+    def self.connect(uri, **options)
+      read_loop_thread = options[:read_loop_thread] || true
+
+      uri = URI.parse(uri)
+      tls = uri.scheme == "amqps"
+      port = port_from_env || uri.port || (@tls ? 5671 : 5672)
+      host = uri.host || "localhost"
+      user = uri.user || "guest"
+      password = uri.password || "guest"
+      vhost = URI.decode_www_form_component(uri.path[1..-1] || "/")
+      options = URI.decode_www_form(uri.query || "").map! { |k, v| [k.to_sym, v] }.to_h.merge(options)
+
+      socket = Socket.tcp host, port, connect_timeout: 20, resolv_timeout: 5
+      enable_tcp_keepalive(socket)
+      if tls
+        context = OpenSSL::SSL::SSLContext.new
+        context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless [false, "false", "none"].include? options[:verify_peer]
+        socket = OpenSSL::SSL::SSLSocket.new(socket, context)
+        socket.sync_close = true # closing the TLS socket also closes the TCP socket
+      end
+      channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, **options)
+      Connection.new(socket, channel_max, frame_max, heartbeat, read_loop_thread: read_loop_thread)
+    end
+
+    def initialize(socket, channel_max, frame_max, heartbeat, read_loop_thread: true)
       @socket = socket
       @channel_max = channel_max
       @frame_max = frame_max
@@ -11,7 +42,7 @@ module AMQP
       @channels = {}
       @closed = false
       @replies = Queue.new
-      Thread.new { read_loop }
+      Thread.new { read_loop } if read_loop_thread
     end
 
     attr_reader :frame_max
@@ -40,8 +71,7 @@ module AMQP
       @socket.write(*bytes)
     end
 
-    private
-
+    # Reads from the socket, required for any kind of progress. Blocks until the connection is closed
     def read_loop
       socket = @socket
       frame_max = @frame_max
@@ -73,12 +103,15 @@ module AMQP
       end
     ensure
       @closed = true
+      @replies.close
       begin
         @socket.close
       rescue IOError
         nil
       end
     end
+
+    private
 
     def parse_frame(type, channel_id, frame_size, buf)
       case type
@@ -257,5 +290,89 @@ module AMQP
       frame_type == expected_frame_type || raise(UnexpectedFrame.new(expected_frame_type, frame_type))
       args
     end
+
+    def self.establish(socket, user, password, vhost, **options)
+      channel_max, frame_max, heartbeat = nil
+      socket.write "AMQP\x00\x00\x09\x01"
+      buf = String.new(capacity: 4096)
+      loop do
+        begin
+          socket.readpartial(4096, buf)
+        rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
+          raise AMQP::Client::Error, "Could not establish AMQP connection: #{e.message}"
+        end
+
+        type, channel_id, frame_size = buf.unpack("C S> L>")
+        frame_end = buf.unpack1("@#{frame_size + 7} C")
+        raise UnexpectedFrameEndError, frame_end if frame_end != 206
+
+        case type
+        when 1 # method frame
+          class_id, method_id = buf.unpack("@7 S> S>")
+          case class_id
+          when 10 # connection
+            raise AMQP::Client::Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
+
+            case method_id
+            when 10 # connection#start
+              properties = CLIENT_PROPERTIES.merge({ connection_name: options[:connection_name] })
+              socket.write FrameBytes.connection_start_ok "\u0000#{user}\u0000#{password}", properties
+            when 30 # connection#tune
+              channel_max, frame_max, heartbeat = buf.unpack("@11 S> L> S>")
+              channel_max = [channel_max, 2048].min
+              frame_max = [frame_max, 131_072].min
+              heartbeat = [heartbeat, 0].min
+              socket.write FrameBytes.connection_tune_ok(channel_max, frame_max, heartbeat)
+              socket.write FrameBytes.connection_open(vhost)
+            when 41 # connection#open-ok
+              return [channel_max, frame_max, heartbeat]
+            when 50 # connection#close
+              code, text_len = buf.unpack("@11 S> C")
+              text, error_class_id, error_method_id = buf.unpack("@14 a#{text_len} S> S>")
+              socket.write FrameBytes.connection_close_ok
+              raise AMQP::Client::Error, "Could not establish AMQP connection: #{code} #{text} #{error_class_id} #{error_method_id}"
+            else raise AMQP::Client::Error, "Unexpected class/method: #{class_id} #{method_id}"
+            end
+          else raise AMQP::Client::Error, "Unexpected class/method: #{class_id} #{method_id}"
+          end
+        else raise AMQP::Client::Error, "Unexpected frame type: #{type}"
+        end
+      end
+    rescue StandardError
+      socket.close rescue nil
+      raise
+    end
+
+    def self.enable_tcp_keepalive(socket)
+      socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
+      socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPIDLE, 60)
+      socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, 10)
+      socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, 3)
+    rescue StandardError => e
+      warn "amqp-client: Could not enable TCP keepalive on socket. #{e.inspect}"
+    end
+
+    def self.port_from_env
+      return unless (port = ENV["AMQP_PORT"])
+
+      port.to_i
+    end
+
+    private_class_method :establish, :enable_tcp_keepalive, :port_from_env
+
+    CLIENT_PROPERTIES = {
+      capabilities: {
+        authentication_failure_close: true,
+        publisher_confirms: true,
+        consumer_cancel_notify: true,
+        exchange_exchange_bindings: true,
+        "basic.nack": true,
+        "connection.blocked": true
+      },
+      product: "amqp-client.rb",
+      platform: RUBY_DESCRIPTION,
+      version: AMQP::Client::VERSION,
+      information: "http://github.com/cloudamqp/amqp-client.rb"
+    }.freeze
   end
 end
