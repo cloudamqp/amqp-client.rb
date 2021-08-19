@@ -164,7 +164,8 @@ module AMQP
             channel = @channels.delete(channel_id)
             channel.closed!(reply_code, reply_text, classid, methodid)
           when 41 # channel#close-ok
-            @channels[channel_id].reply [:channel_close_ok]
+            channel = @channels.delete(channel_id)
+            channel.reply [:channel_close_ok]
           else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
           end
         when 40 # exchange
