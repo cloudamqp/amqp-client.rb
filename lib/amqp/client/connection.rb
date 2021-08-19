@@ -57,7 +57,19 @@ module AMQP
       ch.open
     end
 
+    # Declare a new channel, yield, and then close the channel
+    def with_channel
+      ch = channel
+      begin
+        yield ch
+      ensure
+        ch.close
+      end
+    end
+
     def close(reason = "", code = 200)
+      return if @closed
+
       write_bytes FrameBytes.connection_close(code, reason)
       expect(:close_ok)
       @closed = true
@@ -69,6 +81,8 @@ module AMQP
 
     def write_bytes(*bytes)
       @socket.write(*bytes)
+    rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
+      raise AMQP::Client::Error.new("Could not write to socket", cause: e)
     end
 
     # Reads from the socket, required for any kind of progress. Blocks until the connection is closed

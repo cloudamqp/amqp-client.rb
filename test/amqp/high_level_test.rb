@@ -53,6 +53,7 @@ class HighLevelTest < Minitest::Test
     begin
       q = client.queue("test.bind")
       q.subscribe do |msg|
+        msg.ack
         msgs.push msg
       end
       q.publish Zlib.gzip("hej"), content_encoding: "gzip"

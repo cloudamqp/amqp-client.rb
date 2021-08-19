@@ -6,7 +6,7 @@ module AMQP
   # AMQP Channel
   class Channel
     def initialize(connection, id)
-      @replies = Queue.new
+      @replies = ::Queue.new
       @connection = connection
       @id = id
       @consumers = {}
@@ -65,12 +65,12 @@ module AMQP
       expect :exchange_unbind_ok
     end
 
-    def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, **args)
+    def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, arguments: {})
       durable = false if name.empty?
       exclusive = true if name.empty?
       auto_delete = true if name.empty?
 
-      write_bytes FrameBytes.queue_declare(@id, name, passive, durable, exclusive, auto_delete, args)
+      write_bytes FrameBytes.queue_declare(@id, name, passive, durable, exclusive, auto_delete, arguments)
       name, message_count, consumer_count = expect(:queue_declare_ok)
       {
         queue_name: name,
@@ -114,7 +114,7 @@ module AMQP
           body += body_part
           pos += body_part.bytesize
         end
-        Message.new(delivery_tag, exchange_name, routing_key, properties, body, redelivered)
+        Message.new(self, delivery_tag, exchange_name, routing_key, properties, body, redelivered)
       when :basic_get_empty then nil
       when nil              then raise AMQP::Client::ChannelClosedError.new(@id, *@closed)
       else raise AMQP::Client::UnexpectedFrame.new(%i[basic_get_ok basic_get_empty], frame)
@@ -150,19 +150,21 @@ module AMQP
       wait_for_confirm(id)
     end
 
+    # Consume from a queue
+    # worker_threads: 0 => blocking, messages are executed in the thread calling this method
     def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {},
-                      thread_count: 1)
+                      worker_threads: 1)
       write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
       tag, = expect(:basic_consume_ok)
-      q = @consumers[tag] = Queue.new
-      msgs = Queue.new
+      q = @consumers[tag] = ::Queue.new
+      msgs = ::Queue.new
       Thread.new { recv_deliveries(tag, q, msgs) }
-      if thread_count.zero?
+      if worker_threads.zero?
         while (msg = msgs.shift)
           yield msg
         end
       else
-        threads = Array.new(thread_count) do
+        threads = Array.new(worker_threads) do
           Thread.new do
             while (msg = msgs.shift)
               yield(msg)
@@ -209,7 +211,7 @@ module AMQP
 
       write_bytes FrameBytes.confirm_select(@id, no_wait)
       expect :confirm_select_ok unless no_wait
-      @confirms = Queue.new
+      @confirms = ::Queue.new
       @confirm = 0
     end
 
@@ -281,8 +283,7 @@ module AMQP
           body_part, = expect(:body)
           body += body_part
         end
-        msgs.push Message.new(delivery_tag, exchange, routing_key, properties, body,
-                              redelivered, consumer_tag)
+        msgs.push Message.new(self, delivery_tag, exchange, routing_key, properties, body, redelivered, consumer_tag)
       end
     ensure
       msgs.close

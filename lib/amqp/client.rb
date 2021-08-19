@@ -39,38 +39,37 @@ module AMQP
           sleep @options[:reconnect_interval] || 1
         end
       end
+      self
     end
 
     def stop
       @stopped = true
       conn = @connq.pop
       conn.close
+      nil
     end
 
-    def queue(name)
-      q = @queues[name]
-      unless q
-        q = @queues[name] = Queue.new(self, name)
+    def queue(name, arguments: {})
+      raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
+
+      @queues.fetch(name) do
         with_connection do |conn|
-          conn.channel(1).queue_declare(name)
+          conn.with_channel do |ch| # use a temp channel in case the declaration fails
+            ch.queue_declare(name, arguments: arguments)
+          end
         end
+        @queues[name] = Queue.new(self, name)
       end
-      q
     end
 
-    def subscribe(queue_name, prefetch: 1, arguments: {}, &blk)
-      @subscriptions.add? [queue_name, prefetch, arguments, blk]
+    def subscribe(queue_name, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
+      @subscriptions.add? [queue_name, no_ack, prefetch, arguments, blk]
 
       with_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
-        ch.basic_consume(queue_name, no_ack: false, arguments: arguments) do |msg|
+        ch.basic_consume(queue_name, no_ack: no_ack, worker_threads: worker_threads, arguments: arguments) do |msg|
           blk.call(msg)
-          ch.basic_ack msg.delivery_tag
-        rescue => e
-          warn "AMQP-Client subscribe #{queue_name} error: #{e.inspect}"
-          sleep 1
-          ch.basic_reject msg.delivery_tag, requeue: true
         end
       end
     end
@@ -79,6 +78,9 @@ module AMQP
       with_connection do |conn|
         # Use channel 1 for publishes
         conn.channel(1).basic_publish_confirm(body, exchange, routing_key, **properties)
+      rescue
+        conn.channel(1) # reopen channel 1 if it raised
+        raise
       end
     rescue => e
       warn "AMQP-Client error publishing, retrying (#{e.inspect})"
