@@ -123,8 +123,8 @@ module AMQP
         self
       end
 
-      def subscribe(prefetch: 1, arguments: {}, &blk)
-        @client.subscribe(@name, prefetch: prefetch, arguments: arguments, &blk)
+      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
+        @client.subscribe(@name, no_ack: no_ack, prefetch: prefetch, worker_threads: worker_threads, arguments: arguments, &blk)
         self
       end
 
