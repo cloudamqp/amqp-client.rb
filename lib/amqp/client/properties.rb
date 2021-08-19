@@ -69,7 +69,8 @@ module AMQP
       end
 
       if expiration
-        expiration.is_a?(String) || raise(ArgumentError, "expiration must be a string")
+        expiration = expiration.to_s if expiration.is_a?(Integer)
+        expiration.is_a?(String) || raise(ArgumentError, "expiration must be a string or integer")
 
         flags |= (1 << 8)
         arr << expiration.bytesize << expiration
