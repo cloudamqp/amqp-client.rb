@@ -1,6 +1,10 @@
 ## [Unreleased]
 
 
+## [0.2.3] - 2021-08-19
+
+- Improved TLS/AMQPS support
+
 ## [0.2.2] - 2021-08-19
 
 - TLS port issue fixed
