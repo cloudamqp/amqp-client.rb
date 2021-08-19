@@ -15,7 +15,7 @@ module AMQP
 
       uri = URI.parse(uri)
       tls = uri.scheme == "amqps"
-      port = port_from_env || uri.port || (@tls ? 5671 : 5672)
+      port = port_from_env || uri.port || (tls ? 5671 : 5672)
       host = uri.host || "localhost"
       user = uri.user || "guest"
       password = uri.password || "guest"
