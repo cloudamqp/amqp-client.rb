@@ -74,12 +74,25 @@ module AMQP
       end
     end
 
+    # Publish a (persistent) message and wait for confirmation
     def publish(body, exchange, routing_key, **properties)
       with_connection do |conn|
-        # default to persisent message delivery
         properties = { delivery_mode: 2 }.merge!(properties)
-        # Use channel 1 for publishes
         conn.channel(1).basic_publish_confirm(body, exchange, routing_key, **properties)
+      end
+    end
+
+    # Publish a (persistent) message but don't wait for a confirmation
+    def publish_and_forget(body, exchange, routing_key, **properties)
+      with_connection do |conn|
+        properties = { delivery_mode: 2 }.merge!(properties)
+        conn.channel(1).basic_publish(body, exchange, routing_key, **properties)
+      end
+    end
+
+    def wait_for_confirms
+      with_connection do |conn|
+        conn.channel(1).wait_for_confirms
       end
     end
 
