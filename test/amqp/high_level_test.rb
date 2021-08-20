@@ -15,8 +15,8 @@ class HighLevelTest < Minitest::Test
       end
       q.publish("foobar")
       msg = msgs.pop
-      assert_equal msg.routing_key, "test.conn"
-      assert_equal msg.body, "foobar"
+      assert_equal "test.conn", msg.routing_key
+      assert_equal "foobar", msg.body
     ensure
       q.delete
       client.stop
@@ -38,8 +38,8 @@ class HighLevelTest < Minitest::Test
       client.publish("foo", "amq.topic", "foo.bar")
 
       msg = msgs.pop
-      assert_equal msg.routing_key, "foo.bar"
-      assert_equal msg.body, "foo"
+      assert_equal "foo.bar", msg.routing_key
+      assert_equal "foo", msg.body
     ensure
       q.delete
       client.stop
@@ -58,13 +58,13 @@ class HighLevelTest < Minitest::Test
       end
       q.publish Zlib.gzip("hej"), content_encoding: "gzip"
       msg1 = msgs.pop
-      assert_equal msg1.properties.content_encoding, "gzip"
+      assert_equal "gzip", msg1.properties.content_encoding
 
       q.bind("amq.topic", "foo.*")
       client.publish("foo", "amq.topic", "foo.bar", headers: { foo: "bar" })
 
       msg2 = msgs.pop
-      assert_equal msg2.properties.headers, { "foo" => "bar" }
+      assert_equal({ "foo" => "bar" }, msg2.properties.headers)
     ensure
       q.delete
       client.stop

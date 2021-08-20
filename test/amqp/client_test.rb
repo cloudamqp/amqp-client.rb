@@ -111,8 +111,9 @@ class AMQPClientTest < Minitest::Test
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
-    resp = channel.queue_declare "foo"
+    resp = channel.queue_declare "foo", exclusive: true
     assert_equal "foo", resp[:queue_name]
+    connection.close
   end
 
   def test_it_can_delete_queue
@@ -131,19 +132,21 @@ class AMQPClientTest < Minitest::Test
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
-    channel.queue_declare "e"
-    msg = channel.basic_get "e"
+    q = channel.queue_declare ""
+    msg = channel.basic_get q[:queue_name]
     assert_nil msg
+    connection.close
   end
 
   def test_it_can_get_from_queue
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
-    channel.queue_declare "foo"
+    channel.queue_declare "foo", exclusive: true
     channel.basic_publish "bar", "", "foo"
     msg = channel.basic_get "foo"
     assert_equal "bar", msg.body
+    connection.close
   end
 
   def test_it_can_get_from_transiet_queue
@@ -246,7 +249,7 @@ class AMQPClientTest < Minitest::Test
     channel.basic_publish "foo", "", q[:queue_name]
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
-      if i == 0
+      if i.zero?
         channel.basic_nack msg.delivery_tag, requeue: true
       else
         channel.basic_ack msg.delivery_tag
@@ -312,27 +315,28 @@ class AMQPClientTest < Minitest::Test
     connection = client.connect
     channel = connection.channel
     channel.confirm_select
-    id = channel.basic_publish "foo", "amq.direct", "bar"
-    assert channel.wait_for_confirm id
+    channel.basic_publish "foo", "amq.direct", "bar"
+    assert channel.wait_for_confirms
   end
 
   def test_it_can_commit_tx
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
-    q = channel.queue_declare "foo"
+    q = channel.queue_declare "foo", exclusive: true
     channel.tx_select
     channel.basic_publish "foo", "", "foo"
     channel.tx_commit
     msg = channel.basic_get q[:queue_name]
     assert_equal "foo", msg.body
+    connection.close
   end
 
   def test_it_can_rollback_tx
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
-    q = channel.queue_declare "foo"
+    q = channel.queue_declare "foo", exclusive: true
     channel.tx_select
     channel.basic_publish "bar", "", "foo"
     channel.tx_rollback
@@ -342,6 +346,7 @@ class AMQPClientTest < Minitest::Test
     channel.tx_commit
     msg = channel.basic_get q[:queue_name]
     assert_equal "bar", msg.body
+    connection.close
   end
 
   def test_it_can_generate_tables
