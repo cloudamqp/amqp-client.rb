@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.3.0] - 2021-08-20
+
+- Channel#wait_for_confirms is a smarter way of waiting for publish confirms
+- Default connection_name to $PROGRAM_NAME
 
 ## [0.2.3] - 2021-08-19
 
