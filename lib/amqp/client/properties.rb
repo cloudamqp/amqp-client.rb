@@ -38,7 +38,8 @@ module AMQP
       end
 
       if delivery_mode
-        headers.is_a?(Integer) || raise(ArgumentError, "delivery_mode must be an int")
+        delivery_mode.is_a?(Integer) || raise(ArgumentError, "delivery_mode must be an int")
+        delivery_mode.between?(0, 2) || raise(ArgumentError, "delivery_mode must be be between 0 and 2")
 
         flags |= (1 << 12)
         arr << delivery_mode

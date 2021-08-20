@@ -35,6 +35,10 @@ module AMQP
       write_bytes FrameBytes.channel_close(@id, reason, code)
       expect :channel_close_ok
       @closed = [code, reason]
+      @replies.close
+      @unconfirmed_empty.close
+      @consumers.each_value(&:close)
+      @consumers.clear
     end
 
     # Called when closed by server
@@ -42,7 +46,8 @@ module AMQP
       write_bytes FrameBytes.channel_close_ok(@id)
       @closed = [code, reason, classid, methodid]
       @replies.close
-      @consumers.each { |_, q| q.close }
+      @unconfirmed_empty.close
+      @consumers.each_value(&:close)
       @consumers.clear
     end
 
@@ -126,8 +131,12 @@ module AMQP
       frame_max = @connection.frame_max - 8
       id = @id
       mandatory = properties.delete(:mandatory) || false
+      case properties.delete(:persistent)
+      when true then properties[:delivery_mode] = 2
+      when false then properties[:delivery_mode] = 1
+      end
 
-      if 0 < body.bytesize && body.bytesize <= frame_max
+      if body.bytesize.between?(1, frame_max)
         write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
                     FrameBytes.header(id, body.bytesize, properties),
                     FrameBytes.body(id, body)
@@ -222,7 +231,11 @@ module AMQP
     def wait_for_confirms
       return true if @unconfirmed.empty?
 
-      @unconfirmed_empty.pop
+      case @unconfirmed_empty.pop
+      when true then true
+      when false then false
+      else raise AMQP::Client::ChannelClosedError.new(@id, *@closed)
+      end
     end
 
     def confirm(args)
@@ -239,7 +252,7 @@ module AMQP
       return unless @unconfirmed.empty?
 
       @unconfirmed_empty.num_waiting.times do
-        @unconfirmed_empty << ack_or_nack == :ack
+        @unconfirmed_empty << (ack_or_nack == :ack)
       end
     end
 

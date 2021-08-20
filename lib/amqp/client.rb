@@ -76,15 +76,11 @@ module AMQP
 
     def publish(body, exchange, routing_key, **properties)
       with_connection do |conn|
+        # default to persisent message delivery
+        properties = { delivery_mode: 2 }.merge!(properties)
         # Use channel 1 for publishes
         conn.channel(1).basic_publish_confirm(body, exchange, routing_key, **properties)
-      rescue
-        conn.channel(1) # reopen channel 1 if it raised
-        raise
       end
-    rescue => e
-      warn "AMQP-Client error publishing, retrying (#{e.inspect})"
-      retry
     end
 
     def bind(queue, exchange, routing_key, **headers)
