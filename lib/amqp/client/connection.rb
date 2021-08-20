@@ -332,7 +332,8 @@ module AMQP
 
             case method_id
             when 10 # connection#start
-              properties = CLIENT_PROPERTIES.merge({ connection_name: options[:connection_name] })
+              conn_name = options[:connection_name] || $PROGRAM_NAME
+              properties = CLIENT_PROPERTIES.merge({ connection_name: conn_name })
               socket.write FrameBytes.connection_start_ok "\u0000#{user}\u0000#{password}", properties
             when 30 # connection#tune
               channel_max, frame_max, heartbeat = buf.unpack("@11 S> L> S>")
