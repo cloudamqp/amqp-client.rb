@@ -71,6 +71,8 @@ module AMQP
       expect :exchange_unbind_ok
     end
 
+    QueueOk = Struct.new(:queue_name, :message_count, :consumer_count)
+
     def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, arguments: {})
       durable = false if name.empty?
       exclusive = true if name.empty?
@@ -78,11 +80,8 @@ module AMQP
 
       write_bytes FrameBytes.queue_declare(@id, name, passive, durable, exclusive, auto_delete, arguments)
       name, message_count, consumer_count = expect(:queue_declare_ok)
-      {
-        queue_name: name,
-        message_count: message_count,
-        consumer_count: consumer_count
-      }
+
+      QueueOk.new(name, message_count, consumer_count)
     end
 
     def queue_delete(name, if_unused: false, if_empty: false, no_wait: false)
