@@ -87,7 +87,7 @@ module AMQP
       end
 
       if timestamp
-        timestamp.is_a?(Time) || raise(ArgumentError, "timestamp must be a time")
+        timestamp.is_a?(Integer) || timestamp.is_a?(Time) || raise(ArgumentError, "timestamp must be an Integer or a Time")
 
         flags |= (1 << 6)
         arr << timestamp.to_i
