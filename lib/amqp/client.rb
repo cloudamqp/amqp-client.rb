@@ -51,24 +51,24 @@ module AMQP
       nil
     end
 
-    def queue(name, arguments: {})
+    def queue(name, durable: true, exclusive: false, auto_delete: false, arguments: {})
       raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
 
       @queues.fetch(name) do
         with_connection do |conn|
           conn.with_channel do |ch| # use a temp channel in case the declaration fails
-            ch.queue_declare(name, arguments: arguments)
+            ch.queue_declare(name, passive: passive, durable: durable, exclusive: exclusive, auto_delete: auto_delete, arguments: arguments)
           end
         end
         @queues[name] = Queue.new(self, name)
       end
     end
 
-    def exchange(name, type, passive: false, durable: true, auto_delete: false, internal: false, arguments: {})
+    def exchange(name, type, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
           conn.with_channel do |ch|
-            ch.exchange_declare(name, type, passive: passive, durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
+            ch.exchange_declare(name, type, durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
           end
         end
         @exchanges[name] = Exchange.new(self, name)
