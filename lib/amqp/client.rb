@@ -17,10 +17,12 @@ module AMQP
       @connq = SizedQueue.new(1)
     end
 
+    # Opens an AMQP connection, does not try to reconnect
     def connect(read_loop_thread: true)
       Connection.connect(@uri, **@options.merge(read_loop_thread: read_loop_thread))
     end
 
+    # Opens an AMQP connection using the high level API, will try to reconnect
     def start
       @stopped = false
       Thread.new(connect(read_loop_thread: false)) do |conn|
@@ -37,8 +39,9 @@ module AMQP
           conn.read_loop # blocks until connection is closed, then reconnect
         rescue => e
           warn "AMQP-Client reconnect error: #{e.inspect}"
-          conn = nil
           sleep @options[:reconnect_interval] || 1
+        ensure
+          conn = nil
         end
       end
       self
