@@ -12,6 +12,7 @@ module AMQP
       @options = options
 
       @queues = {}
+      @exchanges = {}
       @subscriptions = Set.new
       @connq = SizedQueue.new(1)
     end
@@ -59,6 +60,43 @@ module AMQP
           end
         end
         @queues[name] = Queue.new(self, name)
+      end
+    end
+
+    def exchange(name, type, passive: false, durable: true, auto_delete: false, internal: false, arguments: {})
+      @exchanges.fetch(name) do
+        with_connection do |conn|
+          conn.with_channel do |ch|
+            ch.exchange_declare(name, type, passive: passive, durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
+          end
+        end
+        @exchanges[name] = Exchange.new(self, name)
+      end
+    end
+
+    # High level representation of an exchange
+    class Exchange
+      def initialize(client, name)
+        @client = client
+        @name = name
+      end
+
+      def publish(body, routing_key, arguments: {})
+        @client.publish(body, @name, routing_key, arguments: arguments)
+      end
+
+      # Bind to another exchange
+      def bind(exchange, routing_key, arguments: {})
+        @client.exchange_bind(@name, exchange, routing_key, arguments: arguments)
+      end
+
+      # Unbind from another exchange
+      def unbind(exchange, routing_key, arguments: {})
+        @client.exchange_unbind(@name, exchange, routing_key, arguments: arguments)
+      end
+
+      def delete
+        @client.delete_exchange(@name)
       end
     end
 
@@ -126,9 +164,17 @@ module AMQP
       end
     end
 
-    def delete_queue(queue)
+    def delete_queue(name)
       with_connection do |conn|
-        conn.channel(1).queue_delete(queue)
+        conn.channel(1).queue_delete(name)
+        @queues.delete(name)
+      end
+    end
+
+    def delete_exchange(name)
+      with_connection do |conn|
+        conn.channel(1).exchange_delete(name)
+        @exchanges.delete(name)
       end
     end
 
