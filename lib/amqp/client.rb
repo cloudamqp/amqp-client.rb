@@ -96,15 +96,27 @@ module AMQP
       end
     end
 
-    def bind(queue, exchange, routing_key, **headers)
+    def bind(queue, exchange, routing_key, arguments: {})
       with_connection do |conn|
-        conn.channel(1).queue_bind(queue, exchange, routing_key, **headers)
+        conn.channel(1).queue_bind(queue, exchange, routing_key, arguments: arguments)
       end
     end
 
-    def unbind(queue, exchange, routing_key, **headers)
+    def unbind(queue, exchange, routing_key, arguments: {})
       with_connection do |conn|
-        conn.channel(1).queue_unbind(queue, exchange, routing_key, **headers)
+        conn.channel(1).queue_unbind(queue, exchange, routing_key, arguments: arguments)
+      end
+    end
+
+    def exchange_bind(destination, source, routing_key, arguments: {})
+      with_connection do |conn|
+        conn.channel(1).exchange_bind(destination, source, routing_key, arguments: arguments)
+      end
+    end
+
+    def exchange_unbind(destination, source, routing_key, arguments: {})
+      with_connection do |conn|
+        conn.channel(1).exchange_unbind(destination, source, routing_key, arguments: arguments)
       end
     end
 

@@ -51,8 +51,8 @@ module AMQP
       @consumers.clear
     end
 
-    def exchange_declare(name, type, passive: false, durable: true, auto_delete: false, internal: false, **args)
-      write_bytes FrameBytes.exchange_declare(@id, name, type, passive, durable, auto_delete, internal, args)
+    def exchange_declare(name, type, passive: false, durable: true, auto_delete: false, internal: false, arguments: {})
+      write_bytes FrameBytes.exchange_declare(@id, name, type, passive, durable, auto_delete, internal, arguments)
       expect :exchange_declare_ok
     end
 
@@ -61,12 +61,12 @@ module AMQP
       expect :exchange_delete_ok
     end
 
-    def exchange_bind(destination, source, binding_key, arguments = {})
+    def exchange_bind(destination, source, binding_key, arguments: {})
       write_bytes FrameBytes.exchange_bind(@id, destination, source, binding_key, false, arguments)
       expect :exchange_bind_ok
     end
 
-    def exchange_unbind(destination, source, binding_key, arguments = {})
+    def exchange_unbind(destination, source, binding_key, arguments: {})
       write_bytes FrameBytes.exchange_unbind(@id, destination, source, binding_key, false, arguments)
       expect :exchange_unbind_ok
     end
@@ -90,7 +90,7 @@ module AMQP
       message_count
     end
 
-    def queue_bind(name, exchange, binding_key, arguments = {})
+    def queue_bind(name, exchange, binding_key, arguments: {})
       write_bytes FrameBytes.queue_bind(@id, name, exchange, binding_key, false, arguments)
       expect :queue_bind_ok
     end
@@ -100,7 +100,7 @@ module AMQP
       expect :queue_purge_ok unless no_wait
     end
 
-    def queue_unbind(name, exchange, binding_key, arguments = {})
+    def queue_unbind(name, exchange, binding_key, arguments: {})
       write_bytes FrameBytes.queue_unbind(@id, name, exchange, binding_key, arguments)
       expect :queue_unbind_ok
     end
@@ -237,6 +237,7 @@ module AMQP
       end
     end
 
+    # Called by Connection when received ack/nack from server
     def confirm(args)
       ack_or_nack, delivery_tag, multiple = *args
       loop do
