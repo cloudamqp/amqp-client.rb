@@ -23,11 +23,11 @@ module AMQP
 
     def start
       @stopped = false
-      Thread.new do
+      Thread.new(connect(read_loop_thread: false)) do |conn|
         loop do
           break if @stopped
 
-          conn = connect(read_loop_thread: false)
+          conn ||= connect(read_loop_thread: false)
           Thread.new do
             # restore connection in another thread, read_loop have to run
             conn.channel(1) # reserve channel 1 for publishes
@@ -37,6 +37,7 @@ module AMQP
           conn.read_loop # blocks until connection is closed, then reconnect
         rescue => e
           warn "AMQP-Client reconnect error: #{e.inspect}"
+          conn = nil
           sleep @options[:reconnect_interval] || 1
         end
       end
