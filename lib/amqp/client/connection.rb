@@ -109,30 +109,39 @@ module AMQP
       frame_max = @frame_max
       buffer = String.new(capacity: frame_max)
       loop do
-        begin
-          socket.readpartial(frame_max, buffer)
-        rescue IOError, OpenSSL::OpenSSLError, SystemCallError
-          break
-        end
+        # read as much as possible from socket
+        socket.readpartial(frame_max, buffer)
 
         pos = 0
         while pos < buffer.bytesize
+          # make sure to have at least the first 8 bytes of a frame
           buffer += socket.read(pos + 8 - buffer.bytesize) if pos + 8 > buffer.bytesize
+
+          # parse the frame properties that all frames got
           type, channel_id, frame_size = buffer.byteslice(pos, 7).unpack("C S> L>")
           if frame_size > frame_max
             raise AMQP::Client::Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}"
           end
 
+          # read the rest of the frame if required
           frame_end_pos = pos + 7 + frame_size
           buffer += socket.read(frame_end_pos - buffer.bytesize + 1) if frame_end_pos + 1 > buffer.bytesize
+
+          # make sure that the frame end is correct
           frame_end = buffer[frame_end_pos].ord
           raise AMQP::Client::UnexpectedFrameEnd, frame_end if frame_end != 206
 
+          # might have gotten more than one frame, so split it out
           buf = buffer.byteslice(pos, frame_size + 8)
           pos += frame_size + 8
+
+          # parse the frame, will return false if a close frame was received
           parse_frame(type, channel_id, frame_size, buf) || return
         end
       end
+    rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
+      warn "AMQP-Client read error: #{e.inspect}" unless e.message == "stream closed in another thread"
+      nil # ignore read errors
     ensure
       @closed = true
       @replies.close
