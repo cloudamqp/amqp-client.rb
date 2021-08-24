@@ -164,6 +164,7 @@ module AMQP
 
           case method_id
           when 50 # connection#close
+            @closed = true
             code, text_len = buf.unpack("@11 S> C")
             text = buf.byteslice(14, text_len).force_encoding("utf-8")
             error_class_id, error_method_id = buf.byteslice(14 + text_len, 4).unpack("S> S>")
@@ -176,6 +177,7 @@ module AMQP
             end
             return false
           when 51 # connection#close-ok
+            @closed = true
             @replies.push [:close_ok]
             return false
           else raise AMQP::Client::UnsupportedMethodFrame, class_id, method_id
