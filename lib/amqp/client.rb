@@ -60,7 +60,7 @@ module AMQP
       @queues.fetch(name) do
         with_connection do |conn|
           conn.with_channel do |ch| # use a temp channel in case the declaration fails
-            ch.queue_declare(name, passive: passive, durable: durable, exclusive: exclusive, auto_delete: auto_delete, arguments: arguments)
+            ch.queue_declare(name, durable: durable, exclusive: exclusive, auto_delete: auto_delete, arguments: arguments)
           end
         end
         @queues[name] = Queue.new(self, name)

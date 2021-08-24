@@ -113,5 +113,4 @@ class HighLevelTest < Minitest::Test
       client.stop
     end
   end
-
 end
