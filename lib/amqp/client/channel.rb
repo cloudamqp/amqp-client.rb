@@ -18,6 +18,10 @@ module AMQP
       @unconfirmed_empty = ::Queue.new
     end
 
+    def inspect
+      "#<#{self.class} @id=#{@id} @open=#{@open} @closed=#{@closed} confirm_selected=#{!@confirm.nil?} replies_count=#{@replies.size} unconfirmed_count=#{@unconfirmed.size} consumer_count=#{@consumers.size}>"
+    end
+
     attr_reader :id, :consumers
 
     def open

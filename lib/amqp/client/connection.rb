@@ -52,6 +52,10 @@ module AMQP
 
     attr_reader :frame_max
 
+    def inspect
+      "#<#{self.class} @closed=#{@closed} channel_count=#{@channels.size}>"
+    end
+
     def channel(id = nil)
       if id
         ch = @channels[id] ||= Channel.new(self, id)
