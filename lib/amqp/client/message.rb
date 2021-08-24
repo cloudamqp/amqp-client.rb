@@ -7,7 +7,7 @@ module AMQP
     end
 
     def reject(requeue: false)
-      channel.basic_reject(delivery_tag, requeue)
+      channel.basic_reject(delivery_tag, requeue: requeue)
     end
   end
 
