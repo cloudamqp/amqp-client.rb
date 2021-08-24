@@ -325,7 +325,7 @@ module AMQP
 
     def expect(expected_frame_type)
       frame_type, args = @replies.shift
-      frame_type == expected_frame_type || raise(UnexpectedFrame.new(expected_frame_type, frame_type))
+      frame_type == expected_frame_type || raise(AMQP::Client::UnexpectedFrame.new(expected_frame_type, frame_type))
       args
     end
 
