@@ -41,7 +41,7 @@ module AMQP
 
     def initialize(socket, channel_max, frame_max, heartbeat, read_loop_thread: true)
       @socket = socket
-      @channel_max = channel_max
+      @channel_max = channel_max.zero? ? 65_536 : channel_max
       @frame_max = frame_max
       @heartbeat = heartbeat
       @channels = {}
