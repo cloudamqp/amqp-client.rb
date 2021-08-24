@@ -368,15 +368,23 @@ class AMQPClientTest < Minitest::Test
     req = Net::HTTP::Get.new("/api/connections?columns=client_properties")
     req.basic_auth "guest", "guest"
     http = Net::HTTP.new("localhost", 15_672)
-    loop do
+    connection_names = []
+    100.times do
       sleep 0.1
       res = http.request(req)
       assert_equal Net::HTTPOK, res.class
-      connections = JSON.parse(res.body)
-      next if connections.empty?
+      connection_names = JSON.parse(res.body).map! { |conn| conn.dig("client_properties", "connection_name") }
+      break if connection_names.include? "foobar"
+    end
+    assert_includes connection_names, "foobar"
+  end
 
-      assert(connections.find { |conn| conn.dig("client_properties", "connection_name") == "foobar" })
-      break
+  def test_handle_connection_closed_by_server
+    conn = AMQP::Client.new("amqp://localhost").connect
+    conn.with_channel do |ch|
+      assert_raises(AMQP::Client::ChannelClosedError, /unknown exchange type/) do
+        ch.exchange_declare("foobar", "faulty.exchange.type")
+      end
     end
   end
 end
