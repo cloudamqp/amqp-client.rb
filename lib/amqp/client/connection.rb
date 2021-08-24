@@ -76,8 +76,10 @@ module AMQP
       return if @closed
 
       write_bytes FrameBytes.connection_close(code, reason)
-      expect(:close_ok)
       @closed = true
+      @channels.each_value { |ch| ch.closed!(code, text, 0, 0) }
+      @channels.clear
+      expect(:close_ok)
     end
 
     def closed?
@@ -87,7 +89,7 @@ module AMQP
     def write_bytes(*bytes)
       @socket.write(*bytes)
     rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
-      raise AMQP::Client::Error.new("Could not write to socket", cause: e)
+      raise AMQP::Client::Error, "Could not write to socket, #{e.message}"
     end
 
     # Reads from the socket, required for any kind of progress. Blocks until the connection is closed
@@ -125,7 +127,7 @@ module AMQP
       @replies.close
       begin
         @socket.close
-      rescue IOError
+      rescue IOError, OpenSSL::OpenSSLError, SystemCallError
         nil
       end
     end
@@ -145,8 +147,14 @@ module AMQP
             code, text_len = buf.unpack("@11 S> C")
             text = buf.byteslice(14, text_len).force_encoding("utf-8")
             error_class_id, error_method_id = buf.byteslice(14 + text_len, 4).unpack("S> S>")
-            warn "Connection closed #{code} #{text} #{error_class_id} #{error_method_id}"
-            write_bytes FrameBytes.connection_close_ok
+            warn "AMQP-Client connection closed #{code} #{text} #{error_class_id} #{error_method_id}"
+            @channels.each_value { |ch| ch.closed!(code, text, error_class_id, error_method_id) }
+            @channels.clear
+            begin
+              write_bytes FrameBytes.connection_close_ok
+            rescue AMQP::Client::Error
+              nil # rabbitmq closes the socket after sending Connection::Close, so ignore write errors
+            end
             return false
           when 51 # connection#close-ok
             @replies.push [:close_ok]
@@ -367,7 +375,7 @@ module AMQP
       socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, 10)
       socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, 3)
     rescue StandardError => e
-      warn "amqp-client: Could not enable TCP keepalive on socket. #{e.inspect}"
+      warn "AMQP-Client could not enable TCP keepalive on socket. #{e.inspect}"
     end
 
     def self.port_from_env
