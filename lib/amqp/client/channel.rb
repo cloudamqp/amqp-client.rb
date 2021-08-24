@@ -42,7 +42,6 @@ module AMQP
       @replies.close
       @unconfirmed_empty.close
       @consumers.each_value(&:close)
-      @consumers.clear
     end
 
     # Called when channel is closed by server
@@ -51,7 +50,6 @@ module AMQP
       @replies.close
       @unconfirmed_empty.close
       @consumers.each_value(&:close)
-      @consumers.clear
     end
 
     def exchange_declare(name, type, passive: false, durable: true, auto_delete: false, internal: false, arguments: {})

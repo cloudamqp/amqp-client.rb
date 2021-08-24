@@ -90,7 +90,6 @@ module AMQP
       @closed = true
       write_bytes FrameBytes.connection_close(code, reason)
       @channels.each_value { |ch| ch.closed!(code, reason, 0, 0) }
-      @channels.clear
       expect(:close_ok)
     end
 
@@ -161,7 +160,6 @@ module AMQP
             error_class_id, error_method_id = buf.byteslice(14 + text_len, 4).unpack("S> S>")
             warn "AMQP-Client connection closed #{code} #{text} #{error_class_id} #{error_method_id}"
             @channels.each_value { |ch| ch.closed!(code, text, error_class_id, error_method_id) }
-            @channels.clear
             begin
               write_bytes FrameBytes.connection_close_ok
             rescue AMQP::Client::Error
