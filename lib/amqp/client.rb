@@ -34,7 +34,11 @@ module AMQP
           Thread.new do
             # restore connection in another thread, read_loop have to run
             conn.channel(1) # reserve channel 1 for publishes
-            @subscriptions.each { |args| subscribe(*args) }
+            @subscriptions.each do |queue_name, no_ack, prefetch, wt, args, blk|
+              ch = conn.channel
+              ch.basic_qos(prefetch)
+              ch.basic_consume(queue_name, no_ack: no_ack, worker_threads: wt, arguments: args, &blk)
+            end
             @connq << conn
           end
           conn.read_loop # blocks until connection is closed, then reconnect
@@ -106,7 +110,7 @@ module AMQP
     end
 
     def subscribe(queue_name, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
-      @subscriptions.add? [queue_name, no_ack, prefetch, arguments, blk]
+      @subscriptions.add? [queue_name, no_ack, prefetch, worker_threads, arguments, blk]
 
       with_connection do |conn|
         ch = conn.channel
