@@ -113,4 +113,25 @@ class HighLevelTest < Minitest::Test
       client.stop
     end
   end
+
+  def test_it_can_resubscribe_on_reconnect
+    msgs = Queue.new
+    client = AMQP::Client.new("amqp://localhost").start
+    begin
+      q = client.queue("foo#{rand}")
+      q.subscribe do |msg|
+        msgs << msg
+      end
+      assert_raises(AMQP::Client::ChannelClosedError) do
+        client.exchange("test.exchange", "non.existing.exchange.type")
+      end
+
+      q.publish("bar")
+      msg = msgs.pop
+      assert msg.body, "bar"
+    ensure
+      q.delete
+      client.stop
+    end
+  end
 end
