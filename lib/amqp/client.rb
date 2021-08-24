@@ -26,6 +26,7 @@ module AMQP
     def start
       @stopped = false
       Thread.new(connect(read_loop_thread: false)) do |conn|
+        Thread.abort_on_exception = true # Raising an unhandled exception is a bug
         loop do
           break if @stopped
 
@@ -37,7 +38,7 @@ module AMQP
             @connq << conn
           end
           conn.read_loop # blocks until connection is closed, then reconnect
-        rescue => e
+        rescue AMQP::Client::Error => e
           warn "AMQP-Client reconnect error: #{e.inspect}"
           sleep @options[:reconnect_interval] || 1
         ensure
