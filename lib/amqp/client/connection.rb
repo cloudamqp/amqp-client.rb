@@ -57,10 +57,18 @@ module AMQP
     end
 
     def channel(id = nil)
+      raise ArgumentError, "Channel ID cannot be 0" if id&.zero?
+      raise ArgumentError, "Channel ID higher than connection's channel max #{@channel_max}" if id && id > @channel_max
+
       if id
         ch = @channels[id] ||= Channel.new(self, id)
       else
-        id = 1.upto(@channel_max) { |i| break i unless @channels.key? i }
+        id = nil
+        1.upto(@channel_max) do |i|
+          break id = i unless @channels.key? i
+        end
+        raise AMQP::Client::Error, "Max channels reached" if id.nil?
+
         ch = @channels[id] = Channel.new(self, id)
       end
       ch.open
