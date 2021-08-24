@@ -79,9 +79,9 @@ module AMQP
     def close(reason = "", code = 200)
       return if @closed
 
-      write_bytes FrameBytes.connection_close(code, reason)
       @closed = true
-      @channels.each_value { |ch| ch.closed!(code, text, 0, 0) }
+      write_bytes FrameBytes.connection_close(code, reason)
+      @channels.each_value { |ch| ch.closed!(code, reason, 0, 0) }
       @channels.clear
       expect(:close_ok)
     end
@@ -175,6 +175,7 @@ module AMQP
             classid, methodid = buf.byteslice(14 + reply_text_len, 4).unpack("S> S>")
             channel = @channels.delete(channel_id)
             channel.closed!(reply_code, reply_text, classid, methodid)
+            write_bytes FrameBytes.channel_close_ok(channel_id)
           when 41 # channel#close-ok
             channel = @channels.delete(channel_id)
             channel.reply [:channel_close_ok]

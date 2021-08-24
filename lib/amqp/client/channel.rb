@@ -27,9 +27,9 @@ module AMQP
     def open
       return self if @open
 
+      @open = true
       write_bytes FrameBytes.channel_open(@id)
       expect(:channel_open_ok)
-      @open = true
       self
     end
 
@@ -37,17 +37,16 @@ module AMQP
       return if @closed
 
       write_bytes FrameBytes.channel_close(@id, reason, code)
-      expect :channel_close_ok
       @closed = [code, reason]
+      expect :channel_close_ok
       @replies.close
       @unconfirmed_empty.close
       @consumers.each_value(&:close)
       @consumers.clear
     end
 
-    # Called when closed by server
+    # Called when channel is closed by server
     def closed!(code, reason, classid, methodid)
-      write_bytes FrameBytes.channel_close_ok(@id)
       @closed = [code, reason, classid, methodid]
       @replies.close
       @unconfirmed_empty.close
