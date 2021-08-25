@@ -19,7 +19,7 @@ module AMQP
 
     # Opens an AMQP connection, does not try to reconnect
     def connect(read_loop_thread: true)
-      Connection.connect(@uri, **@options.merge(read_loop_thread: read_loop_thread))
+      Connection.connect(@uri, read_loop_thread: read_loop_thread, **@options)
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect

@@ -10,9 +10,7 @@ require_relative "./errors"
 module AMQP
   # Represents a single AMQP connection
   class Connection
-    def self.connect(uri, **options)
-      read_loop_thread = options[:read_loop_thread] || true
-
+    def self.connect(uri, read_loop_thread: true, **options)
       uri = URI.parse(uri)
       tls = uri.scheme == "amqps"
       port = port_from_env || uri.port || (tls ? 5671 : 5672)
