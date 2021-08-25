@@ -269,7 +269,7 @@ class AMQPClientTest < Minitest::Test
     channel.basic_publish "foo", "", q[:queue_name]
     i = 0
     channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
-      if i == 0
+      if i.zero?
         channel.basic_reject msg.delivery_tag, requeue: true
       else
         channel.basic_ack msg.delivery_tag
@@ -301,13 +301,13 @@ class AMQPClientTest < Minitest::Test
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
     channel = connection.channel
-    routing_key = nil
+    msgs = Queue.new
     channel.on_return do |msg|
-      routing_key = msg.routing_key
+      msgs << msg
     end
-    channel.basic_publish "foo", "amq.topic", "bar", mandatory: true
-    sleep(0.1)
-    assert_equal "bar", routing_key
+    channel.basic_publish "foo", "amq.direct", "bar", mandatory: true
+    msg = msgs.pop
+    assert_equal "bar", msg.routing_key
   end
 
   def test_it_can_select_confirm
