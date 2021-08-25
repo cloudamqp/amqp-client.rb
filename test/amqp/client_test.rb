@@ -305,7 +305,7 @@ class AMQPClientTest < Minitest::Test
     channel.on_return do |msg|
       msgs << msg
     end
-    channel.basic_publish "foo", "amq.direct", "bar", mandatory: true
+    channel.basic_publish "foo", "amq.headers", "bar", mandatory: true
     msg = msgs.pop
     assert_equal "bar", msg.routing_key
   end
@@ -386,5 +386,48 @@ class AMQPClientTest < Minitest::Test
         ch.exchange_declare("foobar", "faulty.exchange.type")
       end
     end
+  end
+
+  def test_it_can_consume_multiple_queues_on_one_channel
+    msgs1 = Queue.new
+    msgs2 = Queue.new
+    connection = AMQP::Client.new("amqp://localhost").connect
+    channel = connection.channel
+    q1 = channel.queue_declare ""
+    q2 = channel.queue_declare ""
+    channel.basic_consume(q1[:queue_name]) do |msg|
+      msgs1 << msg
+    end
+    channel.basic_consume(q2[:queue_name]) do |msg|
+      msgs2 << msg
+    end
+    channel.basic_publish "foo", "", q1[:queue_name]
+    channel.basic_publish "bar", "", q2[:queue_name]
+
+    assert_equal "foo", msgs1.pop.body
+    assert_equal "bar", msgs2.pop.body
+    connection.close
+  end
+
+  def test_it_can_consume_multiple_queues_on_multiple_channel
+    msgs1 = Queue.new
+    msgs2 = Queue.new
+    connection = AMQP::Client.new("amqp://localhost").connect
+    ch1 = connection.channel
+    ch2 = connection.channel
+    q1 = ch1.queue_declare ""
+    q2 = ch2.queue_declare ""
+    ch1.basic_consume(q1[:queue_name]) do |msg|
+      msgs1 << msg
+    end
+    ch2.basic_consume(q2[:queue_name]) do |msg|
+      msgs2 << msg
+    end
+    ch1.basic_publish "foo", "", q1[:queue_name]
+    ch2.basic_publish "bar", "", q2[:queue_name]
+
+    assert_equal "foo", msgs1.pop.body
+    assert_equal "bar", msgs2.pop.body
+    connection.close
   end
 end
