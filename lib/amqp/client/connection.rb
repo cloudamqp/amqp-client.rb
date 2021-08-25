@@ -103,6 +103,8 @@ module AMQP
 
     # Reads from the socket, required for any kind of progress. Blocks until the connection is closed
     def read_loop
+      # read more often than write so that channel errors crop up early
+      Thread.current.priority += 1
       socket = @socket
       frame_max = @frame_max
       frame_start = String.new(capacity: 7)
