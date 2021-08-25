@@ -16,8 +16,7 @@ module AMQP
       @confirm = nil
       @unconfirmed = ::Queue.new
       @unconfirmed_empty = ::Queue.new
-      @return_queue = ::Queue.new
-      @deliver_queue = ::Queue.new
+      @basic_gets = ::Queue.new
     end
 
     def inspect
@@ -42,6 +41,7 @@ module AMQP
       @closed = [code, reason]
       expect :channel_close_ok
       @replies.close
+      @basic_gets.close
       @unconfirmed_empty.close
       @consumers.each_value(&:close)
     end
@@ -50,6 +50,7 @@ module AMQP
     def closed!(code, reason, classid, methodid)
       @closed = [code, reason, classid, methodid]
       @replies.close
+      @basic_gets.close
       @unconfirmed_empty.close
       @consumers.each_value(&:close)
     end
@@ -110,20 +111,10 @@ module AMQP
 
     def basic_get(queue_name, no_ack: true)
       write_bytes FrameBytes.basic_get(@id, queue_name, no_ack)
-      frame, *rest = @replies.pop
-      case frame
-      when :basic_get_ok
-        delivery_tag, exchange_name, routing_key, _message_count, redelivered = rest
-        body_size, properties = expect(:header)
-        body = StringIO.new(String.new(capacity: body_size)).binmode
-        while body.pos < body_size
-          body_part, = expect(:body)
-          body.write(body_part)
-        end
-        Message.new(self, delivery_tag, exchange_name, routing_key, properties, body.string, redelivered)
+      case (msg = @basic_gets.pop)
+      when Message then msg
       when :basic_get_empty then nil
       when nil              then raise AMQP::Client::ChannelClosedError.new(@id, *@closed)
-      else raise AMQP::Client::UnexpectedFrame.new(%i[basic_get_ok basic_get_empty], frame)
       end
     end
 
@@ -165,19 +156,18 @@ module AMQP
 
     # Consume from a queue
     # worker_threads: 0 => blocking, messages are executed in the thread calling this method
-    def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {},
-                      worker_threads: 1)
+    def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {}, worker_threads: 1)
       write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
       tag, = expect(:basic_consume_ok)
       q = @consumers[tag] = ::Queue.new
       if worker_threads.zero?
-        while (msg = consume_message(q))
+        while (msg = q.pop)
           yield msg
         end
       else
         threads = Array.new(worker_threads) do
           Thread.new do
-            while (msg = consume_message(q))
+            while (msg = q.pop)
               yield msg
             end
           end
@@ -275,25 +265,33 @@ module AMQP
     end
 
     def message_returned(reply_code, reply_text, exchange, routing_key)
-      Thread.new do
-        body_size, properties = expect(:header)
-        body = StringIO.new(String.new(capacity: body_size)).binmode
-        while body.pos < body_size
-          body_part, = expect(:body)
-          body.write(body_part)
-        end
-        msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key, properties, body.string)
-        if @on_return
-          @on_return.call(msg)
-        else
-          warn "AMQP-Client message returned: #{msg.inspect}"
-        end
-      end
+      @next_msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key, nil, "")
     end
 
     def message_delivered(consumer_tag, delivery_tag, redelivered, exchange, routing_key)
-      Thread.pass until (consumer = @consumers[consumer_tag])
-      consumer.push [consumer_tag, delivery_tag, redelivered, exchange, routing_key]
+      @next_msg = Message.new(self, delivery_tag, exchange, routing_key, nil, "", redelivered, consumer_tag)
+    end
+
+    def basic_get_empty
+      @basic_gets.push :basic_get_empty
+    end
+
+    def header_delivered(body_size, properties)
+      @next_msg[:properties] = properties
+      if body_size.zero?
+        next_message_finished!
+      else
+        @next_body = StringIO.new(String.new(capacity: body_size))
+        @next_body_size = body_size
+      end
+    end
+
+    def body_delivered(body_part)
+      @next_body.write(body_part)
+      return unless @next_body.pos == @next_body_size
+
+      @next_msg[:body] = @next_body.string
+      next_message_finished!
     end
 
     def on_return(&block)
@@ -302,15 +300,22 @@ module AMQP
 
     private
 
-    def consume_message(deliver_queue)
-      consumer_tag, delivery_tag, redelivered, exchange, routing_key = deliver_queue.pop || return
-      body_size, properties = expect(:header)
-      body = StringIO.new(String.new(capacity: body_size)).binmode
-      while body.pos < body_size
-        body_part, = expect(:body)
-        body.write(body_part)
+    def next_message_finished!
+      next_msg = @next_msg
+      if next_msg.is_a? ReturnMessage
+        if @on_return
+          Thread.new { @on_return.call(next_msg) }
+        else
+          warn "AMQP-Client message returned: #{msg.inspect}"
+        end
+      elsif next_msg.consumer_tag.nil?
+        @basic_gets.push next_msg
+      else
+        Thread.pass until (consumer = @consumers[next_msg.consumer_tag])
+        consumer.push next_msg
       end
-      Message.new(self, delivery_tag, exchange, routing_key, properties, body.string, redelivered, consumer_tag)
+    ensure
+      @next_msg = @next_body = @next_body_size = nil
     end
 
     def write_bytes(*bytes)
@@ -320,16 +325,6 @@ module AMQP
     end
 
     def expect(expected_frame_type)
-      loop do
-        frame_type, *args = @replies.pop
-        raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
-        return args if frame_type == expected_frame_type
-
-        @replies.push [frame_type, *args] # requeue unexpected frames
-      end
-    end
-
-    def expect!(expected_frame_type)
       frame_type, *args = @replies.pop
       raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
       raise AMQP::Client::UnexpectedFrame.new(expected_frame_type, frame_type) unless frame_type == expected_frame_type

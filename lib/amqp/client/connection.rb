@@ -267,10 +267,9 @@ module AMQP
             routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
             pos += routing_key_len
             message_count = buf.byteslice(pos, 4).unpack1("L>")
-            redelivered = redelivered == 1
-            @channels[channel_id].reply [:basic_get_ok, delivery_tag, exchange, routing_key, message_count, redelivered]
+            @channels[channel_id].message_delivered(nil, delivery_tag, redelivered == 1, exchange, routing_key)
           when 72 # get-empty
-            @channels[channel_id].reply [:basic_get_empty]
+            @channels[channel_id].basic_get_empty
           when 80 # ack
             delivery_tag, multiple = buf.unpack("@4 Q> C")
             @channels[channel_id].confirm [:ack, delivery_tag, multiple == 1]
@@ -302,9 +301,9 @@ module AMQP
       when 2 # header
         body_size = buf.unpack1("@4 Q>")
         properties = Properties.decode(buf.byteslice(12, buf.bytesize - 12))
-        @channels[channel_id].reply [:header, body_size, properties]
+        @channels[channel_id].header_delivered body_size, properties
       when 3 # body
-        @channels[channel_id].reply [:body, buf.dup]
+        @channels[channel_id].body_delivered buf
       else raise AMQP::Client::UnsupportedFrameType, type
       end
       true
