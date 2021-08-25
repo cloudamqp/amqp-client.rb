@@ -254,14 +254,7 @@ module AMQP
             rk_len = buf[pos].ord
             pos += 1
             routing_key = buf.byteslice(pos, rk_len).force_encoding("utf-8")
-            loop do
-              if (consumer = @channels[channel_id].consumers[consumer_tag])
-                consumer.push [:deliver, delivery_tag, redelivered == 1, exchange, routing_key]
-                break
-              else
-                Thread.pass
-              end
-            end
+            @channels[channel_id].message_delivered(consumer_tag, delivery_tag, redelivered == 1, exchange, routing_key)
           when 71 # get-ok
             delivery_tag, redelivered, exchange_len = buf.unpack("@4 Q> C C")
             pos = 14
@@ -316,7 +309,7 @@ module AMQP
     end
 
     def expect(expected_frame_type)
-      frame_type, args = @replies.shift
+      frame_type, args = @replies.pop
       frame_type == expected_frame_type || raise(AMQP::Client::UnexpectedFrame.new(expected_frame_type, frame_type))
       args
     end
