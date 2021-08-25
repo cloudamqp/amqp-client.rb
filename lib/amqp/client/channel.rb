@@ -18,8 +18,6 @@ module AMQP
       @unconfirmed_empty = ::Queue.new
       @return_queue = ::Queue.new
       @deliver_queue = ::Queue.new
-      Thread.new { deliver_loop(@deliver_queue) }
-      Thread.new { return_loop(@return_queue) }
     end
 
     def inspect
@@ -171,16 +169,16 @@ module AMQP
                       worker_threads: 1)
       write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
       tag, = expect(:basic_consume_ok)
-      msgs = @consumers[tag] = ::Queue.new
+      q = @consumers[tag] = ::Queue.new
       if worker_threads.zero?
-        while (msg = msgs.pop)
+        while (msg = consume_message(q))
           yield msg
         end
       else
         threads = Array.new(worker_threads) do
           Thread.new do
-            while (msg = msgs.pop)
-              yield(msg)
+            while (msg = consume_message(q))
+              yield msg
             end
           end
         end
@@ -277,40 +275,7 @@ module AMQP
     end
 
     def message_returned(reply_code, reply_text, exchange, routing_key)
-      @return_queue.push [reply_code, reply_text, exchange, routing_key]
-    end
-
-    def message_delivered(consumer_tag, delivery_tag, redelivered, exchange, routing_key)
-      @deliver_queue.push [consumer_tag, delivery_tag, redelivered, exchange, routing_key]
-    end
-
-    def on_return(&block)
-      @on_return = block
-    end
-
-    private
-
-    def deliver_loop(deliver_queue)
-      consumers = @consumers
-      loop do
-        consumer_tag, delivery_tag, redelivered, exchange, routing_key = deliver_queue.pop || raise(ClosedQueueError)
-        body_size, properties = expect(:header)
-        body = StringIO.new(String.new(capacity: body_size)).binmode
-        while body.pos < body_size
-          body_part, = expect(:body)
-          body.write(body_part)
-        end
-        msg = Message.new(self, delivery_tag, exchange, routing_key, properties, body.string, redelivered, consumer_tag)
-        Thread.pass until (consumer = consumers[consumer_tag])
-        consumer.push msg
-      end
-    ensure
-      deliver_queue
-    end
-
-    def return_loop(return_queue)
-      loop do
-        reply_code, reply_text, exchange, routing_key = return_queue.pop || raise(ClosedQueueError)
+      Thread.new do
         body_size, properties = expect(:header)
         body = StringIO.new(String.new(capacity: body_size)).binmode
         while body.pos < body_size
@@ -324,6 +289,28 @@ module AMQP
           warn "AMQP-Client message returned: #{msg.inspect}"
         end
       end
+    end
+
+    def message_delivered(consumer_tag, delivery_tag, redelivered, exchange, routing_key)
+      Thread.pass until (consumer = @consumers[consumer_tag])
+      consumer.push [consumer_tag, delivery_tag, redelivered, exchange, routing_key]
+    end
+
+    def on_return(&block)
+      @on_return = block
+    end
+
+    private
+
+    def consume_message(deliver_queue)
+      consumer_tag, delivery_tag, redelivered, exchange, routing_key = deliver_queue.pop || return
+      body_size, properties = expect(:header)
+      body = StringIO.new(String.new(capacity: body_size)).binmode
+      while body.pos < body_size
+        body_part, = expect(:body)
+        body.write(body_part)
+      end
+      Message.new(self, delivery_tag, exchange, routing_key, properties, body.string, redelivered, consumer_tag)
     end
 
     def write_bytes(*bytes)
@@ -340,6 +327,14 @@ module AMQP
 
         @replies.push [frame_type, *args] # requeue unexpected frames
       end
+    end
+
+    def expect!(expected_frame_type)
+      frame_type, *args = @replies.pop
+      raise AMQP::Client::ChannelClosedError.new(@id, *@closed) if frame_type.nil?
+      raise AMQP::Client::UnexpectedFrame.new(expected_frame_type, frame_type) unless frame_type == expected_frame_type
+
+      args
     end
   end
 end

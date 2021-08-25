@@ -430,4 +430,28 @@ class AMQPClientTest < Minitest::Test
     assert_equal "bar", msgs2.pop.body
     connection.close
   end
+
+  def test_it_can_ack_a_lot_of_msgs
+    msgs1 = Queue.new
+    connection = AMQP::Client.new("amqp://localhost").connect
+    ch1 = connection.channel
+    q = ch1.queue_declare ""
+    ch1.basic_qos(2)
+    ch1.queue_bind(q[:queue_name], "amq.topic", "foo")
+    ch1.basic_consume(q[:queue_name], no_ack: false, worker_threads: 2) do |msg|
+      msgs1 << msg
+      msg.ack
+    end
+
+    ch2 = connection.channel
+    1000.times do |i|
+      ch2.basic_publish "bar #{i + 1}", "amq.topic", "foo"
+    end
+
+    1000.times do
+      assert_equal "foo", msgs1.pop.routing_key
+    end
+    sleep 0.01
+    connection.close
+  end
 end
