@@ -309,7 +309,7 @@ module AMQP
         properties = Properties.decode(buf.byteslice(12, buf.bytesize - 12))
         @channels[channel_id].reply [:header, body_size, properties]
       when 3 # body
-        @channels[channel_id].reply [:body, buf]
+        @channels[channel_id].reply [:body, buf.dup]
       else raise AMQP::Client::UnsupportedFrameType, type
       end
       true
