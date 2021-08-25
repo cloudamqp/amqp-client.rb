@@ -118,7 +118,7 @@ module AMQP
         socket.read(frame_size, frame_buffer)
 
         # make sure that the frame end is correct
-        frame_end = socket.readbyte
+        frame_end = socket.readchar.ord
         raise AMQP::Client::UnexpectedFrameEnd, frame_end if frame_end != 206
 
         # parse the frame, will return false if a close frame was received
