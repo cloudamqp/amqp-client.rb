@@ -113,14 +113,12 @@ module AMQP
       when :basic_get_ok
         delivery_tag, exchange_name, routing_key, _message_count, redelivered = rest
         body_size, properties = expect(:header)
-        pos = 0
-        body = String.new("", capacity: body_size)
-        while pos < body_size
+        body = StringIO.new(String.new(capacity: body_size)).binmode
+        while body.pos < body_size
           body_part, = expect(:body)
-          body += body_part
-          pos += body_part.bytesize
+          body.write(body_part)
         end
-        Message.new(self, delivery_tag, exchange_name, routing_key, properties, body, redelivered)
+        Message.new(self, delivery_tag, exchange_name, routing_key, properties, body.string, redelivered)
       when :basic_get_empty then nil
       when nil              then raise AMQP::Client::ChannelClosedError.new(@id, *@closed)
       else raise AMQP::Client::UnexpectedFrame.new(%i[basic_get_ok basic_get_empty], frame)
@@ -279,12 +277,12 @@ module AMQP
     def message_returned(reply_code, reply_text, exchange, routing_key)
       Thread.new do
         body_size, properties = expect(:header)
-        body = String.new("", capacity: body_size)
-        while body.bytesize < body_size
+        body = StringIO.new(String.new(capacity: body_size)).binmode
+        while body.pos < body_size
           body_part, = expect(:body)
-          body += body_part
+          body.write(body_part)
         end
-        msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key, properties, body)
+        msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key, properties, body.string)
 
         if @on_return
           @on_return.call(msg)
@@ -304,12 +302,12 @@ module AMQP
       loop do
         _, delivery_tag, redelivered, exchange, routing_key = deliver_queue.shift || raise(ClosedQueueError)
         body_size, properties = expect(:header)
-        body = String.new("", capacity: body_size)
-        while body.bytesize < body_size
+        body = StringIO.new(String.new(capacity: body_size)).binmode
+        while body.pos < body_size
           body_part, = expect(:body)
-          body += body_part
+          body.write(body_part)
         end
-        msgs.push Message.new(self, delivery_tag, exchange, routing_key, properties, body, redelivered, consumer_tag)
+        msgs.push Message.new(self, delivery_tag, exchange, routing_key, properties, body.string, redelivered, consumer_tag)
       end
     ensure
       msgs.close
