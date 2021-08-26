@@ -162,14 +162,14 @@ module AMQP
       tag, = expect(:basic_consume_ok)
       q = @consumers[tag] = ::Queue.new
       if worker_threads.zero?
-        while (msg = q.pop)
-          yield msg
+        loop do
+          yield (q.pop || break)
         end
       else
         threads = Array.new(worker_threads) do
           Thread.new do
-            while (msg = q.pop)
-              yield msg
+            loop do
+              yield (q.pop || break)
             end
           end
         end

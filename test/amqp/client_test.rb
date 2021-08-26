@@ -432,7 +432,6 @@ class AMQPClientTest < Minitest::Test
   end
 
   def test_it_can_ack_a_lot_of_msgs
-    skip
     msgs1 = Queue.new
     connection = AMQP::Client.new("amqp://localhost").connect
     ch1 = connection.channel
@@ -446,11 +445,11 @@ class AMQPClientTest < Minitest::Test
 
     ch2 = connection.channel
     ch2.confirm_select
-    10000.times do |i|
+    10_000.times do |i|
       ch2.basic_publish "bar #{i + 1}", "amq.topic", "foo"
     end
 
-    10000.times do
+    10_000.times do
       assert_equal "foo", msgs1.pop.routing_key
     end
     assert ch2.wait_for_confirms
