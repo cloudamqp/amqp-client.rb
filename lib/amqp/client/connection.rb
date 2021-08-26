@@ -226,7 +226,7 @@ module AMQP
             tag_len = buf.unpack1("@4 C")
             tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
             no_wait = buf[5 + tag_len].ord
-            @channels[channel_id].consumers.fetch(tag).close
+            @channels[channel_id].close_consumer(tag)
             write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait == 1
           when 31 # cancel-ok
             tag_len = buf.unpack1("@4 C")
@@ -266,7 +266,7 @@ module AMQP
             pos += 1
             routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
             pos += routing_key_len
-            message_count = buf.byteslice(pos, 4).unpack1("L>")
+            _message_count = buf.byteslice(pos, 4).unpack1("L>")
             @channels[channel_id].message_delivered(nil, delivery_tag, redelivered == 1, exchange, routing_key)
           when 72 # get-empty
             @channels[channel_id].basic_get_empty

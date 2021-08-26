@@ -20,10 +20,11 @@ module AMQP
     end
 
     def inspect
-      "#<#{self.class} @id=#{@id} @open=#{@open} @closed=#{@closed} confirm_selected=#{!@confirm.nil?} replies_count=#{@replies.size} unconfirmed_count=#{@unconfirmed.size} consumer_count=#{@consumers.size}>"
+      "#<#{self.class} @id=#{@id} @open=#{@open} @closed=#{@closed} confirm_selected=#{!@confirm.nil?}"\
+        " consumer_count=#{@consumers.size} replies_count=#{@replies.size} unconfirmed_count=#{@unconfirmed.size}>"
     end
 
-    attr_reader :id, :consumers
+    attr_reader :id
 
     def open
       return self if @open
@@ -260,6 +261,10 @@ module AMQP
       expect :tx_rollback_ok
     end
 
+    def on_return(&block)
+      @on_return = block
+    end
+
     def reply(args)
       @replies.push(args)
     end
@@ -277,7 +282,7 @@ module AMQP
     end
 
     def header_delivered(body_size, properties)
-      @next_msg[:properties] = properties
+      @next_msg.properties = properties
       if body_size.zero?
         next_message_finished!
       else
@@ -290,12 +295,12 @@ module AMQP
       @next_body.write(body_part)
       return unless @next_body.pos == @next_body_size
 
-      @next_msg[:body] = @next_body.string
+      @next_msg.body = @next_body.string
       next_message_finished!
     end
 
-    def on_return(&block)
-      @on_return = block
+    def close_consumer(tag)
+      @consumers.fetch(tag).close
     end
 
     private
