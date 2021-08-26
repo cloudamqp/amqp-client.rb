@@ -46,6 +46,7 @@ module AMQP
       @channels = {}
       @closed = false
       @replies = Queue.new
+      @write_lock = Mutex.new
       Thread.new { read_loop } if read_loop_thread
     end
 
@@ -97,7 +98,13 @@ module AMQP
     end
 
     def write_bytes(*bytes)
-      @socket.write(*bytes)
+      if @socket.is_a? OpenSSL::SSL::SSLSocket
+        @write_lock.synchronize do
+          @socket.write(*bytes)
+        end
+      else
+        @socket.write(*bytes)
+      end
     rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
       raise AMQP::Client::Error, "Could not write to socket, #{e.message}"
     end
