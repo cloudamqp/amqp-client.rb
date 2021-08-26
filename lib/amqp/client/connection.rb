@@ -32,6 +32,7 @@ module AMQP
         socket.sync_close = true # closing the TLS socket also closes the TCP socket
         socket.hostname = host # SNI host
         socket.connect
+        socket.post_connection_check(host) || raise(AMQP::Client::Error, "TLS certificate hostname doesn't match requested")
       end
       channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, **options)
       Connection.new(socket, channel_max, frame_max, heartbeat, read_loop_thread: read_loop_thread)
