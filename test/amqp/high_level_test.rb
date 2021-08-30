@@ -74,7 +74,7 @@ class HighLevelTest < Minitest::Test
   def test_it_can_reopen_channel_1_after_failed_publish
     client = AMQP::Client.new("amqp://localhost").start
     begin
-      assert_raises(AMQP::Client::ChannelClosedError) do
+      assert_raises(AMQP::Client::Error::ChannelClosed) do
         client.publish("", "non-existing-exchange", "foo.bar")
       end
       client.publish("", "amq.topic", "foo.bar")
@@ -122,7 +122,7 @@ class HighLevelTest < Minitest::Test
       q.subscribe do |msg|
         msgs << msg
       end
-      assert_raises(AMQP::Client::ChannelClosedError) do
+      assert_raises(AMQP::Client::Error::ChannelClosed) do
         client.exchange("test.exchange", "non.existing.exchange.type")
       end
 

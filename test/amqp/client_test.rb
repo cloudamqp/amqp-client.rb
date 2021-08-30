@@ -72,7 +72,7 @@ class AMQPClientTest < Minitest::Test
     channel.queue_bind q[:queue_name], "foo", ""
     channel.exchange_delete "foo"
     channel.basic_publish "foo", "foo", ""
-    assert_raises(AMQP::Client::ChannelClosedError) do
+    assert_raises(AMQP::Client::Error::ChannelClosed) do
       channel.basic_get q[:queue_name]
     end
   end
@@ -382,7 +382,7 @@ class AMQPClientTest < Minitest::Test
   def test_handle_connection_closed_by_server
     conn = AMQP::Client.new("amqp://localhost").connect
     conn.with_channel do |ch|
-      assert_raises(AMQP::Client::ChannelClosedError, /unknown exchange type/) do
+      assert_raises(AMQP::Client::Error::ChannelClosed, /unknown exchange type/) do
         ch.exchange_declare("foobar", "faulty.exchange.type")
       end
     end
@@ -444,14 +444,15 @@ class AMQPClientTest < Minitest::Test
     end
 
     ch2 = connection.channel
-    100_000.times do |i|
+    ch2.confirm_select
+    10000.times do |i|
       ch2.basic_publish "bar #{i + 1}", "amq.topic", "foo"
     end
 
-    100_000.times do
+    10000.times do
       assert_equal "foo", msgs1.pop.routing_key
     end
-    sleep 0.01
+    assert ch2.wait_for_confirms
     connection.close
   end
 end

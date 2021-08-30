@@ -3,6 +3,8 @@
 require "set"
 require_relative "client/version"
 require_relative "client/connection"
+require_relative "client/exchange"
+require_relative "client/queue"
 
 module AMQP
   # AMQP 0-9-1 Client
@@ -52,13 +54,18 @@ module AMQP
       self
     end
 
+    # Close the currently open connection
     def stop
+      return if @stopped
+
       @stopped = true
       conn = @connq.pop
       conn.close
       nil
     end
 
+    # Declare a queue
+    # @return [Queue] Queue
     def queue(name, durable: true, exclusive: false, auto_delete: false, arguments: {})
       raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
 
@@ -72,6 +79,8 @@ module AMQP
       end
     end
 
+    # Declare an exchange
+    # @return [Exchange] Exchange
     def exchange(name, type, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
@@ -80,32 +89,6 @@ module AMQP
           end
         end
         @exchanges[name] = Exchange.new(self, name)
-      end
-    end
-
-    # High level representation of an exchange
-    class Exchange
-      def initialize(client, name)
-        @client = client
-        @name = name
-      end
-
-      def publish(body, routing_key, arguments: {})
-        @client.publish(body, @name, routing_key, arguments: arguments)
-      end
-
-      # Bind to another exchange
-      def bind(exchange, routing_key, arguments: {})
-        @client.exchange_bind(@name, exchange, routing_key, arguments: arguments)
-      end
-
-      # Unbind from another exchange
-      def unbind(exchange, routing_key, arguments: {})
-        @client.exchange_unbind(@name, exchange, routing_key, arguments: arguments)
-      end
-
-      def delete
-        @client.delete_exchange(@name)
       end
     end
 
@@ -137,42 +120,49 @@ module AMQP
       end
     end
 
+    # Wait for unconfirmed publishes
     def wait_for_confirms
       with_connection do |conn|
         conn.channel(1).wait_for_confirms
       end
     end
 
+    # Bind a queue to an exchange
     def bind(queue, exchange, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).queue_bind(queue, exchange, routing_key, arguments: arguments)
       end
     end
 
+    # Unbind a queue from an exchange
     def unbind(queue, exchange, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).queue_unbind(queue, exchange, routing_key, arguments: arguments)
       end
     end
 
+    # Bind an exchange to an exchange
     def exchange_bind(destination, source, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).exchange_bind(destination, source, routing_key, arguments: arguments)
       end
     end
 
+    # Unind an exchange from an exchange
     def exchange_unbind(destination, source, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).exchange_unbind(destination, source, routing_key, arguments: arguments)
       end
     end
 
+    # Purge a queue
     def purge(queue)
       with_connection do |conn|
         conn.channel(1).queue_purge(queue)
       end
     end
 
+    # Delete a queue
     def delete_queue(name)
       with_connection do |conn|
         conn.channel(1).queue_delete(name)
@@ -180,48 +170,11 @@ module AMQP
       end
     end
 
+    # Delete an exchange
     def delete_exchange(name)
       with_connection do |conn|
         conn.channel(1).exchange_delete(name)
         @exchanges.delete(name)
-      end
-    end
-
-    # Queue abstraction
-    class Queue
-      def initialize(client, name)
-        @client = client
-        @name = name
-      end
-
-      def publish(body, **properties)
-        @client.publish(body, "", @name, **properties)
-        self
-      end
-
-      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
-        @client.subscribe(@name, no_ack: no_ack, prefetch: prefetch, worker_threads: worker_threads, arguments: arguments, &blk)
-        self
-      end
-
-      def bind(exchange, routing_key, **headers)
-        @client.bind(@name, exchange, routing_key, **headers)
-        self
-      end
-
-      def unbind(exchange, routing_key, **headers)
-        @client.unbind(@name, exchange, routing_key, **headers)
-        self
-      end
-
-      def purge
-        @client.purge(@name)
-        self
-      end
-
-      def delete
-        @client.delete_queue(@name)
-        nil
       end
     end
 
