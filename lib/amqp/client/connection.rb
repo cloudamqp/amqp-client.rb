@@ -98,11 +98,7 @@ module AMQP
     end
 
     def write_bytes(*bytes)
-      if @socket.is_a? OpenSSL::SSL::SSLSocket
-        @write_lock.synchronize do
-          @socket.write(*bytes)
-        end
-      else
+      @write_lock.synchronize do
         @socket.write(*bytes)
       end
     rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
