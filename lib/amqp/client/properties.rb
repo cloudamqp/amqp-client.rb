@@ -8,6 +8,32 @@ module AMQP
     Properties = Struct.new(:content_type, :content_encoding, :headers, :delivery_mode, :priority, :correlation_id,
                             :reply_to, :expiration, :message_id, :timestamp, :type, :user_id, :app_id,
                             keyword_init: true) do
+      # @!attribute content_type
+      #   @return [String] Content type of the message body
+      # @!attribute content_encoding
+      #   @return [String] Content encoding of the body
+      # @!attribute headers
+      #   @return [Hash<String, Object>] Custom headers
+      # @!attribute delivery_mode
+      #   @return [Integer] 2 for persisted message, transient messages for all other values
+      # @!attribute priority
+      #   @return [Integer] A priority of the message (between 0 and 255)
+      # @!attribute correlation_id
+      #   @return [Integer] A correlation id, most often used used for RPC communication
+      # @!attribute reply_to
+      #   @return [String] Queue to reply RPC responses to
+      # @!attribute expiration
+      #   @return [Integer, String] Number of seconds the message will stay in the queue
+      # @!attribute message_id
+      #   @return [String]
+      # @!attribute timestamp
+      #   @return [Date]
+      # @!attribute type
+      #   @return [String]
+      # @!attribute user_id
+      #   @return [String]
+      # @!attribute app_id
+      #   @return [String]
 
       # Encode properties into a byte array
       # @return [String] byte array

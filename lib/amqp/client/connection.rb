@@ -99,6 +99,8 @@ module AMQP
         expect(:close_ok)
       end
 
+      # True if the connection is closed
+      # @return [Boolean]
       def closed?
         @closed
       end
