@@ -2,6 +2,10 @@
 
 An AMQP 0-9-1 Ruby client, trying to keep things as simple as possible.
 
+## Documentation
+
+[API reference](https://cloudamqp.github.io/amqp-client.rb/)
+
 ## Installation
 
 Add this line to your application's Gemfile:
