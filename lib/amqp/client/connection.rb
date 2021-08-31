@@ -241,9 +241,9 @@ module AMQP
             when 30 # cancel
               tag_len = buf.unpack1("@4 C")
               tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
-              no_wait = buf[5 + tag_len].ord
+              no_wait = buf[5 + tag_len].ord == 1
               @channels[channel_id].close_consumer(tag)
-              write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait == 1
+              write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait
             when 31 # cancel-ok
               tag_len = buf.unpack1("@4 C")
               tag = buf.byteslice(5, tag_len).force_encoding("utf-8")

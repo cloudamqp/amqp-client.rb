@@ -233,7 +233,7 @@ module AMQP
         # @param consumer_tag [String] Tag of the consumer to cancel
         # @param no_wait [Boolean] Will wait for a confirmation from the server that the consumer is cancelled
         # @return [nil]
-        def basic_cancel(consumer_tag, no_wait: true)
+        def basic_cancel(consumer_tag, no_wait: false)
           consumer = @consumers.fetch(consumer_tag)
           return if consumer.closed?
 
