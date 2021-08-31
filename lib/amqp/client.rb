@@ -148,7 +148,7 @@ module AMQP
       end
     end
 
-    # Unind an exchange from an exchange
+    # Unbind an exchange from an exchange
     def exchange_unbind(destination, source, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).exchange_unbind(destination, source, routing_key, arguments: arguments)
