@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.0.1] - 2021-09-06
+
 - The API is fully documented! https://cloudamqp.github.io/amqp-client.rb/
 - Fixed: Socket writing is now thread-safe
 - Change: Block while waiting for basic_cancel by default
