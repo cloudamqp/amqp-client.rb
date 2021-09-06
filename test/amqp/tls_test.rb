@@ -22,8 +22,8 @@ class AMQPSClientTest < Minitest::Test
     ch1.basic_qos(200)
     ch1.queue_bind(q[:queue_name], "amq.topic", "foo")
     ch1.basic_consume(q[:queue_name], no_ack: false, worker_threads: 100) do |msg|
-      msgs1 << msg
       msg.ack
+      msgs1 << msg
     end
 
     ch2 = connection.channel
