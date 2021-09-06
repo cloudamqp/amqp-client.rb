@@ -9,7 +9,7 @@ require_relative "./errors"
 
 module AMQP
   class Client
-    # Represents a single AMQP connection
+    # Represents a single established AMQP connection
     class Connection
       # Establish a connection to an AMQP broker
       # @param uri [String] URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection

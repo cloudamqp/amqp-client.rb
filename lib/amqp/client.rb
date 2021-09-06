@@ -36,6 +36,7 @@ module AMQP
     # @!group Connect and disconnect
 
     # Establishes a new AMQP connection, does not try to reconnect
+    # @see Connection.connect
     # @return [Connection]
     def connect(read_loop_thread: true)
       Connection.connect(@uri, read_loop_thread: read_loop_thread, **@options)
