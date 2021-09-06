@@ -12,12 +12,17 @@ module AMQP
   # AMQP 0-9-1 Client
   # @see Connection
   class Client
-    # Create a new Client object, this won't establish a connection yet, use #connect or #start for that
+    # Create a new Client object, this won't establish a connection yet, use {#connect} or {#start} for that
     # @param uri [String] URL on the format amqp://username:password@hostname/vhost,
     #   use amqps:// for encrypted connection
     # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
     #   the client from the broker
     # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
+    # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
+    # @option options [Integer] frame_max (131_072) Maximum frame size,
+    #    the smallest of the client's and the broker's values will be used
+    # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
+    #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
     def initialize(uri, **options)
       @uri = uri
       @options = options

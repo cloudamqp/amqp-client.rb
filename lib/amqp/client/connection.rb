@@ -13,10 +13,15 @@ module AMQP
     class Connection
       # Establish a connection to an AMQP broker
       # @param uri [String] URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection
-      # @param read_loop_thread [Boolean] Set to false if you manually want to run the #read_loop
+      # @param read_loop_thread [Boolean] Set to false if you manually want to run the {#read_loop}
       # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
       #   the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
+      # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
+      # @option options [Integer] frame_max (131_072) Maximum frame size,
+      #    the smallest of the client's and the broker's values will be used
+      # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
+      #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
       # @return [Connection]
       def self.connect(uri, read_loop_thread: true, **options)
         uri = URI.parse(uri)
@@ -353,7 +358,7 @@ module AMQP
         args
       end
 
-      def self.establish(socket, user, password, vhost, **options)
+      def self.establish(socket, user, password, vhost, options)
         channel_max, frame_max, heartbeat = nil
         socket.write "AMQP\x00\x00\x09\x01"
         buf = String.new(capacity: 4096)
@@ -382,9 +387,10 @@ module AMQP
                 socket.write FrameBytes.connection_start_ok "\u0000#{user}\u0000#{password}", properties
               when 30 # connection#tune
                 channel_max, frame_max, heartbeat = buf.unpack("@11 S> L> S>")
-                channel_max = [channel_max, 2048].min
-                frame_max = [frame_max, 131_072].min
-                heartbeat = [heartbeat, 0].min
+                channel_max = 65_536 if channel_max.zero?
+                channel_max = [channel_max, options.fetch(:channel_max, 2048).to_i].min
+                frame_max = [frame_max, options.fetch(:frame_max, 131_072).to_i].min
+                heartbeat = [heartbeat, options.fetch(:heartbeat, 0).to_i].min
                 socket.write FrameBytes.connection_tune_ok(channel_max, frame_max, heartbeat)
                 socket.write FrameBytes.connection_open(vhost)
               when 41 # connection#open-ok

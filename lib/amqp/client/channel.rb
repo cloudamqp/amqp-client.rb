@@ -139,7 +139,7 @@ module AMQP
         # @!endgroup
         # @!group Queue
 
-        # Response from declaring a Queue
+        # Response when declaring a Queue
         # @!attribute queue_name
         #   @return [String] The name of the queue
         # @!attribute message_count
@@ -173,9 +173,10 @@ module AMQP
         # @param if_empty [Boolean] Only delete if the queue is empty, raises a ChannelClosed error otherwise
         # @param no_wait [Boolean] Don't wait for a server confirmation if true
         # @return [Integer] Number of messages in queue when deleted
+        # @return [nil] If no_wait was set true
         def queue_delete(name, if_unused: false, if_empty: false, no_wait: false)
           write_bytes FrameBytes.queue_delete(@id, name, if_unused, if_empty, no_wait)
-          message_count, = expect :queue_delete if no_wait
+          message_count, = expect :queue_delete unless no_wait
           message_count
         end
 
