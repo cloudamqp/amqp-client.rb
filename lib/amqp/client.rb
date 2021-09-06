@@ -88,8 +88,10 @@ module AMQP
 
     # Declare a queue
     # @param name [String] Name of the queue
-    # @param durable [Boolean] If true the queue will survive broker restarts, messages in the queue will only survive if they are published as persistent
-    # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming (it won't be deleted until at least one consumer has consumed from it)
+    # @param durable [Boolean] If true the queue will survive broker restarts,
+    #   messages in the queue will only survive if they are published as persistent
+    # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
+    #   (it won't be deleted until at least one consumer has consumed from it)
     # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
     # @return [Queue]
     def queue(name, durable: true, auto_delete: false, arguments: {})
@@ -108,7 +110,8 @@ module AMQP
     def exchange(name, type, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
-          conn.channel(1).exchange_declare(name, type, durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
+          conn.channel(1).exchange_declare(name, type, durable: durable, auto_delete: auto_delete,
+                                                       internal: internal, arguments: arguments)
         end
         @exchanges[name] = Exchange.new(self, name)
       end
@@ -149,8 +152,9 @@ module AMQP
     # Consume messages from a queue
     # @param queue [String] Name of the queue to subscribe to
     # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected)
-    # @param prefetch [Integer] Specify how many messages to prefetch for consumers with `no_ack: false`
-    # @param worker_threads [Integer] Number of threads processing messages, 0 means that the thread calling this method will be blocked
+    # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
+    # @param worker_threads [Integer] Number of threads processing messages,
+    #   0 means that the thread calling this method will be blocked
     # @param arguments [Hash] Custom arguments to the consumer
     # @yield [Message] Delivered message from the queue
     # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads

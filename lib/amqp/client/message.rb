@@ -20,20 +20,21 @@ module AMQP
     # @!attribute consumer_tag
     #   @return [String] The tag of the consumer the message was deliviered to
     #   @return [nil] Nil if the message was polled and not deliviered to a consumer
-    Message = Struct.new(:channel, :delivery_tag, :exchange_name, :routing_key, :properties, :body, :redelivered, :consumer_tag) do
-      # Acknowledge the message
-      # @return [nil]
-      def ack
-        channel.basic_ack(delivery_tag)
-      end
+    Message =
+      Struct.new(:channel, :delivery_tag, :exchange_name, :routing_key, :properties, :body, :redelivered, :consumer_tag) do
+        # Acknowledge the message
+        # @return [nil]
+        def ack
+          channel.basic_ack(delivery_tag)
+        end
 
-      # Reject the message
-      # @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
-      # @return [nil]
-      def reject(requeue: false)
-        channel.basic_reject(delivery_tag, requeue: requeue)
+        # Reject the message
+        # @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+        # @return [nil]
+        def reject(requeue: false)
+          channel.basic_reject(delivery_tag, requeue: requeue)
+        end
       end
-    end
 
     # A published message returned by the broker due to some error
     # @!attribute reply_code

@@ -24,11 +24,11 @@ module AMQP
       # @option properties [Integer] correlation_id A correlation id, most often used used for RPC communication
       # @option properties [String] reply_to Queue to reply RPC responses to
       # @option properties [Integer, String] expiration Number of seconds the message will stay in the queue
-      # @option properties [String] message_id
-      # @option properties [Date] timestamp User-definable, but often used for the time the message was originally generated
-      # @option properties [String] type User-definable, but can can indicate what kind of message this is
-      # @option properties [String] user_id User-definable, but can be used to verify that this is the user that published the message
-      # @option properties [String] app_id User-definable, but often indicates which app that generated the message
+      # @option properties [String] message_id Can be used to uniquely identify the message, e.g. for deduplication
+      # @option properties [Date] timestamp Often used for the time the message was originally generated
+      # @option properties [String] type Can indicate what kind of message this is
+      # @option properties [String] user_id Can be used to verify that this is the user that published the message
+      # @option properties [String] app_id Can be used to indicates which app that generated the message
       # @return [Exchange] self
       def publish(body, routing_key, **properties)
         @client.publish(body, @name, routing_key, **properties)

@@ -86,7 +86,6 @@ module AMQP
         if id
           ch = @channels[id] ||= Channel.new(self, id)
         else
-          id = nil
           1.upto(@channel_max) do |i|
             break id = i unless @channels.key? i
           end
@@ -154,9 +153,7 @@ module AMQP
         loop do
           socket.read(7, frame_start)
           type, channel_id, frame_size = frame_start.unpack("C S> L>")
-          if frame_size > frame_max
-            raise Error, "Frame size #{frame_size} is larger than negotiated max frame size #{frame_max}"
-          end
+          frame_max >= frame_size || raise(Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}")
 
           # read the frame content
           socket.read(frame_size, frame_buffer)
@@ -363,6 +360,8 @@ module AMQP
         args
       end
 
+      # Negotiate a connection
+      # @return [Array<Integer, Integer, Integer>] channel_max, frame_max, heartbeat
       def self.establish(socket, user, password, vhost, options)
         channel_max, frame_max, heartbeat = nil
         socket.write "AMQP\x00\x00\x09\x01"
