@@ -2,6 +2,7 @@
 
 module AMQP
   class Client
+    # All errors raised inherit from this class
     class Error < StandardError
       # Raised when a frame that wasn't expected arrives
       class UnexpectedFrame < Error
@@ -17,7 +18,7 @@ module AMQP
         end
       end
 
-      # Should never be raised as we support all offical frame types
+      # Should never be raised as we support all official frame types
       class UnsupportedFrameType < Error
         def initialize(type)
           super "Unsupported frame type '#{type}'"

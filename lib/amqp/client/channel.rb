@@ -7,6 +7,11 @@ module AMQP
     class Connection
       # AMQP Channel
       class Channel
+        # Should only be called from Connection
+        # @param connection [Connection] The connection this channel belongs to
+        # @param id [Integer] ID of the channel
+        # @see Connection#channel
+        # @api private
         def initialize(connection, id)
           @connection = connection
           @id = id
@@ -21,6 +26,8 @@ module AMQP
           @basic_gets = ::Queue.new
         end
 
+        # Override #inspect
+        # @api private
         def inspect
           "#<#{self.class} @id=#{@id} @open=#{@open} @closed=#{@closed} confirm_selected=#{!@confirm.nil?}"\
             " consumer_count=#{@consumers.size} replies_count=#{@replies.size} unconfirmed_count=#{@unconfirmed.size}>"
@@ -30,8 +37,10 @@ module AMQP
         # @return [Integer]
         attr_reader :id
 
+
         # Open the channel (called from Connection)
         # @return [Channel] self
+        # @api private
         def open
           return self if @open
 
@@ -42,7 +51,7 @@ module AMQP
         end
 
         # Gracefully close a connection
-        # @return [void]
+        # @return [nil]
         def close(reason: "", code: 200)
           return if @closed
 
@@ -53,51 +62,101 @@ module AMQP
           @basic_gets.close
           @unconfirmed_empty.close
           @consumers.each_value(&:close)
+          nil
         end
 
         # Called when channel is closed by server
-        # @return [void]
+        # @return [nil]
+        # @api private
         def closed!(code, reason, classid, methodid)
           @closed = [code, reason, classid, methodid]
           @replies.close
           @basic_gets.close
           @unconfirmed_empty.close
           @consumers.each_value(&:close)
+          nil
         end
 
+        # Handle returned messages in this block.  If not set the message will just be logged to STDERR
+        # @yield [ReturnMessage] Messages returned by the server when a publish has failed
+        # @return nil
+        def on_return(&block)
+          @on_return = block
+          nil
+        end
+
+        # @!group Exchange
+
         # Declare an exchange
-        # @return [void]
+        # @param name [String] Name of the exchange
+        # @param type [String] Type of exchange (amq.direct, amq.fanout, amq.topic, amq.headers, etc.)
+        # @param passive [Boolean] If true raise an exception if the exchange doesn't already exists
+        # @param durable [Boolean] If true the exchange will persist between broker restarts, also a requirement for persistent messages
+        # @param auto_delete [Boolean] If true the exchange will be deleted when the last queue/exchange is unbound
+        # @param internal [Boolean] If true the exchange can't be published to directly
+        # @param arguments [Hash] Custom arguments
+        # @return [nil]
         def exchange_declare(name, type, passive: false, durable: true, auto_delete: false, internal: false, arguments: {})
           write_bytes FrameBytes.exchange_declare(@id, name, type, passive, durable, auto_delete, internal, arguments)
           expect :exchange_declare_ok
+          nil
         end
 
         # Delete an exchange
-        # @return [void]
+        # @param name [String] Name of the exchange
+        # @param if_unused [Boolean] If true raise an exception if queues/exchanges is bound to this exchange
+        # @param no_wait [Boolean] If true don't wait for a server confirmation
+        # @return [nil]
         def exchange_delete(name, if_unused: false, no_wait: false)
           write_bytes FrameBytes.exchange_delete(@id, name, if_unused, no_wait)
           expect :exchange_delete_ok
+          nil
         end
 
         # Bind an exchange to another exchange
-        # @return [void]
+        # @param destination [String] Name of the exchange to bind
+        # @param source [String] Name of the exchange to bind to
+        # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
+        # @param arguments [Hash] Message headers to match on, but only when bound to header exchanges
+        # @return [nil]
         def exchange_bind(destination, source, binding_key, arguments: {})
           write_bytes FrameBytes.exchange_bind(@id, destination, source, binding_key, false, arguments)
           expect :exchange_bind_ok
+          nil
         end
 
         # Unbind an exchange from another exchange
-        # @return [void]
+        # @param destination [String] Name of the exchange to unbind
+        # @param source [String] Name of the exchange to unbind from
+        # @param binding_key [String] Binding key which the queue is bound to the exchange with
+        # @param arguments [Hash] Arguments matching the binding that's being removed
+        # @return [nil]
         def exchange_unbind(destination, source, binding_key, arguments: {})
           write_bytes FrameBytes.exchange_unbind(@id, destination, source, binding_key, false, arguments)
           expect :exchange_unbind_ok
+          nil
         end
 
+        # @!endgroup
+        # @!group Queue
+
         # Response from declaring a Queue
+        # @!attribute queue_name
+        #   @return [String] The name of the queue
+        # @!attribute message_count
+        #   @return [Integer] Number of messages in the queue at the time of declaration
+        # @!attribute consumer_count
+        #   @return [Integer] Number of consumers subscribed to the queue at the time of declaration
         QueueOk = Struct.new(:queue_name, :message_count, :consumer_count)
 
         # Create a queue (operation is idempotent)
-        # @return [QueueOk]
+        # @param name [String] Name of the queue, can be empty, but will then be generated by the broker
+        # @param passive [Boolean] If true an exception will be raised if the queue doesn't already exists
+        # @param durable [Boolean] If true the queue will survive broker restarts, messages in the queue will only survive if they are published as persistent
+        # @param exclusive [Boolean] If true the queue will be deleted when the channel is closed
+        # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming (it won't be deleted until at least one consumer has consumed from it)
+        # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
+        # @return [QueueOk] The QueueOk struct got `queue_name`, `message_count` and `consumer_count` properties
         def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, arguments: {})
           durable = false if name.empty?
           exclusive = true if name.empty?
@@ -110,33 +169,52 @@ module AMQP
         end
 
         # Delete a queue
+        # @param name [String] Name of the queue
+        # @param if_unused [Boolean] Only delete if the queue doesn't have consumers, raises a ChannelClosed error otherwise
+        # @param if_empty [Boolean] Only delete if the queue is empty, raises a ChannelClosed error otherwise
+        # @param no_wait [Boolean] Don't wait for a server confirmation if true
         # @return [Integer] Number of messages in queue when deleted
         def queue_delete(name, if_unused: false, if_empty: false, no_wait: false)
           write_bytes FrameBytes.queue_delete(@id, name, if_unused, if_empty, no_wait)
-          message_count, = expect :queue_delete
+          message_count, = expect :queue_delete if no_wait
           message_count
         end
 
         # Bind a queue to an exchange
-        # @return [void]
+        # @param name [String] Name of the queue to bind
+        # @param exchange [String] Name of the exchange to bind to
+        # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
+        # @param arguments [Hash] Message headers to match on, but only when bound to header exchanges
+        # @return [nil]
         def queue_bind(name, exchange, binding_key, arguments: {})
           write_bytes FrameBytes.queue_bind(@id, name, exchange, binding_key, false, arguments)
           expect :queue_bind_ok
+          nil
         end
 
         # Purge a queue
-        # @return [void]
+        # @param name [String] Name of the queue
+        # @param no_wait [Boolean] Don't wait for a server confirmation if true
+        # @return [nil]
         def queue_purge(name, no_wait: false)
           write_bytes FrameBytes.queue_purge(@id, name, no_wait)
           expect :queue_purge_ok unless no_wait
+          nil
         end
 
         # Unbind a queue from an exchange
-        # @return [void]
+        # @param name [String] Name of the queue to unbind
+        # @param exchange [String] Name of the exchange to unbind from
+        # @param binding_key [String] Binding key which the queue is bound to the exchange with
+        # @param arguments [Hash] Arguments matching the binding that's being removed
+        # @return [nil]
         def queue_unbind(name, exchange, binding_key, arguments: {})
           write_bytes FrameBytes.queue_unbind(@id, name, exchange, binding_key, arguments)
           expect :queue_unbind_ok
         end
+
+        # @!endgroup
+        # @!group Basic
 
         # Get a message from a queue (by polling)
         # @param queue_name [String]
@@ -153,9 +231,23 @@ module AMQP
         end
 
         # Publishes a message to an exchange
-        # @param body [String]
-        # @param exchange [String]
-        # @param routing_key [String]
+        # @param body [String] The body, can be a string or a byte array
+        # @param exchange [String] Name of the exchange to publish to
+        # @param routing_key [String] The routing key that the exchange might use to route the message to a queue
+        # @param properties [Properties]
+        # @option properties [String] content_type Content type of the message body
+        # @option properties [String] content_encoding Content encoding of the body
+        # @option properties [Hash<String, Object>] headers Custom headers
+        # @option properties [Integer] delivery_mode 2 for persisted message, transient messages for all other values
+        # @option properties [Integer] priority A priority of the message (between 0 and 255)
+        # @option properties [Integer] correlation_id A correlation id, most often used used for RPC communication
+        # @option properties [String] reply_to Queue to reply RPC responses to
+        # @option properties [Integer, String] expiration Number of seconds the message will stay in the queue
+        # @option properties [String] message_id
+        # @option properties [Date] timestamp User-definable, but often used for the time the message was originally generated
+        # @option properties [String] type User-definable, but can can indicate what kind of message this is
+        # @option properties [String] user_id User-definable, but can be used to verify that this is the user that published the message
+        # @option properties [String] app_id User-definable, but often indicates which app that generated the message
         # @return [nil]
         def basic_publish(body, exchange, routing_key, **properties)
           frame_max = @connection.frame_max - 8
@@ -188,9 +280,7 @@ module AMQP
         end
 
         # Publish a message and block until the message has confirmed it has received it
-        # @param body [String]
-        # @param exchange [String]
-        # @param routing_key [String]
+        # @param (see #basic_publish)
         # @return [Boolean] True if the message was successfully published
         def basic_publish_confirm(body, exchange, routing_key, **properties)
           confirm_select(no_wait: true)
@@ -207,7 +297,7 @@ module AMQP
         # @param worker_threads [Integer] Number of threads processing messages, 0 means that the thread calling this method will be blocked
         # @yield [Message] Delivered message from the queue
         # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
-        # @return [nil] When worker_threas is 0 the method will return when the consumer is cancelled
+        # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
         def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {}, worker_threads: 1)
           write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
           tag, = expect(:basic_consume_ok)
@@ -244,41 +334,54 @@ module AMQP
         end
 
         # Specify how many messages to prefetch for consumers with `no_ack: false`
-        # @param prefetch_count [Integer] Number of messages to maxium have in flight
-        # @return [void]
+        # @param prefetch_count [Integer] Number of messages to maxium keep in flight
+        # @param prefetch_size [Integer] Number of bytes to maxium keep in flight
+        # @param global [Boolean] If true the limit will apply to channel rather than the consumer
+        # @return [nil]
         def basic_qos(prefetch_count, prefetch_size: 0, global: false)
           write_bytes FrameBytes.basic_qos(@id, prefetch_size, prefetch_count, global)
           expect :basic_qos_ok
+          nil
         end
 
         # Acknowledge a message
         # @param delivery_tag [Integer] The delivery tag of the message to acknowledge
-        # @return [void]
+        # @return [nil]
         def basic_ack(delivery_tag, multiple: false)
           write_bytes FrameBytes.basic_ack(@id, delivery_tag, multiple)
+          nil
         end
 
         # Negatively acknowledge a message
         # @param delivery_tag [Integer] The delivery tag of the message to acknowledge
         # @param multiple [Boolean] Nack all messages up to this message
         # @param requeue [Boolean] Requeue the message
-        # @return [void]
+        # @return [nil]
         def basic_nack(delivery_tag, multiple: false, requeue: false)
           write_bytes FrameBytes.basic_nack(@id, delivery_tag, multiple, requeue)
+          nil
         end
 
         # Reject a message
         # @param delivery_tag [Integer] The delivery tag of the message to acknowledge
         # @param requeue [Boolean] Requeue the message into the queue again
-        # @return [void]
+        # @return [nil]
         def basic_reject(delivery_tag, requeue: false)
           write_bytes FrameBytes.basic_reject(@id, delivery_tag, requeue)
+          nil
         end
 
+        # Recover all the unacknowledge messages
+        # @param requeue [Boolean] If false the currently unack:ed messages will be deliviered to this consumer again, if false to any consumer
+        # @return [nil]
         def basic_recover(requeue: false)
           write_bytes FrameBytes.basic_recover(@id, requeue: requeue)
           expect :basic_recover_ok
+          nil
         end
+
+        # @!endgroup
+        # @!group Confirm
 
         # Put the channel in confirm mode, each published message will then be confirmed by the server
         # @param no_wait [Boolean] If false the method will block until the server has confirmed the request
@@ -324,31 +427,34 @@ module AMQP
           end
         end
 
-        # Put the channel in transaction mode
+        # @!endgroup
+        # @!group Transaction
+
+        # Put the channel in transaction mode, make sure that you #tx_commit or #tx_rollback after publish
         # @return [nil]
         def tx_select
           write_bytes FrameBytes.tx_select(@id)
           expect :tx_select_ok
+          nil
         end
 
-        # Commit a transaction
+        # Commmit a transaction, requires that the channel is in transaction mode
         # @return [nil]
         def tx_commit
           write_bytes FrameBytes.tx_commit(@id)
           expect :tx_commit_ok
+          nil
         end
 
-        # Rollback a transaction
+        # Rollback a transaction, requires that the channel is in transaction mode
         # @return [nil]
         def tx_rollback
           write_bytes FrameBytes.tx_rollback(@id)
           expect :tx_rollback_ok
+          nil
         end
 
-        # @yield [ReturnMessage] Messages returned by the server when a publish has failed
-        def on_return(&block)
-          @on_return = block
-        end
+        # @!endgroup
 
         # @api private
         def reply(args)

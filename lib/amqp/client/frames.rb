@@ -8,8 +8,7 @@ module AMQP
     # Generate binary data for different frames
     # Each frame type implemented as a method
     # Having a class for each frame type is more expensive in terms of CPU and memory
-    #
-    # @private
+    # @api private
     module FrameBytes
       module_function
 

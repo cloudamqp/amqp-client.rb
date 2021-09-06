@@ -12,6 +12,12 @@ module AMQP
     # Represents a single AMQP connection
     class Connection
       # Establish a connection to an AMQP broker
+      # @param uri [String] URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection
+      # @param read_loop_thread [Boolean] Set to false if you manually want to run the #read_loop
+      # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
+      #   the client from the broker
+      # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
+      # @return [Connection]
       def self.connect(uri, read_loop_thread: true, **options)
         uri = URI.parse(uri)
         tls = uri.scheme == "amqps"
@@ -40,6 +46,8 @@ module AMQP
         Connection.new(socket, channel_max, frame_max, heartbeat, read_loop_thread: read_loop_thread)
       end
 
+      # Requires an already established TCP/TLS socket
+      # @api private
       def initialize(socket, channel_max, frame_max, heartbeat, read_loop_thread: true)
         @socket = socket
         @channel_max = channel_max.zero? ? 65_536 : channel_max
@@ -52,13 +60,19 @@ module AMQP
         Thread.new { read_loop } if read_loop_thread
       end
 
+      # The max frame size negotiated between the client and the broker
+      # @return [Integer]
       attr_reader :frame_max
 
+      # Custom inspect
+      # @return [String]
+      # @api private
       def inspect
         "#<#{self.class} @closed=#{@closed} channel_count=#{@channels.size}>"
       end
 
       # Open an AMQP channel
+      # @param id [Integer, nil] If nil a new channel will be opened, otherwise an already open channel might be reused
       # @return [Channel]
       def channel(id = nil)
         raise ArgumentError, "Channel ID cannot be 0" if id&.zero?
@@ -79,6 +93,8 @@ module AMQP
       end
 
       # Declare a new channel, yield, and then close the channel
+      # @yield [Channel]
+      # @return [Object] Whatever was returned by the block
       def with_channel
         ch = channel
         begin
@@ -89,6 +105,8 @@ module AMQP
       end
 
       # Gracefully close a connection
+      # @param reason [String] A reason to close the connection can be logged by the broker
+      # @param code [Integer]
       # @return [nil]
       def close(reason: "", code: 200)
         return if @closed
@@ -97,6 +115,7 @@ module AMQP
         write_bytes FrameBytes.connection_close(code, reason)
         @channels.each_value { |ch| ch.closed!(code, reason, 0, 0) }
         expect(:close_ok)
+        nil
       end
 
       # True if the connection is closed
@@ -106,7 +125,9 @@ module AMQP
       end
 
       # Write byte array(s) directly to the socket (thread-safe)
+      # @param bytes [String] One or more byte arrays
       # @return [Integer] number of bytes written
+      # @api private
       def write_bytes(*bytes)
         @write_lock.synchronize do
           @socket.write(*bytes)
@@ -117,6 +138,7 @@ module AMQP
 
       # Reads from the socket, required for any kind of progress.
       # Blocks until the connection is closed. Normally run as a background thread automatically.
+      # @return [nil]
       def read_loop
         # read more often than write so that channel errors crop up early
         Thread.current.priority += 1
@@ -139,7 +161,7 @@ module AMQP
           raise AMQP::Client::UnexpectedFrameEnd, frame_end if frame_end != 206
 
           # parse the frame, will return false if a close frame was received
-          parse_frame(type, channel_id, frame_size, frame_buffer) || return
+          parse_frame(type, channel_id, frame_buffer) || return
         end
         nil
       rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
@@ -157,7 +179,7 @@ module AMQP
 
       private
 
-      def parse_frame(type, channel_id, frame_size, buf)
+      def parse_frame(type, channel_id, buf)
         case type
         when 1 # method frame
           class_id, method_id = buf.unpack("S> S>")

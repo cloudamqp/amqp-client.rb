@@ -2,7 +2,7 @@
 
 module AMQP
   class Client
-    # Encode and decode AMQP Tables to/from hash
+    # Encode and decode an AMQP table to/from hash
     module Table
       module_function
 

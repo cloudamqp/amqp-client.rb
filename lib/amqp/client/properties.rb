@@ -4,7 +4,7 @@ require_relative "./table"
 
 module AMQP
   class Client
-  # Encode/decode AMQP Properties
+    # Encode/decode AMQP Properties
     Properties = Struct.new(:content_type, :content_encoding, :headers, :delivery_mode, :priority, :correlation_id,
                             :reply_to, :expiration, :message_id, :timestamp, :type, :user_id, :app_id,
                             keyword_init: true) do
@@ -27,13 +27,13 @@ module AMQP
       # @!attribute message_id
       #   @return [String]
       # @!attribute timestamp
-      #   @return [Date]
+      #   @return [Date] User-definable, but often used for the time the message was originally generated
       # @!attribute type
-      #   @return [String]
+      #   @return [String] User-definable, but can can indicate what kind of message this is
       # @!attribute user_id
-      #   @return [String]
+      #   @return [String] User-definable, but can be used to verify that this is the user that published the message
       # @!attribute app_id
-      #   @return [String]
+      #   @return [String] User-definable, but often indicates which app that generated the message
 
       # Encode properties into a byte array
       # @return [String] byte array
