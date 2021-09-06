@@ -37,7 +37,6 @@ module AMQP
         # @return [Integer]
         attr_reader :id
 
-
         # Open the channel (called from Connection)
         # @return [Channel] self
         # @api private

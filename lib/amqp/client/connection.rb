@@ -402,7 +402,11 @@ module AMQP
           end
         end
       rescue StandardError
-        socket.close rescue nil
+        begin
+          socket.close
+        rescue IOError, OpenSSL::OpenSSLError, SystemCallError
+          nil
+        end
         raise
       end
 

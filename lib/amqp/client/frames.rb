@@ -168,7 +168,7 @@ module AMQP
       def exchange_bind(id, destination, source, binding_key, no_wait, arguments)
         tbl = Table.encode(arguments)
         frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
-          binding_key.bytesize + 1 + 4 + tbl.bytesize
+                     binding_key.bytesize + 1 + 4 + tbl.bytesize
         [
           1, # type: method
           id, # channel id
@@ -188,7 +188,7 @@ module AMQP
       def exchange_unbind(id, destination, source, binding_key, no_wait, arguments)
         tbl = Table.encode(arguments)
         frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
-          binding_key.bytesize + 1 + 4 + tbl.bytesize
+                     binding_key.bytesize + 1 + 4 + tbl.bytesize
         [
           1, # type: method
           id, # channel id
@@ -251,7 +251,7 @@ module AMQP
       def queue_bind(id, queue, exchange, binding_key, no_wait, arguments)
         tbl = Table.encode(arguments)
         frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 +
-          binding_key.bytesize + 1 + 4 + tbl.bytesize
+                     binding_key.bytesize + 1 + 4 + tbl.bytesize
         [
           1, # type: method
           id, # channel id
@@ -270,7 +270,8 @@ module AMQP
 
       def queue_unbind(id, queue, exchange, binding_key, arguments)
         tbl = Table.encode(arguments)
-        frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 + binding_key.bytesize + 4 + tbl.bytesize
+        frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 +
+                     binding_key.bytesize + 4 + tbl.bytesize
         [
           1, # type: method
           id, # channel id
