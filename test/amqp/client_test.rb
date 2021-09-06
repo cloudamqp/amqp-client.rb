@@ -456,4 +456,14 @@ class AMQPClientTest < Minitest::Test
     assert ch2.wait_for_confirms
     connection.close
   end
+
+  def test_it_can_set_channel_max
+    connection = AMQP::Client.new("amqp://localhost", channel_max: 1).connect
+    assert connection.channel
+    assert_raises(AMQP::Client::Error) do
+      connection.channel
+    end
+  ensure
+    connection&.close
+  end
 end
