@@ -62,7 +62,7 @@ module AMQP
             @connq << conn
           end
           conn.read_loop # blocks until connection is closed, then reconnect
-        rescue AMQP::Client::Error => e
+        rescue Error => e
           warn "AMQP-Client reconnect error: #{e.inspect}"
           sleep @options[:reconnect_interval] || 1
         ensure

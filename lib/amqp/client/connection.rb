@@ -45,7 +45,7 @@ module AMQP
           socket.sync_close = true # closing the TLS socket also closes the TCP socket
           socket.hostname = host # SNI host
           socket.connect
-          socket.post_connection_check(host) || raise(AMQP::Client::Error, "TLS certificate hostname doesn't match requested")
+          socket.post_connection_check(host) || raise(Error, "TLS certificate hostname doesn't match requested")
         end
         channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, **options)
         Connection.new(socket, channel_max, frame_max, heartbeat, read_loop_thread: read_loop_thread)
@@ -90,7 +90,7 @@ module AMQP
           1.upto(@channel_max) do |i|
             break id = i unless @channels.key? i
           end
-          raise AMQP::Client::Error, "Max channels reached" if id.nil?
+          raise Error, "Max channels reached" if id.nil?
 
           ch = @channels[id] = Channel.new(self, id)
         end
@@ -138,7 +138,7 @@ module AMQP
           @socket.write(*bytes)
         end
       rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
-        raise AMQP::Client::Error, "Could not write to socket, #{e.message}"
+        raise Error, "Could not write to socket, #{e.message}"
       end
 
       # Reads from the socket, required for any kind of progress.
@@ -155,7 +155,7 @@ module AMQP
           socket.read(7, frame_start)
           type, channel_id, frame_size = frame_start.unpack("C S> L>")
           if frame_size > frame_max
-            raise AMQP::Client::Error, "Frame size #{frame_size} is larger than negotiated max frame size #{frame_max}"
+            raise Error, "Frame size #{frame_size} is larger than negotiated max frame size #{frame_max}"
           end
 
           # read the frame content
@@ -163,7 +163,7 @@ module AMQP
 
           # make sure that the frame end is correct
           frame_end = socket.readchar.ord
-          raise AMQP::Client::UnexpectedFrameEnd, frame_end if frame_end != 206
+          raise UnexpectedFrameEnd, frame_end if frame_end != 206
 
           # parse the frame, will return false if a close frame was received
           parse_frame(type, channel_id, frame_buffer) || return
@@ -190,7 +190,7 @@ module AMQP
           class_id, method_id = buf.unpack("S> S>")
           case class_id
           when 10 # connection
-            raise AMQP::Client::Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
+            raise Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
 
             case method_id
             when 50 # connection#close
@@ -201,7 +201,7 @@ module AMQP
               @channels.each_value { |ch| ch.closed!(code, text, error_class_id, error_method_id) }
               begin
                 write_bytes FrameBytes.connection_close_ok
-              rescue AMQP::Client::Error
+              rescue Error
                 nil # rabbitmq closes the socket after sending Connection::Close, so ignore write errors
               end
               return false
@@ -209,7 +209,7 @@ module AMQP
               @closed = true
               @replies.push [:close_ok]
               return false
-            else raise AMQP::Client::Error::UnsupportedMethodFrame, class_id, method_id
+            else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
           when 20 # channel
             case method_id
@@ -225,7 +225,7 @@ module AMQP
             when 41 # channel#close-ok
               channel = @channels.delete(channel_id)
               channel.reply [:channel_close_ok]
-            else raise AMQP::Client::Error::UnsupportedMethodFrame, class_id, method_id
+            else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
           when 40 # exchange
             case method_id
@@ -237,7 +237,7 @@ module AMQP
               @channels[channel_id].reply [:exchange_bind_ok]
             when 51 # unbind-ok
               @channels[channel_id].reply [:exchange_unbind_ok]
-            else raise AMQP::Client::Error::UnsupportedMethodFrame, class_id, method_id
+            else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
           when 50 # queue
             case method_id
@@ -255,7 +255,7 @@ module AMQP
               @channels[channel_id].reply [:queue_delete, message_count]
             when 51 # unbind-ok
               @channels[channel_id].reply [:queue_unbind_ok]
-            else raise AMQP::Client::Error::UnsupportedMethodFrame.new class_id, method_id
+            else raise Error::UnsupportedMethodFrame.new class_id, method_id
             end
           when 60 # basic
             case method_id
@@ -321,13 +321,13 @@ module AMQP
             when 120 # nack
               delivery_tag, multiple, requeue = buf.unpack("@4 Q> C C")
               @channels[channel_id].confirm [:nack, delivery_tag, multiple == 1, requeue == 1]
-            else raise AMQP::Client::Error::UnsupportedMethodFrame.new class_id, method_id
+            else raise Error::UnsupportedMethodFrame.new class_id, method_id
             end
           when 85 # confirm
             case method_id
             when 11 # select-ok
               @channels[channel_id].reply [:confirm_select_ok]
-            else raise AMQP::Client::Error::UnsupportedMethodFrame.new class_id, method_id
+            else raise Error::UnsupportedMethodFrame.new class_id, method_id
             end
           when 90 # tx
             case method_id
@@ -337,9 +337,9 @@ module AMQP
               @channels[channel_id].reply [:tx_commit_ok]
             when 31 # rollback-ok
               @channels[channel_id].reply [:tx_rollback_ok]
-            else raise AMQP::Client::Error::UnsupportedMethodFrame.new class_id, method_id
+            else raise Error::UnsupportedMethodFrame.new class_id, method_id
             end
-          else raise AMQP::Client::Error::UnsupportedMethodFrame.new class_id, method_id
+          else raise Error::UnsupportedMethodFrame.new class_id, method_id
           end
         when 2 # header
           body_size = buf.unpack1("@4 Q>")
@@ -366,7 +366,7 @@ module AMQP
           begin
             socket.readpartial(4096, buf)
           rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
-            raise AMQP::Client::Error, "Could not establish AMQP connection: #{e.message}"
+            raise Error, "Could not establish AMQP connection: #{e.message}"
           end
 
           type, channel_id, frame_size = buf.unpack("C S> L>")
@@ -378,7 +378,7 @@ module AMQP
             class_id, method_id = buf.unpack("@7 S> S>")
             case class_id
             when 10 # connection
-              raise AMQP::Client::Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
+              raise Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
 
               case method_id
               when 10 # connection#start
@@ -399,21 +399,21 @@ module AMQP
                 code, text_len = buf.unpack("@11 S> C")
                 text, error_class_id, error_method_id = buf.unpack("@14 a#{text_len} S> S>")
                 socket.write FrameBytes.connection_close_ok
-                raise AMQP::Client::Error, "Could not establish AMQP connection: #{code} #{text} #{error_class_id} #{error_method_id}"
-              else raise AMQP::Client::Error, "Unexpected class/method: #{class_id} #{method_id}"
+                raise Error, "Could not establish AMQP connection: #{code} #{text} #{error_class_id} #{error_method_id}"
+              else raise Error, "Unexpected class/method: #{class_id} #{method_id}"
               end
-            else raise AMQP::Client::Error, "Unexpected class/method: #{class_id} #{method_id}"
+            else raise Error, "Unexpected class/method: #{class_id} #{method_id}"
             end
-          else raise AMQP::Client::Error, "Unexpected frame type: #{type}"
+          else raise Error, "Unexpected frame type: #{type}"
           end
         end
-      rescue StandardError
+      rescue StandardError => e
         begin
           socket.close
         rescue IOError, OpenSSL::OpenSSLError, SystemCallError
           nil
         end
-        raise
+        raise e
       end
 
       def self.enable_tcp_keepalive(socket)
@@ -444,7 +444,7 @@ module AMQP
         },
         product: "amqp-client.rb",
         platform: RUBY_DESCRIPTION,
-        version: AMQP::Client::VERSION,
+        version: VERSION,
         information: "http://github.com/cloudamqp/amqp-client.rb"
       }.freeze
     end

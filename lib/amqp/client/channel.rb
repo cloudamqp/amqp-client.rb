@@ -226,7 +226,7 @@ module AMQP
           case (msg = @basic_gets.pop)
           when Message then msg
           when :basic_get_empty then nil
-          when nil              then raise AMQP::Client::Error::ChannelClosed.new(@id, *@closed)
+          when nil              then raise Error::ChannelClosed.new(@id, *@closed)
           end
         end
 
@@ -403,7 +403,7 @@ module AMQP
           case @unconfirmed_empty.pop
           when true then true
           when false then false
-          else raise AMQP::Client::Error::ChannelClosed.new(@id, *@closed)
+          else raise Error::ChannelClosed.new(@id, *@closed)
           end
         end
 
@@ -522,15 +522,15 @@ module AMQP
         end
 
         def write_bytes(*bytes)
-          raise AMQP::Client::Error::ChannelClosed.new(@id, *@closed) if @closed
+          raise Error::ChannelClosed.new(@id, *@closed) if @closed
 
           @connection.write_bytes(*bytes)
         end
 
         def expect(expected_frame_type)
           frame_type, *args = @replies.pop
-          raise AMQP::Client::Error::ChannelClosed.new(@id, *@closed) if frame_type.nil?
-          raise AMQP::Client::Error::UnexpectedFrame.new(expected_frame_type, frame_type) unless frame_type == expected_frame_type
+          raise Error::ChannelClosed.new(@id, *@closed) if frame_type.nil?
+          raise Error::UnexpectedFrame.new(expected_frame_type, frame_type) unless frame_type == expected_frame_type
 
           args
         end
