@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+- The API is fully documented! https://cloudamqp.github.io/amqp-client.rb/
+- Fixed: Socket writing is now thread-safe
+- Change: Block while waiting for basic_cancel by default
+- Added: Can specify channel_max, heartbeat and frame_max as options to the Client/Connection
+- Added: Reuse channel 1 to declare high level queues/exchanges
+- Fixed: Only wait for exchange_delete confirmation if not no_wait is set
+- Fixed: Don't raise if Connection#close detects a closed socket (expected)
+
 ## [1.0.0] - 2021-08-27
 
 - Verify TLS certificate matches hostname
