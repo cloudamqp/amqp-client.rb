@@ -122,7 +122,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#body-instance_method" title="#body (instance method)">#<strong>body</strong>  &#x21d2; Object </a>
+      <a href="#body-instance_method" title="#body (instance method)">#<strong>body</strong>  &#x21d2; String </a>
     
 
     
@@ -140,7 +140,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute body.</p>
+<p>The message body.</p>
 </div></span>
   
 </li>
@@ -149,7 +149,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#exchange-instance_method" title="#exchange (instance method)">#<strong>exchange</strong>  &#x21d2; Object </a>
+      <a href="#exchange-instance_method" title="#exchange (instance method)">#<strong>exchange</strong>  &#x21d2; String </a>
     
 
     
@@ -167,7 +167,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute exchange.</p>
+<p>Name of the exchange the message was published to.</p>
 </div></span>
   
 </li>
@@ -176,7 +176,32 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#properties-instance_method" title="#properties (instance method)">#<strong>properties</strong>  &#x21d2; Object </a>
+      <a href="#properties-instance_method" title="#properties (instance method)">#<strong>properties</strong>  &#x21d2; Properties </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reply_code-instance_method" title="#reply_code (instance method)">#<strong>reply_code</strong>  &#x21d2; Integer </a>
     
 
     
@@ -194,7 +219,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute properties.</p>
+<p>Error code.</p>
 </div></span>
   
 </li>
@@ -203,7 +228,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#reply_code-instance_method" title="#reply_code (instance method)">#<strong>reply_code</strong>  &#x21d2; Object </a>
+      <a href="#reply_text-instance_method" title="#reply_text (instance method)">#<strong>reply_text</strong>  &#x21d2; String </a>
     
 
     
@@ -221,7 +246,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute reply_code.</p>
+<p>Description on why the message was returned.</p>
 </div></span>
   
 </li>
@@ -230,7 +255,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#reply_text-instance_method" title="#reply_text (instance method)">#<strong>reply_text</strong>  &#x21d2; Object </a>
+      <a href="#routing_key-instance_method" title="#routing_key (instance method)">#<strong>routing_key</strong>  &#x21d2; String </a>
     
 
     
@@ -248,34 +273,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute reply_text.</p>
-</div></span>
-  
-</li>
-
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#routing_key-instance_method" title="#routing_key (instance method)">#<strong>routing_key</strong>  &#x21d2; Object </a>
-    
-
-    
-  </span>
-  
-  
-  
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute routing_key.</p>
+<p>The routing key the message was published with.</p>
 </div></span>
   
 </li>
@@ -296,7 +294,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="body-instance_method">
   
-    #<strong>body</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>body</strong>  &#x21d2; <tt>String</tt> 
   
 
   
@@ -305,7 +303,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute body</p>
+<p>Returns The message body.</p>
 
 
   </div>
@@ -318,13 +316,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>String</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of body</p>
+<p>The message body</p>
 </div>
       
     </li>
@@ -337,16 +335,12 @@
       <pre class="lines">
 
 
-40
-41
-42</pre>
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 51</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_body'>body</span>
-  <span class='ivar'>@body</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -357,7 +351,7 @@
       <div class="method_details ">
   <h3 class="signature " id="exchange-instance_method">
   
-    #<strong>exchange</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>exchange</strong>  &#x21d2; <tt>String</tt> 
   
 
   
@@ -366,7 +360,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute exchange</p>
+<p>Returns Name of the exchange the message was published to.</p>
 
 
   </div>
@@ -379,13 +373,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>String</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of exchange</p>
+<p>Name of the exchange the message was published to</p>
 </div>
       
     </li>
@@ -398,16 +392,12 @@
       <pre class="lines">
 
 
-40
-41
-42</pre>
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 51</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_exchange'>exchange</span>
-  <span class='ivar'>@exchange</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -418,7 +408,7 @@
       <div class="method_details ">
   <h3 class="signature " id="properties-instance_method">
   
-    #<strong>properties</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>properties</strong>  &#x21d2; <tt><span class='object_link'><a href="Properties.html" title="AMQP::Client::Properties (class)">Properties</a></span></tt> 
   
 
   
@@ -427,8 +417,6 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute properties</p>
-
 
   </div>
 </div>
@@ -440,14 +428,9 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="Properties.html" title="AMQP::Client::Properties (class)">Properties</a></span></tt>)</span>
       
       
-      
-        &mdash;
-        <div class='inline'>
-<p>the current value of properties</p>
-</div>
       
     </li>
   
@@ -459,16 +442,12 @@
       <pre class="lines">
 
 
-40
-41
-42</pre>
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 51</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_properties'>properties</span>
-  <span class='ivar'>@properties</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -479,7 +458,7 @@
       <div class="method_details ">
   <h3 class="signature " id="reply_code-instance_method">
   
-    #<strong>reply_code</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>reply_code</strong>  &#x21d2; <tt>Integer</tt> 
   
 
   
@@ -488,7 +467,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute reply_code</p>
+<p>Returns Error code.</p>
 
 
   </div>
@@ -501,13 +480,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>Integer</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of reply_code</p>
+<p>Error code</p>
 </div>
       
     </li>
@@ -520,16 +499,12 @@
       <pre class="lines">
 
 
-40
-41
-42</pre>
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 51</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_reply_code'>reply_code</span>
-  <span class='ivar'>@reply_code</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -540,7 +515,7 @@
       <div class="method_details ">
   <h3 class="signature " id="reply_text-instance_method">
   
-    #<strong>reply_text</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>reply_text</strong>  &#x21d2; <tt>String</tt> 
   
 
   
@@ -549,7 +524,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute reply_text</p>
+<p>Returns Description on why the message was returned.</p>
 
 
   </div>
@@ -562,13 +537,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>String</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of reply_text</p>
+<p>Description on why the message was returned</p>
 </div>
       
     </li>
@@ -581,16 +556,12 @@
       <pre class="lines">
 
 
-40
-41
-42</pre>
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 51</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_reply_text'>reply_text</span>
-  <span class='ivar'>@reply_text</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -601,7 +572,7 @@
       <div class="method_details ">
   <h3 class="signature " id="routing_key-instance_method">
   
-    #<strong>routing_key</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>routing_key</strong>  &#x21d2; <tt>String</tt> 
   
 
   
@@ -610,7 +581,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute routing_key</p>
+<p>Returns The routing key the message was published with.</p>
 
 
   </div>
@@ -623,13 +594,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>String</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of routing_key</p>
+<p>The routing key the message was published with</p>
 </div>
       
     </li>
@@ -642,16 +613,12 @@
       <pre class="lines">
 
 
-40
-41
-42</pre>
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 51</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_routing_key'>routing_key</span>
-  <span class='ivar'>@routing_key</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -663,7 +630,7 @@
 </div>
 
       <div id="footer">
-  Generated on Mon Sep  6 11:47:01 2021 by
+  Generated on Mon Sep  6 15:13:20 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>

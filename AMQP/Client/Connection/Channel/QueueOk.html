@@ -116,13 +116,13 @@
 
 
 
-  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <h2>Queue <small><a href="#" class="summary_toggle">collapse</a></small></h2>
   <ul class="summary">
     
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#consumer_count-instance_method" title="#consumer_count (instance method)">#<strong>consumer_count</strong>  &#x21d2; Object </a>
+      <a href="#consumer_count-instance_method" title="#consumer_count (instance method)">#<strong>consumer_count</strong>  &#x21d2; Integer </a>
     
 
     
@@ -140,7 +140,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute consumer_count.</p>
+<p>Number of consumers subscribed to the queue at the time of declaration.</p>
 </div></span>
   
 </li>
@@ -149,7 +149,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#message_count-instance_method" title="#message_count (instance method)">#<strong>message_count</strong>  &#x21d2; Object </a>
+      <a href="#message_count-instance_method" title="#message_count (instance method)">#<strong>message_count</strong>  &#x21d2; Integer </a>
     
 
     
@@ -167,7 +167,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute message_count.</p>
+<p>Number of messages in the queue at the time of declaration.</p>
 </div></span>
   
 </li>
@@ -176,7 +176,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#queue_name-instance_method" title="#queue_name (instance method)">#<strong>queue_name</strong>  &#x21d2; Object </a>
+      <a href="#queue_name-instance_method" title="#queue_name (instance method)">#<strong>queue_name</strong>  &#x21d2; String </a>
     
 
     
@@ -194,7 +194,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute queue_name.</p>
+<p>The name of the queue.</p>
 </div></span>
   
 </li>
@@ -215,7 +215,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="consumer_count-instance_method">
   
-    #<strong>consumer_count</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>consumer_count</strong>  &#x21d2; <tt>Integer</tt> 
   
 
   
@@ -224,7 +224,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute consumer_count</p>
+<p>Returns Number of consumers subscribed to the queue at the time of declaration.</p>
 
 
   </div>
@@ -237,13 +237,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>Integer</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of consumer_count</p>
+<p>Number of consumers subscribed to the queue at the time of declaration</p>
 </div>
       
     </li>
@@ -256,16 +256,12 @@
       <pre class="lines">
 
 
-97
-98
-99</pre>
+150</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 97</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 150</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_consumer_count'>consumer_count</span>
-  <span class='ivar'>@consumer_count</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Connection::Channel::QueueOk (class)">QueueOk</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:queue_name</span><span class='comma'>,</span> <span class='symbol'>:message_count</span><span class='comma'>,</span> <span class='symbol'>:consumer_count</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -276,7 +272,7 @@
       <div class="method_details ">
   <h3 class="signature " id="message_count-instance_method">
   
-    #<strong>message_count</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>message_count</strong>  &#x21d2; <tt>Integer</tt> 
   
 
   
@@ -285,7 +281,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute message_count</p>
+<p>Returns Number of messages in the queue at the time of declaration.</p>
 
 
   </div>
@@ -298,13 +294,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>Integer</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of message_count</p>
+<p>Number of messages in the queue at the time of declaration</p>
 </div>
       
     </li>
@@ -317,16 +313,12 @@
       <pre class="lines">
 
 
-97
-98
-99</pre>
+150</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 97</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 150</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_message_count'>message_count</span>
-  <span class='ivar'>@message_count</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Connection::Channel::QueueOk (class)">QueueOk</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:queue_name</span><span class='comma'>,</span> <span class='symbol'>:message_count</span><span class='comma'>,</span> <span class='symbol'>:consumer_count</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -337,7 +329,7 @@
       <div class="method_details ">
   <h3 class="signature " id="queue_name-instance_method">
   
-    #<strong>queue_name</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>queue_name</strong>  &#x21d2; <tt>String</tt> 
   
 
   
@@ -346,7 +338,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute queue_name</p>
+<p>Returns The name of the queue.</p>
 
 
   </div>
@@ -359,13 +351,13 @@
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>)</span>
+        <span class='type'>(<tt>String</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the current value of queue_name</p>
+<p>The name of the queue</p>
 </div>
       
     </li>
@@ -378,16 +370,12 @@
       <pre class="lines">
 
 
-97
-98
-99</pre>
+150</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 97</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 150</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_queue_name'>queue_name</span>
-  <span class='ivar'>@queue_name</span>
-<span class='kw'>end</span></pre>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Connection::Channel::QueueOk (class)">QueueOk</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:queue_name</span><span class='comma'>,</span> <span class='symbol'>:message_count</span><span class='comma'>,</span> <span class='symbol'>:consumer_count</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -399,7 +387,7 @@
 </div>
 
       <div id="footer">
-  Generated on Mon Sep  6 11:47:00 2021 by
+  Generated on Mon Sep  6 15:13:20 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>

@@ -347,7 +347,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#ack-instance_method" title="#ack (instance method)">#<strong>ack</strong>  &#x21d2; void </a>
+      <a href="#ack-instance_method" title="#ack (instance method)">#<strong>ack</strong>  &#x21d2; nil </a>
     
 
     
@@ -371,7 +371,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#reject-instance_method" title="#reject (instance method)">#<strong>reject</strong>(requeue: false)  &#x21d2; void </a>
+      <a href="#reject-instance_method" title="#reject (instance method)">#<strong>reject</strong>(requeue: false)  &#x21d2; nil </a>
     
 
     
@@ -446,15 +446,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_body'>body</span>
-  <span class='ivar'>@body</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -507,15 +529,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_channel'>channel</span>
-  <span class='ivar'>@channel</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -580,15 +624,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_consumer_tag'>consumer_tag</span>
-  <span class='ivar'>@consumer_tag</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -641,15 +707,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_delivery_tag'>delivery_tag</span>
-  <span class='ivar'>@delivery_tag</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -702,15 +790,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_exchange_name'>exchange_name</span>
-  <span class='ivar'>@exchange_name</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -756,15 +866,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_properties'>properties</span>
-  <span class='ivar'>@properties</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -817,15 +949,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_redelivered'>redelivered</span>
-  <span class='ivar'>@redelivered</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -878,15 +1032,37 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 23</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_routing_key'>routing_key</span>
-  <span class='ivar'>@routing_key</span>
+<span class='const'><span class='object_link'><a href="" title="AMQP::Client::Message (class)">Message</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:channel</span><span class='comma'>,</span> <span class='symbol'>:delivery_tag</span><span class='comma'>,</span> <span class='symbol'>:exchange_name</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='comma'>,</span> <span class='symbol'>:redelivered</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='comment'># Acknowledge the message
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Reject the message
+</span>  <span class='comment'># @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
+</span>  <span class='comment'># @return [nil]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -903,7 +1079,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="ack-instance_method">
   
-    #<strong>ack</strong>  &#x21d2; <tt>void</tt> 
+    #<strong>ack</strong>  &#x21d2; <tt>nil</tt> 
   
 
   
@@ -911,7 +1087,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p class="note returns_void">This method returns an undefined value.</p>
+    
 <p>Acknowledge the message</p>
 
 
@@ -919,6 +1095,19 @@
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -926,12 +1115,12 @@
       <pre class="lines">
 
 
+26
 27
-28
-29</pre>
+28</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 27</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 26</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ack'>ack</span>
   <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='rparen'>)</span>
@@ -944,7 +1133,7 @@
       <div class="method_details ">
   <h3 class="signature " id="reject-instance_method">
   
-    #<strong>reject</strong>(requeue: false)  &#x21d2; <tt>void</tt> 
+    #<strong>reject</strong>(requeue: false)  &#x21d2; <tt>nil</tt> 
   
 
   
@@ -952,7 +1141,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p class="note returns_void">This method returns an undefined value.</p>
+    
 <p>Reject the message</p>
 
 
@@ -975,13 +1164,26 @@
       
         &mdash;
         <div class='inline'>
-<p>If true the message put back into the queue again, ready to be redelivered</p>
+<p>If true the message will be put back into the queue again, ready to be redelivered</p>
 </div>
       
     </li>
   
 </ul>
 
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -989,12 +1191,12 @@
       <pre class="lines">
 
 
+33
 34
-35
-36</pre>
+35</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
@@ -1009,7 +1211,7 @@
 </div>
 
       <div id="footer">
-  Generated on Mon Sep  6 11:47:00 2021 by
+  Generated on Mon Sep  6 15:13:20 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
