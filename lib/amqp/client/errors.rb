@@ -38,6 +38,9 @@ module AMQP
           super "Channel[#{id}] closed (#{code}) #{reason} (#{classid}/#{methodid})"
         end
       end
+
+      # Raised if connection is unexpectedly closed
+      class ConnectionClosed < Error; end
     end
   end
 end

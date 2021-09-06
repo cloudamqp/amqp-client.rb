@@ -347,14 +347,19 @@ module AMQP
           @channels[channel_id].header_delivered body_size, properties
         when 3 # body
           @channels[channel_id].body_delivered buf
-        else raise AMQP::Client::UnsupportedFrameType, type
+        else raise Error::UnsupportedFrameType, type
         end
         true
       end
 
       def expect(expected_frame_type)
         frame_type, args = @replies.pop
-        frame_type == expected_frame_type || raise(AMQP::Client::UnexpectedFrame.new(expected_frame_type, frame_type))
+        if frame_type.nil?
+          return if expected_frame_type == :close_ok
+
+          raise(Error::ConnectionClosed, "while waiting for #{expected_frame_type}")
+        end
+        frame_type == expected_frame_type || raise(Error::UnexpectedFrame.new(expected_frame_type, frame_type))
         args
       end
 
