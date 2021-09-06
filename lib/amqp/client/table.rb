@@ -65,7 +65,7 @@ module AMQP
           ["t", 0].pack("a C")
         when nil
           ["V"].pack("a")
-        else raise "unsupported table field type: #{value.class}"
+        else raise ArgumentError, "unsupported table field type: #{value.class}"
         end
       end
 
@@ -126,7 +126,7 @@ module AMQP
           [8, Time.at(bytes.byteslice(pos, 8).unpack1("Q>"))]
         when "V"
           [0, nil]
-        else raise "unsupported table field type: #{type}"
+        else raise ArgumentError, "unsupported table field type: #{type}"
         end
       end
     end
