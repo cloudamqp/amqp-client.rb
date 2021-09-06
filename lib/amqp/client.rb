@@ -20,11 +20,13 @@ module AMQP
     end
 
     # Opens an AMQP connection, does not try to reconnect
+    # @return [Connection]
     def connect(read_loop_thread: true)
       Connection.connect(@uri, read_loop_thread: read_loop_thread, **@options)
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect
+    # @return [self]
     def start
       @stopped = false
       Thread.new(connect(read_loop_thread: false)) do |conn|
@@ -55,6 +57,7 @@ module AMQP
     end
 
     # Close the currently open connection
+    # @return [Nil]
     def stop
       return if @stopped
 
@@ -92,19 +95,29 @@ module AMQP
       end
     end
 
-    def subscribe(queue_name, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
-      @subscriptions.add? [queue_name, no_ack, prefetch, worker_threads, arguments, blk]
+    # Consume messages from a queue
+    # @param queue [String] Name of the queue to subscribe to
+    # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected)
+    # @param prefetch [Integer] Specify how many messages to prefetch for consumers with `no_ack: false`
+    # @param worker_threads [Integer] Number of threads processing messages, 0 means that the thread calling this method will be blocked
+    # @param arguments [Hash] Custom arguments to the consumer
+    # @yield [Message] Delivered message from the queue
+    # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
+    # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
+    def subscribe(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
+      @subscriptions.add? [queue, no_ack, prefetch, worker_threads, arguments, blk]
 
       with_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
-        ch.basic_consume(queue_name, no_ack: no_ack, worker_threads: worker_threads, arguments: arguments) do |msg|
+        ch.basic_consume(queue, no_ack: no_ack, worker_threads: worker_threads, arguments: arguments) do |msg|
           blk.call(msg)
         end
       end
     end
 
     # Publish a (persistent) message and wait for confirmation
+    # @return [Nil]
     def publish(body, exchange, routing_key, **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
@@ -113,6 +126,7 @@ module AMQP
     end
 
     # Publish a (persistent) message but don't wait for a confirmation
+    # @return [Nil]
     def publish_and_forget(body, exchange, routing_key, **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
@@ -121,6 +135,7 @@ module AMQP
     end
 
     # Wait for unconfirmed publishes
+    # @return [Boolean] True if successful, false if any message negatively acknowledged
     def wait_for_confirms
       with_connection do |conn|
         conn.channel(1).wait_for_confirms
@@ -128,6 +143,7 @@ module AMQP
     end
 
     # Bind a queue to an exchange
+    # @return [void]
     def bind(queue, exchange, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).queue_bind(queue, exchange, routing_key, arguments: arguments)
@@ -135,6 +151,7 @@ module AMQP
     end
 
     # Unbind a queue from an exchange
+    # @return [void]
     def unbind(queue, exchange, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).queue_unbind(queue, exchange, routing_key, arguments: arguments)
@@ -142,6 +159,7 @@ module AMQP
     end
 
     # Bind an exchange to an exchange
+    # @return [void]
     def exchange_bind(destination, source, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).exchange_bind(destination, source, routing_key, arguments: arguments)
@@ -149,6 +167,7 @@ module AMQP
     end
 
     # Unbind an exchange from an exchange
+    # @return [void]
     def exchange_unbind(destination, source, routing_key, arguments: {})
       with_connection do |conn|
         conn.channel(1).exchange_unbind(destination, source, routing_key, arguments: arguments)
@@ -156,6 +175,7 @@ module AMQP
     end
 
     # Purge a queue
+    # @return [void]
     def purge(queue)
       with_connection do |conn|
         conn.channel(1).queue_purge(queue)
@@ -163,6 +183,7 @@ module AMQP
     end
 
     # Delete a queue
+    # @return [void]
     def delete_queue(name)
       with_connection do |conn|
         conn.channel(1).queue_delete(name)
@@ -171,6 +192,7 @@ module AMQP
     end
 
     # Delete an exchange
+    # @return [void]
     def delete_exchange(name)
       with_connection do |conn|
         conn.channel(1).exchange_delete(name)
