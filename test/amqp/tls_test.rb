@@ -28,11 +28,11 @@ class AMQPSClientTest < Minitest::Test
 
     ch2 = connection.channel
     ch2.confirm_select
-    100_000.times do |i|
+    10_000.times do |i|
       ch2.basic_publish "bar #{i + 1}", "amq.topic", "foo"
     end
 
-    100_000.times do
+    10_000.times do
       assert_equal "foo", msgs1.pop.routing_key
     end
     assert ch2.wait_for_confirms

@@ -41,7 +41,7 @@ class HighLevelTest < Minitest::Test
       assert_equal "foo.bar", msg.routing_key
       assert_equal "foo", msg.body
     ensure
-      q.delete
+      q&.delete
       client.stop
     end
   end
@@ -66,7 +66,7 @@ class HighLevelTest < Minitest::Test
       msg2 = msgs.pop
       assert_equal({ "foo" => "bar" }, msg2.properties.headers)
     ensure
-      q.delete
+      q&.delete
       client.stop
     end
   end
@@ -130,7 +130,7 @@ class HighLevelTest < Minitest::Test
       msg = msgs.pop
       assert msg.body, "bar"
     ensure
-      q.delete
+      q&.delete
       client.stop
     end
   end

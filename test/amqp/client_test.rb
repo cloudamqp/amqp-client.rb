@@ -362,6 +362,7 @@ class AMQPClientTest < Minitest::Test
   end
 
   def test_set_connection_name
+    skip "slow, polls HTTP mgmt API"
     client = AMQP::Client.new("amqp://localhost", connection_name: "foobar")
     client.connect
 
