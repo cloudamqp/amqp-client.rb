@@ -47,7 +47,7 @@ module AMQP
           socket.connect
           socket.post_connection_check(host) || raise(Error, "TLS certificate hostname doesn't match requested")
         end
-        channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, **options)
+        channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, options)
         Connection.new(socket, channel_max, frame_max, heartbeat, read_loop_thread: read_loop_thread)
       end
 
