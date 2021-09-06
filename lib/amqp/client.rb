@@ -97,27 +97,24 @@ module AMQP
 
       @queues.fetch(name) do
         with_connection do |conn|
-          conn.with_channel(1).queue_declare(name, durable: durable, exclusive: exclusive, auto_delete: auto_delete, arguments: arguments)
+          conn.channel(1).queue_declare(name, durable: durable, auto_delete: auto_delete, arguments: arguments)
         end
         @queues[name] = Queue.new(self, name)
       end
     end
 
-    # Declare an exchange
-    # @return [Exchange] Exchange
+    # Declare an exchange and return a high level Exchange object
+    # @return [Exchange]
     def exchange(name, type, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
-          conn.with_channel do |ch|
-            ch.exchange_declare(name, type, durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
-          end
+          conn.channel(1).exchange_declare(name, type, durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
         end
         @exchanges[name] = Exchange.new(self, name)
       end
     end
 
     # @!endgroup
-
     # @!group Publish
 
     # Publish a (persistent) message and wait for confirmation
