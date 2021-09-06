@@ -108,7 +108,7 @@ module AMQP
         # @return [nil]
         def exchange_delete(name, if_unused: false, no_wait: false)
           write_bytes FrameBytes.exchange_delete(@id, name, if_unused, no_wait)
-          expect :exchange_delete_ok
+          expect :exchange_delete_ok unless no_wait
           nil
         end
 
