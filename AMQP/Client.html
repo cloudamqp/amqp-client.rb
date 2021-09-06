@@ -158,7 +158,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#bind-instance_method" title="#bind (instance method)">#<strong>bind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; Object </a>
+      <a href="#bind-instance_method" title="#bind (instance method)">#<strong>bind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; void </a>
     
 
     
@@ -182,7 +182,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#connect-instance_method" title="#connect (instance method)">#<strong>connect</strong>(read_loop_thread: true)  &#x21d2; Object </a>
+      <a href="#connect-instance_method" title="#connect (instance method)">#<strong>connect</strong>(read_loop_thread: true)  &#x21d2; Connection </a>
     
 
     
@@ -206,7 +206,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#delete_exchange-instance_method" title="#delete_exchange (instance method)">#<strong>delete_exchange</strong>(name)  &#x21d2; Object </a>
+      <a href="#delete_exchange-instance_method" title="#delete_exchange (instance method)">#<strong>delete_exchange</strong>(name)  &#x21d2; void </a>
     
 
     
@@ -230,7 +230,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#delete_queue-instance_method" title="#delete_queue (instance method)">#<strong>delete_queue</strong>(name)  &#x21d2; Object </a>
+      <a href="#delete_queue-instance_method" title="#delete_queue (instance method)">#<strong>delete_queue</strong>(name)  &#x21d2; void </a>
     
 
     
@@ -278,7 +278,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#exchange_bind-instance_method" title="#exchange_bind (instance method)">#<strong>exchange_bind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; Object </a>
+      <a href="#exchange_bind-instance_method" title="#exchange_bind (instance method)">#<strong>exchange_bind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; void </a>
     
 
     
@@ -302,7 +302,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#exchange_unbind-instance_method" title="#exchange_unbind (instance method)">#<strong>exchange_unbind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; Object </a>
+      <a href="#exchange_unbind-instance_method" title="#exchange_unbind (instance method)">#<strong>exchange_unbind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; void </a>
     
 
     
@@ -352,7 +352,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#publish-instance_method" title="#publish (instance method)">#<strong>publish</strong>(body, exchange, routing_key, **properties)  &#x21d2; Object </a>
+      <a href="#publish-instance_method" title="#publish (instance method)">#<strong>publish</strong>(body, exchange, routing_key, **properties)  &#x21d2; Nil </a>
     
 
     
@@ -376,7 +376,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#publish_and_forget-instance_method" title="#publish_and_forget (instance method)">#<strong>publish_and_forget</strong>(body, exchange, routing_key, **properties)  &#x21d2; Object </a>
+      <a href="#publish_and_forget-instance_method" title="#publish_and_forget (instance method)">#<strong>publish_and_forget</strong>(body, exchange, routing_key, **properties)  &#x21d2; Nil </a>
     
 
     
@@ -400,7 +400,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#purge-instance_method" title="#purge (instance method)">#<strong>purge</strong>(queue)  &#x21d2; Object </a>
+      <a href="#purge-instance_method" title="#purge (instance method)">#<strong>purge</strong>(queue)  &#x21d2; void </a>
     
 
     
@@ -448,7 +448,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#start-instance_method" title="#start (instance method)">#<strong>start</strong>  &#x21d2; Object </a>
+      <a href="#start-instance_method" title="#start (instance method)">#<strong>start</strong>  &#x21d2; self </a>
     
 
     
@@ -472,7 +472,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#stop-instance_method" title="#stop (instance method)">#<strong>stop</strong>  &#x21d2; Object </a>
+      <a href="#stop-instance_method" title="#stop (instance method)">#<strong>stop</strong>  &#x21d2; Nil </a>
     
 
     
@@ -496,7 +496,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#subscribe-instance_method" title="#subscribe (instance method)">#<strong>subscribe</strong>(queue_name, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &amp;blk)  &#x21d2; Object </a>
+      <a href="#subscribe-instance_method" title="#subscribe (instance method)">#<strong>subscribe</strong>(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}) {|Message| ... } &#x21d2; Array&lt;(String, Array&lt;Thread&gt;)&gt;<sup>?</sup> </a>
     
 
     
@@ -510,7 +510,9 @@
   
 
   
-    <span class="summary_desc"><div class='inline'></div></span>
+    <span class="summary_desc"><div class='inline'>
+<p>Consume messages from a queue.</p>
+</div></span>
   
 </li>
 
@@ -518,7 +520,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#unbind-instance_method" title="#unbind (instance method)">#<strong>unbind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; Object </a>
+      <a href="#unbind-instance_method" title="#unbind (instance method)">#<strong>unbind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; void </a>
     
 
     
@@ -542,7 +544,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#wait_for_confirms-instance_method" title="#wait_for_confirms (instance method)">#<strong>wait_for_confirms</strong>  &#x21d2; Object </a>
+      <a href="#wait_for_confirms-instance_method" title="#wait_for_confirms (instance method)">#<strong>wait_for_confirms</strong>  &#x21d2; Boolean </a>
     
 
     
@@ -632,7 +634,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="bind-instance_method">
   
-    #<strong>bind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; <tt>Object</tt> 
+    #<strong>bind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; <tt>void</tt> 
   
 
   
@@ -640,7 +642,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
+    <p class="note returns_void">This method returns an undefined value.</p>
 <p>Bind a queue to an exchange</p>
 
 
@@ -655,14 +657,14 @@
       <pre class="lines">
 
 
-131
-132
-133
-134
-135</pre>
+147
+148
+149
+150
+151</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 131</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 147</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -677,7 +679,7 @@
       <div class="method_details ">
   <h3 class="signature " id="connect-instance_method">
   
-    #<strong>connect</strong>(read_loop_thread: true)  &#x21d2; <tt>Object</tt> 
+    #<strong>connect</strong>(read_loop_thread: true)  &#x21d2; <tt><span class='object_link'><a href="Client/Connection.html" title="AMQP::Client::Connection (class)">Connection</a></span></tt> 
   
 
   
@@ -693,6 +695,19 @@
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Client/Connection.html" title="AMQP::Client::Connection (class)">Connection</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -700,12 +715,12 @@
       <pre class="lines">
 
 
-23
 24
-25</pre>
+25
+26</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 23</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="Client/Connection.html" title="AMQP::Client::Connection (class)">Connection</a></span></span><span class='period'>.</span><span class='id identifier rubyid_connect'><span class='object_link'><a href="Client/Connection.html#connect-class_method" title="AMQP::Client::Connection.connect (method)">connect</a></span></span><span class='lparen'>(</span><span class='ivar'>@uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span> <span class='id identifier rubyid_read_loop_thread'>read_loop_thread</span><span class='comma'>,</span> <span class='op'>**</span><span class='ivar'>@options</span><span class='rparen'>)</span>
@@ -718,7 +733,7 @@
       <div class="method_details ">
   <h3 class="signature " id="delete_exchange-instance_method">
   
-    #<strong>delete_exchange</strong>(name)  &#x21d2; <tt>Object</tt> 
+    #<strong>delete_exchange</strong>(name)  &#x21d2; <tt>void</tt> 
   
 
   
@@ -726,7 +741,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
+    <p class="note returns_void">This method returns an undefined value.</p>
 <p>Delete an exchange</p>
 
 
@@ -741,15 +756,15 @@
       <pre class="lines">
 
 
-174
-175
-176
-177
-178
-179</pre>
+196
+197
+198
+199
+200
+201</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 174</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 196</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_exchange'>delete_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -765,7 +780,7 @@
       <div class="method_details ">
   <h3 class="signature " id="delete_queue-instance_method">
   
-    #<strong>delete_queue</strong>(name)  &#x21d2; <tt>Object</tt> 
+    #<strong>delete_queue</strong>(name)  &#x21d2; <tt>void</tt> 
   
 
   
@@ -773,7 +788,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
+    <p class="note returns_void">This method returns an undefined value.</p>
 <p>Delete a queue</p>
 
 
@@ -788,15 +803,15 @@
       <pre class="lines">
 
 
-166
-167
-168
-169
-170
-171</pre>
+187
+188
+189
+190
+191
+192</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 166</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 187</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_queue'>delete_queue</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -853,19 +868,19 @@
       <pre class="lines">
 
 
-84
-85
-86
 87
 88
 89
 90
 91
 92
-93</pre>
+93
+94
+95
+96</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 84</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 87</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>internal:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='ivar'>@exchanges</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span> <span class='kw'>do</span>
@@ -885,7 +900,7 @@
       <div class="method_details ">
   <h3 class="signature " id="exchange_bind-instance_method">
   
-    #<strong>exchange_bind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; <tt>Object</tt> 
+    #<strong>exchange_bind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; <tt>void</tt> 
   
 
   
@@ -893,7 +908,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
+    <p class="note returns_void">This method returns an undefined value.</p>
 <p>Bind an exchange to an exchange</p>
 
 
@@ -908,14 +923,14 @@
       <pre class="lines">
 
 
-145
-146
-147
-148
-149</pre>
+163
+164
+165
+166
+167</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 145</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 163</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange_bind'>exchange_bind</span><span class='lparen'>(</span><span class='id identifier rubyid_destination'>destination</span><span class='comma'>,</span> <span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -930,7 +945,7 @@
       <div class="method_details ">
   <h3 class="signature " id="exchange_unbind-instance_method">
   
-    #<strong>exchange_unbind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; <tt>Object</tt> 
+    #<strong>exchange_unbind</strong>(destination, source, routing_key, arguments: {})  &#x21d2; <tt>void</tt> 
   
 
   
@@ -938,7 +953,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
+    <p class="note returns_void">This method returns an undefined value.</p>
 <p>Unbind an exchange from an exchange</p>
 
 
@@ -953,14 +968,14 @@
       <pre class="lines">
 
 
-152
-153
-154
-155
-156</pre>
+171
+172
+173
+174
+175</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 152</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 171</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange_unbind'>exchange_unbind</span><span class='lparen'>(</span><span class='id identifier rubyid_destination'>destination</span><span class='comma'>,</span> <span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -975,7 +990,7 @@
       <div class="method_details ">
   <h3 class="signature " id="publish-instance_method">
   
-    #<strong>publish</strong>(body, exchange, routing_key, **properties)  &#x21d2; <tt>Object</tt> 
+    #<strong>publish</strong>(body, exchange, routing_key, **properties)  &#x21d2; <tt>Nil</tt> 
   
 
   
@@ -991,6 +1006,19 @@
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -998,15 +1026,15 @@
       <pre class="lines">
 
 
-108
-109
-110
-111
-112
-113</pre>
+121
+122
+123
+124
+125
+126</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 108</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 121</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -1022,7 +1050,7 @@
       <div class="method_details ">
   <h3 class="signature " id="publish_and_forget-instance_method">
   
-    #<strong>publish_and_forget</strong>(body, exchange, routing_key, **properties)  &#x21d2; <tt>Object</tt> 
+    #<strong>publish_and_forget</strong>(body, exchange, routing_key, **properties)  &#x21d2; <tt>Nil</tt> 
   
 
   
@@ -1038,6 +1066,19 @@
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -1045,15 +1086,15 @@
       <pre class="lines">
 
 
-116
-117
-118
-119
-120
-121</pre>
+130
+131
+132
+133
+134
+135</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 116</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 130</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_publish_and_forget'>publish_and_forget</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -1069,7 +1110,7 @@
       <div class="method_details ">
   <h3 class="signature " id="purge-instance_method">
   
-    #<strong>purge</strong>(queue)  &#x21d2; <tt>Object</tt> 
+    #<strong>purge</strong>(queue)  &#x21d2; <tt>void</tt> 
   
 
   
@@ -1077,7 +1118,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
+    <p class="note returns_void">This method returns an undefined value.</p>
 <p>Purge a queue</p>
 
 
@@ -1092,14 +1133,14 @@
       <pre class="lines">
 
 
-159
-160
-161
-162
-163</pre>
+179
+180
+181
+182
+183</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 159</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 179</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_purge'>purge</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -1168,9 +1209,6 @@
       <pre class="lines">
 
 
-69
-70
-71
 72
 73
 74
@@ -1179,10 +1217,13 @@
 77
 78
 79
-80</pre>
+80
+81
+82
+83</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 69</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 72</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_queue'>queue</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>exclusive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Currently only supports named, durable queues</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -1204,7 +1245,7 @@
       <div class="method_details ">
   <h3 class="signature " id="start-instance_method">
   
-    #<strong>start</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>start</strong>  &#x21d2; <tt>self</tt> 
   
 
   
@@ -1220,6 +1261,19 @@
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -1227,8 +1281,6 @@
       <pre class="lines">
 
 
-28
-29
 30
 31
 32
@@ -1254,10 +1306,12 @@
 52
 53
 54
-55</pre>
+55
+56
+57</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 30</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_start'>start</span>
   <span class='ivar'>@stopped</span> <span class='op'>=</span> <span class='kw'>false</span>
@@ -1295,7 +1349,7 @@
       <div class="method_details ">
   <h3 class="signature " id="stop-instance_method">
   
-    #<strong>stop</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>stop</strong>  &#x21d2; <tt>Nil</tt> 
   
 
   
@@ -1311,6 +1365,19 @@
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -1318,17 +1385,17 @@
       <pre class="lines">
 
 
-58
-59
-60
 61
 62
 63
 64
-65</pre>
+65
+66
+67
+68</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 58</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_stop'>stop</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@stopped</span>
@@ -1346,40 +1413,193 @@
       <div class="method_details ">
   <h3 class="signature " id="subscribe-instance_method">
   
-    #<strong>subscribe</strong>(queue_name, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &amp;blk)  &#x21d2; <tt>Object</tt> 
+    #<strong>subscribe</strong>(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}) {|Message| ... } &#x21d2; <tt>Array&lt;(String, Array&lt;Thread&gt;)&gt;</tt><sup>?</sup> 
   
 
   
 
   
-</h3><table class="source_code">
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Consume messages from a queue</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>queue</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Name of the queue to subscribe to</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>no_ack</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>When false messages have to be manually acknowledged (or rejected)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>prefetch</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>1</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Specify how many messages to prefetch for consumers with `no_ack: false`</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>worker_threads</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>1</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Number of threads processing messages, 0 means that the thread calling this method will be blocked</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>{}</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Custom arguments to the consumer</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Client/Message.html" title="AMQP::Client::Message (class)">Message</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Delivered message from the queue</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;(String, Array&lt;Thread&gt;)&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Returns consumer_tag and an array of worker threads</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>When `worker_threads` is 0 the method will return when the consumer is cancelled</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
   <tr>
     <td>
       <pre class="lines">
 
 
-95
-96
-97
-98
-99
-100
-101
-102
-103
-104
-105</pre>
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 95</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 107</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='id identifier rubyid_queue_name'>queue_name</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>prefetch:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
-  <span class='ivar'>@subscriptions</span><span class='period'>.</span><span class='id identifier rubyid_add?'>add?</span> <span class='lbracket'>[</span><span class='id identifier rubyid_queue_name'>queue_name</span><span class='comma'>,</span> <span class='id identifier rubyid_no_ack'>no_ack</span><span class='comma'>,</span> <span class='id identifier rubyid_prefetch'>prefetch</span><span class='comma'>,</span> <span class='id identifier rubyid_worker_threads'>worker_threads</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_blk'>blk</span><span class='rbracket'>]</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>prefetch:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
+  <span class='ivar'>@subscriptions</span><span class='period'>.</span><span class='id identifier rubyid_add?'>add?</span> <span class='lbracket'>[</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='id identifier rubyid_no_ack'>no_ack</span><span class='comma'>,</span> <span class='id identifier rubyid_prefetch'>prefetch</span><span class='comma'>,</span> <span class='id identifier rubyid_worker_threads'>worker_threads</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_blk'>blk</span><span class='rbracket'>]</span>
 
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
     <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_channel'>channel</span>
     <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_qos'>basic_qos</span><span class='lparen'>(</span><span class='id identifier rubyid_prefetch'>prefetch</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_consume'>basic_consume</span><span class='lparen'>(</span><span class='id identifier rubyid_queue_name'>queue_name</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='id identifier rubyid_no_ack'>no_ack</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='id identifier rubyid_worker_threads'>worker_threads</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
+    <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_consume'>basic_consume</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='id identifier rubyid_no_ack'>no_ack</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='id identifier rubyid_worker_threads'>worker_threads</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
       <span class='id identifier rubyid_blk'>blk</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='rparen'>)</span>
     <span class='kw'>end</span>
   <span class='kw'>end</span>
@@ -1392,7 +1612,7 @@
       <div class="method_details ">
   <h3 class="signature " id="unbind-instance_method">
   
-    #<strong>unbind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; <tt>Object</tt> 
+    #<strong>unbind</strong>(queue, exchange, routing_key, arguments: {})  &#x21d2; <tt>void</tt> 
   
 
   
@@ -1400,7 +1620,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
+    <p class="note returns_void">This method returns an undefined value.</p>
 <p>Unbind a queue from an exchange</p>
 
 
@@ -1415,14 +1635,14 @@
       <pre class="lines">
 
 
-138
-139
-140
-141
-142</pre>
+155
+156
+157
+158
+159</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 138</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 155</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -1437,7 +1657,7 @@
       <div class="method_details ">
   <h3 class="signature " id="wait_for_confirms-instance_method">
   
-    #<strong>wait_for_confirms</strong>  &#x21d2; <tt>Object</tt> 
+    #<strong>wait_for_confirms</strong>  &#x21d2; <tt>Boolean</tt> 
   
 
   
@@ -1453,6 +1673,24 @@
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>True if successful, false if any message negatively acknowledged</p>
+</div>
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -1460,14 +1698,14 @@
       <pre class="lines">
 
 
-124
-125
-126
-127
-128</pre>
+139
+140
+141
+142
+143</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 124</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 139</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait_for_confirms'>wait_for_confirms</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -1484,7 +1722,7 @@
 </div>
 
       <div id="footer">
-  Generated on Wed Sep  1 18:19:51 2021 by
+  Generated on Mon Sep  6 11:47:00 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
