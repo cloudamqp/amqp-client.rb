@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [1.0.2] - 2021-09-07
+
+- Changed: Raise ConnectionClosed and ChannelClosed correctly (previous always ChannelClosed)
+- Fixed: Respect Connection#blocked sent by the broker, will block all writes/requests
+
 ## [1.0.1] - 2021-09-06
 
 - The API is fully documented! https://cloudamqp.github.io/amqp-client.rb/
