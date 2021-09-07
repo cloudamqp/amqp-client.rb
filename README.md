@@ -38,7 +38,7 @@ msg = ch.basic_get q[:queue_name]
 puts msg.body
 ```
 
-High level API, is an easier and safer API, that only deal with durable queues and persisted messages. All methods are blocking in the case of connection loss etc. It's also fully thread-safe. Don't expect it to have extreme throughput, but expect 100% delivery guarantees (messages might be delivered twice, in the unlikely event of connection loss between message publish and message confirmation by the server).
+High level API, is an easier and safer API, that only deal with durable queues and persisted messages. All methods are blocking in the case of connection loss etc. It's also fully thread-safe. Don't expect it to have extreme throughput, but expect 100% delivery guarantees (messages might be delivered twice, in the unlikely event of connection loss between message publish and message confirmation by the broker).
 
 ```ruby
 amqp = AMQP::Client.new("amqp://localhost")
@@ -50,7 +50,7 @@ q = amqp.queue("myqueue")
 # Bind the queue to any exchange, with any binding key
 q.bind("amq.topic", "my.events.*")
 
-# The message will be reprocessed if the client loses connection to the server
+# The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack'ed.
 q.subscribe(prefetch: 20) do |msg|
   process(JSON.parse(msg.body))

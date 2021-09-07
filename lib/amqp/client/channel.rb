@@ -64,7 +64,7 @@ module AMQP
           nil
         end
 
-        # Called when channel is closed by server
+        # Called when channel is closed by broker
         # @return [nil]
         # @api private
         def closed!(code, reason, classid, methodid)
@@ -77,7 +77,7 @@ module AMQP
         end
 
         # Handle returned messages in this block.  If not set the message will just be logged to STDERR
-        # @yield [ReturnMessage] Messages returned by the server when a publish has failed
+        # @yield [ReturnMessage] Messages returned by the broker when a publish has failed
         # @return nil
         def on_return(&block)
           @on_return = block
@@ -105,7 +105,7 @@ module AMQP
         # Delete an exchange
         # @param name [String] Name of the exchange
         # @param if_unused [Boolean] If true raise an exception if queues/exchanges is bound to this exchange
-        # @param no_wait [Boolean] If true don't wait for a server confirmation
+        # @param no_wait [Boolean] If true don't wait for a broker confirmation
         # @return [nil]
         def exchange_delete(name, if_unused: false, no_wait: false)
           write_bytes FrameBytes.exchange_delete(@id, name, if_unused, no_wait)
@@ -174,7 +174,7 @@ module AMQP
         # @param name [String] Name of the queue
         # @param if_unused [Boolean] Only delete if the queue doesn't have consumers, raises a ChannelClosed error otherwise
         # @param if_empty [Boolean] Only delete if the queue is empty, raises a ChannelClosed error otherwise
-        # @param no_wait [Boolean] Don't wait for a server confirmation if true
+        # @param no_wait [Boolean] Don't wait for a broker confirmation if true
         # @return [Integer] Number of messages in queue when deleted
         # @return [nil] If no_wait was set true
         def queue_delete(name, if_unused: false, if_empty: false, no_wait: false)
@@ -197,7 +197,7 @@ module AMQP
 
         # Purge a queue
         # @param name [String] Name of the queue
-        # @param no_wait [Boolean] Don't wait for a server confirmation if true
+        # @param no_wait [Boolean] Don't wait for a broker confirmation if true
         # @return [nil]
         def queue_purge(name, no_wait: false)
           write_bytes FrameBytes.queue_purge(@id, name, no_wait)
@@ -238,6 +238,8 @@ module AMQP
         # @param exchange [String] Name of the exchange to publish to
         # @param routing_key [String] The routing key that the exchange might use to route the message to a queue
         # @param properties [Properties]
+        # @option properties [Boolean] mandatory The message will be returned if the message can't be routed to a queue
+        # @option properties [Boolean] persistent Same as delivery_mode: 2
         # @option properties [String] content_type Content type of the message body
         # @option properties [String] content_encoding Content encoding of the body
         # @option properties [Hash<String, Object>] headers Custom headers
@@ -284,7 +286,9 @@ module AMQP
 
         # Publish a message and block until the message has confirmed it has received it
         # @param (see #basic_publish)
+        # @option (see #basic_publish)
         # @return [Boolean] True if the message was successfully published
+        # @raise (see #basic_publish)
         def basic_publish_confirm(body, exchange, routing_key, **properties)
           confirm_select(no_wait: true)
           basic_publish(body, exchange, routing_key, **properties)
@@ -293,12 +297,13 @@ module AMQP
 
         # Consume messages from a queue
         # @param queue [String] Name of the queue to subscribe to
-        # @param tag [String] Custom consumer tag, will be auto assigned by the server if empty
+        # @param tag [String] Custom consumer tag, will be auto assigned by the broker if empty.
+        #   Has to be uniqe among this channel's consumers only
         # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected)
         # @param exclusive [Boolean] When true only a single consumer can consume from the queue at a time
-        # @param arguments [Hash] Custom arguments to the consumer
+        # @param arguments [Hash] Custom arguments for the consumer
         # @param worker_threads [Integer] Number of threads processing messages,
-        #   0 means that the thread calling this method will be blocked
+        #   0 means that the thread calling this method will process the messages and thus this method will block
         # @yield [Message] Delivered message from the queue
         # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
         # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
@@ -325,7 +330,7 @@ module AMQP
 
         # Cancel/abort/stop a consumer
         # @param consumer_tag [String] Tag of the consumer to cancel
-        # @param no_wait [Boolean] Will wait for a confirmation from the server that the consumer is cancelled
+        # @param no_wait [Boolean] Will wait for a confirmation from the broker that the consumer is cancelled
         # @return [nil]
         def basic_cancel(consumer_tag, no_wait: false)
           consumer = @consumers.fetch(consumer_tag)
@@ -377,7 +382,7 @@ module AMQP
 
         # Recover all the unacknowledge messages
         # @param requeue [Boolean] If false the currently unack:ed messages will be deliviered to this consumer again,
-        #   if false to any consumer
+        #   if true to any consumer
         # @return [nil]
         def basic_recover(requeue: false)
           write_bytes FrameBytes.basic_recover(@id, requeue: requeue)
@@ -388,8 +393,8 @@ module AMQP
         # @!endgroup
         # @!group Confirm
 
-        # Put the channel in confirm mode, each published message will then be confirmed by the server
-        # @param no_wait [Boolean] If false the method will block until the server has confirmed the request
+        # Put the channel in confirm mode, each published message will then be confirmed by the broker
+        # @param no_wait [Boolean] If false the method will block until the broker has confirmed the request
         # @return [nil]
         def confirm_select(no_wait: false)
           return if @confirm
@@ -412,7 +417,7 @@ module AMQP
           end
         end
 
-        # Called by Connection when received ack/nack from server
+        # Called by Connection when received ack/nack from broker
         # @api private
         def confirm(args)
           ack_or_nack, delivery_tag, multiple = *args

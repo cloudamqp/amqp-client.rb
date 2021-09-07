@@ -122,7 +122,10 @@ module AMQP
     # @!group Publish
 
     # Publish a (persistent) message and wait for confirmation
-    # @return [nil]
+    # @param (see Connection::Channel#basic_publish_confirm)
+    # @option (see Connection::Channel#basic_publish_confirm)
+    # @return (see Connection::Channel#basic_publish_confirm)
+    # @raise (see Connection::Channel#basic_publish_confirm)
     def publish(body, exchange, routing_key, **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
@@ -131,7 +134,10 @@ module AMQP
     end
 
     # Publish a (persistent) message but don't wait for a confirmation
-    # @return [nil]
+    # @param (see Connection::Channel#basic_publish)
+    # @option (see Connection::Channel#basic_publish)
+    # @return (see Connection::Channel#basic_publish)
+    # @raise (see Connection::Channel#basic_publish)
     def publish_and_forget(body, exchange, routing_key, **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
