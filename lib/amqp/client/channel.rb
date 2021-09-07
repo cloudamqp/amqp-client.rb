@@ -255,7 +255,12 @@ module AMQP
         # @option properties [String] app_id Can be used to indicates which app that generated the message
         # @return [nil]
         def basic_publish(body, exchange, routing_key, **properties)
-          frame_max = @connection.frame_max - 8
+          if (blocked = @connection.blocked)
+            warn "AMQP-Client publishes blocked by broker: #{blocked}"
+            @connection.unblocked.pop # this will block until unblocked in Connection#read_loop
+          end
+
+          body_max = @connection.frame_max - 8
           id = @id
           mandatory = properties.delete(:mandatory) || false
           case properties.delete(:persistent)
@@ -263,7 +268,7 @@ module AMQP
           when false then properties[:delivery_mode] = 1
           end
 
-          if body.bytesize.between?(1, frame_max)
+          if body.bytesize.between?(1, body_max)
             write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
                         FrameBytes.header(id, body.bytesize, properties),
                         FrameBytes.body(id, body)
@@ -275,7 +280,7 @@ module AMQP
                       FrameBytes.header(id, body.bytesize, properties)
           pos = 0
           while pos < body.bytesize # split body into multiple frame_max frames
-            len = [frame_max, body.bytesize - pos].min
+            len = [body_max, body.bytesize - pos].min
             body_part = body.byteslice(pos, len)
             write_bytes FrameBytes.body(id, body_part)
             pos += len

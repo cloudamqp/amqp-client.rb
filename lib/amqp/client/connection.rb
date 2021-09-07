@@ -62,12 +62,22 @@ module AMQP
         @closed = false
         @replies = ::Queue.new
         @write_lock = Mutex.new
+        @blocked = nil
+        @unblocked = ::Queue.new
         Thread.new { read_loop } if read_loop_thread
       end
 
       # The max frame size negotiated between the client and the broker
       # @return [Integer]
       attr_reader :frame_max
+
+      # If publishes is blocked by the broker this holds the reason, nil if not blocked
+      # @return [String, nil]
+      attr_reader :blocked
+
+      # A queue which channels can be notified on when the connection is unblocked
+      # @return [::Queue]
+      attr_reader :unblocked
 
       # Custom inspect
       # @return [String]
@@ -206,6 +216,13 @@ module AMQP
               @closed = true
               @replies.push [:close_ok]
               return false
+            when 60 # connection#blocked
+              reason_len = buf[4].ord
+              reason = buf.byteslice(5, reason_len).force_encoding("utf-8")
+              @blocked = reason
+            when 61 # connection#unblocked
+              @blocked = nil
+              @unblocked.num_waiting.times { @unblocked.push nil } # notify waiting channels
             else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
           when 20 # channel
