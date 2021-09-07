@@ -255,11 +255,6 @@ module AMQP
         # @option properties [String] app_id Can be used to indicates which app that generated the message
         # @return [nil]
         def basic_publish(body, exchange, routing_key, **properties)
-          if (blocked = @connection.blocked)
-            warn "AMQP-Client publishes blocked by broker: #{blocked}"
-            @connection.unblocked.pop # this will block until unblocked in Connection#read_loop
-          end
-
           body_max = @connection.frame_max - 8
           id = @id
           mandatory = properties.delete(:mandatory) || false

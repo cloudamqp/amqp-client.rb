@@ -469,7 +469,7 @@ class AMQPClientTest < Minitest::Test
 
   def test_it_can_be_blocked
     skip "requires sudo"
-    connection = AMQP::Client.new("amqp://localhost", channel_max: 1).connect
+    connection = AMQP::Client.new("amqp://localhost").connect
     ch = connection.channel
     system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
     t = Thread.new do
@@ -482,6 +482,32 @@ class AMQPClientTest < Minitest::Test
     assert t.join
     assert_equal false, t.status # status is false when terminated normal
   ensure
+    connection&.close
+  end
+
+  def test_it_will_raise_if_closed_while_blocked
+    skip "requires sudo"
+    connection = AMQP::Client.new("amqp://localhost").connect
+    ch = connection.channel
+    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
+    t = Thread.new do
+      ch.basic_publish("body", "", "q")
+      sleep 0.01 # server blocks after first publish
+      assert_raises(AMQP::Client::Error::ConnectionClosed) do
+        ch.basic_publish("body", "", "q")
+      end
+    end
+    assert_nil t.join(0.1) # make sure the thread is blocked
+    Thread.new do
+      assert_raises(AMQP::Client::Error::ConnectionClosed) do
+        ch.exchange_declare("foo", "not.an.exchange.type")
+      end
+    end
+    sleep 0.01
+    connection.close
+    t.join
+  ensure
+    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
     connection&.close
   end
 end

@@ -40,7 +40,11 @@ module AMQP
       end
 
       # Raised if connection is unexpectedly closed
-      class ConnectionClosed < Error; end
+      class ConnectionClosed < Error
+        def initialize(code, reason, classid = 0, methodid = 0)
+          super "Connection closed (#{code}) #{reason} (#{classid}/#{methodid})"
+        end
+      end
     end
   end
 end

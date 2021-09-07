@@ -59,25 +59,16 @@ module AMQP
         @frame_max = frame_max
         @heartbeat = heartbeat
         @channels = {}
-        @closed = false
+        @closed = nil
         @replies = ::Queue.new
         @write_lock = Mutex.new
         @blocked = nil
-        @unblocked = ::Queue.new
         Thread.new { read_loop } if read_loop_thread
       end
 
       # The max frame size negotiated between the client and the broker
       # @return [Integer]
       attr_reader :frame_max
-
-      # If publishes is blocked by the broker this holds the reason, nil if not blocked
-      # @return [String, nil]
-      attr_reader :blocked
-
-      # A queue which channels can be notified on when the connection is unblocked
-      # @return [::Queue]
-      attr_reader :unblocked
 
       # Custom inspect
       # @return [String]
@@ -125,17 +116,21 @@ module AMQP
       def close(reason: "", code: 200)
         return if @closed
 
-        @closed = true
-        write_bytes FrameBytes.connection_close(code, reason)
+        @closed = [code, reason]
         @channels.each_value { |ch| ch.closed!(code, reason, 0, 0) }
-        expect(:close_ok)
+        if @blocked
+          @socket.close
+        else
+          write_bytes FrameBytes.connection_close(code, reason)
+          expect(:close_ok)
+        end
         nil
       end
 
       # True if the connection is closed
       # @return [Boolean]
       def closed?
-        @closed
+        !@closed.nil?
       end
 
       # Write byte array(s) directly to the socket (thread-safe)
@@ -143,10 +138,15 @@ module AMQP
       # @return [Integer] number of bytes written
       # @api private
       def write_bytes(*bytes)
+        blocked = @blocked
+        warn "AMQP-Client blocked by broker: #{blocked}" if blocked
         @write_lock.synchronize do
+          warn "AMQP-Client unblocked by broker" if blocked
           @socket.write(*bytes)
         end
       rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
+        raise Error::ConnectionClosed.new(*@closed) if @closed
+
         raise Error, "Could not write to socket, #{e.message}"
       end
 
@@ -177,10 +177,10 @@ module AMQP
         end
         nil
       rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
-        warn "AMQP-Client read error: #{e.inspect}"
+        @closed ||= [400, "read error: #{e.message}"]
         nil # ignore read errors
       ensure
-        @closed = true
+        @closed ||= [400, "unknown"]
         @replies.close
         begin
           @socket.close
@@ -201,10 +201,10 @@ module AMQP
 
             case method_id
             when 50 # connection#close
-              @closed = true
               code, text_len = buf.unpack("@4 S> C")
               text = buf.byteslice(7, text_len).force_encoding("utf-8")
               error_class_id, error_method_id = buf.byteslice(7 + text_len, 4).unpack("S> S>")
+              @closed = [code, text, error_class_id, error_method_id]
               @channels.each_value { |ch| ch.closed!(code, text, error_class_id, error_method_id) }
               begin
                 write_bytes FrameBytes.connection_close_ok
@@ -213,22 +213,26 @@ module AMQP
               end
               return false
             when 51 # connection#close-ok
-              @closed = true
               @replies.push [:close_ok]
               return false
             when 60 # connection#blocked
-              reason_len = buf[4].ord
+              reason_len = buf.unpack1("@4 C")
               reason = buf.byteslice(5, reason_len).force_encoding("utf-8")
               @blocked = reason
+              @write_lock.lock
             when 61 # connection#unblocked
               @blocked = nil
-              @unblocked.num_waiting.times { @unblocked.push nil } # notify waiting channels
+              @write_lock.unlock
             else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
           when 20 # channel
             case method_id
             when 11 # channel#open-ok
               @channels[channel_id].reply [:channel_open_ok]
+            when 20 # channel#flow
+              active = buf.byteslice(4).ord
+              @channels[channel_id].flow = active == 1
+              write_bytes FrameBytes.channel_flow_ok(active)
             when 40 # channel#close
               reply_code, reply_text_len = buf.unpack("@4 S> C")
               reply_text = buf.byteslice(7, reply_text_len).force_encoding("utf-8")

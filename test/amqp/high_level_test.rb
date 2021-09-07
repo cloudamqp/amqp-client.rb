@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../test_helper"
-require 'zlib'
+require "zlib"
 
 class HighLevelTest < Minitest::Test
   def test_it_can_connect_pub_sub
