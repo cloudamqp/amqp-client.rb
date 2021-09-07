@@ -98,7 +98,7 @@
 <span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_body'>body</span>
 </code></pre>
 
-<p>High level API, is an easier and safer API, that only deal with durable queues and persisted messages. All methods are blocking in the case of connection loss etc. It&#39;s also fully thread-safe. Don&#39;t expect it to have extreme throughput, but expect 100% delivery guarantees (messages might be delivered twice, in the unlikely event of connection loss between message publish and message confirmation by the server).</p>
+<p>High level API, is an easier and safer API, that only deal with durable queues and persisted messages. All methods are blocking in the case of connection loss etc. It&#39;s also fully thread-safe. Don&#39;t expect it to have extreme throughput, but expect 100% delivery guarantees (messages might be delivered twice, in the unlikely event of connection loss between message publish and message confirmation by the broker).</p>
 
 <pre class="code ruby"><code class="ruby">amqp = AMQP::Client.new(&quot;amqp://localhost&quot;)
 amqp.start
@@ -109,7 +109,7 @@ q = amqp.queue(&quot;myqueue&quot;)
 # Bind the queue to any exchange, with any binding key
 q.bind(&quot;amq.topic&quot;, &quot;my.events.*&quot;)
 
-# The message will be reprocessed if the client loses connection to the server
+# The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack&#39;ed.
 q.subscribe(prefetch: 20) do |msg|
   process(JSON.parse(msg.body))
@@ -142,7 +142,7 @@ amqp.publish(Zlib.gzip(&quot;an event&quot;), &quot;amq.topic&quot;, &quot;my.ev
 </div></div>
 
       <div id="footer">
-  Generated on Mon Sep  6 20:22:13 2021 by
+  Generated on Tue Sep  7 10:08:36 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
