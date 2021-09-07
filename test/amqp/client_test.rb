@@ -383,7 +383,7 @@ class AMQPClientTest < Minitest::Test
   def test_handle_connection_closed_by_server
     conn = AMQP::Client.new("amqp://localhost").connect
     conn.with_channel do |ch|
-      assert_raises(AMQP::Client::Error::ChannelClosed, /unknown exchange type/) do
+      assert_raises(AMQP::Client::Error::ConnectionClosed, /unknown exchange type/) do
         ch.exchange_declare("foobar", "faulty.exchange.type")
       end
     end
@@ -506,8 +506,8 @@ class AMQPClientTest < Minitest::Test
     sleep 0.01
     connection.close
     t.join
-  ensure
     system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
+  ensure
     connection&.close
   end
 end

@@ -117,7 +117,7 @@ module AMQP
         return if @closed
 
         @closed = [code, reason]
-        @channels.each_value { |ch| ch.closed!(code, reason, 0, 0) }
+        @channels.each_value { |ch| ch.closed!(:connection, code, reason, 0, 0) }
         if @blocked
           @socket.close
         else
@@ -205,7 +205,7 @@ module AMQP
               text = buf.byteslice(7, text_len).force_encoding("utf-8")
               error_class_id, error_method_id = buf.byteslice(7 + text_len, 4).unpack("S> S>")
               @closed = [code, text, error_class_id, error_method_id]
-              @channels.each_value { |ch| ch.closed!(code, text, error_class_id, error_method_id) }
+              @channels.each_value { |ch| ch.closed!(:connection, code, text, error_class_id, error_method_id) }
               begin
                 write_bytes FrameBytes.connection_close_ok
               rescue Error
@@ -229,16 +229,12 @@ module AMQP
             case method_id
             when 11 # channel#open-ok
               @channels[channel_id].reply [:channel_open_ok]
-            when 20 # channel#flow
-              active = buf.byteslice(4).ord
-              @channels[channel_id].flow = active == 1
-              write_bytes FrameBytes.channel_flow_ok(active)
             when 40 # channel#close
               reply_code, reply_text_len = buf.unpack("@4 S> C")
               reply_text = buf.byteslice(7, reply_text_len).force_encoding("utf-8")
               classid, methodid = buf.byteslice(7 + reply_text_len, 4).unpack("S> S>")
               channel = @channels.delete(channel_id)
-              channel.closed!(reply_code, reply_text, classid, methodid)
+              channel.closed!(:channel, reply_code, reply_text, classid, methodid)
               write_bytes FrameBytes.channel_close_ok(channel_id)
             when 41 # channel#close-ok
               channel = @channels.delete(channel_id)

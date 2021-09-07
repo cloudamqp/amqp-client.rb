@@ -122,7 +122,7 @@ class HighLevelTest < Minitest::Test
       q.subscribe do |msg|
         msgs << msg
       end
-      assert_raises(AMQP::Client::Error::ChannelClosed) do
+      assert_raises(AMQP::Client::Error::ConnectionClosed) do
         client.exchange("test.exchange", "non.existing.exchange.type")
       end
 

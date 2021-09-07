@@ -32,6 +32,19 @@ module AMQP
         end
       end
 
+      # Depending on close level a ConnectionClosed or ChannelClosed error is returned
+      class Closed < Error
+        def self.new(id, level, code, reason, classid = 0, methodid = 0)
+          case level
+          when :connection
+            ConnectionClosed.new(code, reason, classid, methodid)
+          when :channel
+            ChannelClosed.new(id, code, reason, classid, methodid)
+          else raise ArgumentError, "invalid level '#{level}'"
+          end
+        end
+      end
+
       # Raised if channel is already closed
       class ChannelClosed < Error
         def initialize(id, code, reason, classid = 0, methodid = 0)
