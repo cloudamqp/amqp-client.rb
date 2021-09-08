@@ -45,7 +45,9 @@ module AMQP
       # @return [String, nil]
       attr_accessor :reply_to
       # Number of seconds the message will stay in the queue
-      # @return [Integer, String, nil]
+      # @return [Integer]
+      # @return [String]
+      # @return [nil]
       attr_accessor :expiration
       # @return [String, nil]
       attr_accessor :message_id

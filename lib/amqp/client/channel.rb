@@ -473,12 +473,12 @@ module AMQP
 
         # @api private
         def message_returned(reply_code, reply_text, exchange, routing_key)
-          @next_msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key, nil, "")
+          @next_msg = ReturnMessage.new(reply_code, reply_text, exchange, routing_key)
         end
 
         # @api private
         def message_delivered(consumer_tag, delivery_tag, redelivered, exchange, routing_key)
-          @next_msg = Message.new(self, delivery_tag, exchange, routing_key, nil, "", redelivered, consumer_tag)
+          @next_msg = Message.new(self, consumer_tag, delivery_tag, exchange, routing_key, redelivered)
         end
 
         # @api private

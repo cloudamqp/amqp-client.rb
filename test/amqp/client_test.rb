@@ -358,7 +358,7 @@ class AMQPClientTest < Minitest::Test
     channel.basic_publish "foo", "amq.headers", "bar", headers: { a: "b" }
     msg = channel.basic_get q[:queue_name]
     assert_equal "foo", msg.body
-    assert_equal({ "a" => "b" }, msg.properties[:headers])
+    assert_equal({ "a" => "b" }, msg.properties.headers)
   end
 
   def test_set_connection_name

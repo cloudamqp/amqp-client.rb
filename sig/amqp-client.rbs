@@ -88,24 +88,24 @@ module AMQP
       def self.tx_rollback: (Integer id) -> String
     end
 
-    class Message < Struct[untyped]
-      attr_accessor channel(): Connection::Channel
-      attr_accessor delivery_tag(): Integer
-      attr_accessor exchange_name(): String
-      attr_accessor routing_key(): String
-      attr_accessor properties(): Hash[String, untyped]
-      attr_accessor body(): String?
-      attr_accessor redelivered(): bool
-      attr_accessor consumer_tag(): String?
+    class Message
+      attr_reader channel(): Connection::Channel
+      attr_reader delivery_tag(): Integer
+      attr_reader exchange(): String
+      attr_reader routing_key(): String
+      attr_reader redelivered(): bool
+      attr_reader consumer_tag(): String?
+      attr_accessor properties(): Properties
+      attr_accessor body(): String
     end
 
-    class ReturnMessage < Struct[untyped]
-      attr_accessor reply_code(): Integer
-      attr_accessor reply_text(): String
-      attr_accessor exchange(): String
-      attr_accessor routing_key(): String
-      attr_accessor properties(): Hash[String, untyped]
-      attr_accessor body(): String?
+    class ReturnMessage
+      attr_reader reply_code(): Integer
+      attr_reader reply_text(): String
+      attr_reader exchange(): String
+      attr_reader routing_key(): String
+      attr_accessor properties(): Properties
+      attr_accessor body(): String
     end
 
     class Connection
