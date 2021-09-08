@@ -1,7 +1,11 @@
 ## [Unreleased]
 
+## [1.1.0] - 2021-09-08
+
 - Fixed: Due to a race condition publishers could get stuck waiting for publish confirms
+- Change: Message, ReturnMessage and Properties are now classes and not structs (for performance reasons)
 - Added: Ruby 2.6 support
+- Added: RBS signatures in sig/amqp-client.rbs
 
 ## [1.0.2] - 2021-09-07
 
