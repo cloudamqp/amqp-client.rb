@@ -60,11 +60,82 @@
       <div id="content"><div id='filecontents'>
 <h1 id="label-AMQP-3A-3AClient">AMQP::Client</h1>
 
-<p>An AMQP 0-9-1 Ruby client, trying to keep things as simple as possible.</p>
+<p>A modern AMQP 0-9-1 Ruby client. Very fast (just as fast as the Java client, and &gt;4x than other Ruby clients), fully thread-safe, blocking operations and straight-forward error handling.</p>
 
 <h2 id="label-Documentation">Documentation</h2>
 
 <p><a href="https://cloudamqp.github.io/amqp-client.rb/">API reference</a></p>
+
+<h2 id="label-Usage">Usage</h2>
+
+<p>The client has two APIs.</p>
+
+<h3 id="label-Low+level+API">Low level API</h3>
+
+<p>This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn&#39;t handle reconnects.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amqp-client</span><span class='tstring_end'>&quot;</span></span>
+
+<span class='comment'># Opens and establishes a connection
+</span><span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="AMQP.html" title="AMQP (module)">AMQP</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="AMQP/Client.html" title="AMQP::Client (class)">Client</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="AMQP/Client.html#initialize-instance_method" title="AMQP::Client#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amqp://guest:guest@localhost</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_connect'><span class='object_link'><a href="AMQP/Client.html#connect-instance_method" title="AMQP::Client#connect (method)">connect</a></span></span>
+
+<span class='comment'># Open a channel
+</span><span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_channel'>channel</span>
+
+<span class='comment'># Create a temporary queue
+</span><span class='id identifier rubyid_q'>q</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_queue_declare'>queue_declare</span>
+
+<span class='comment'># Publish a message to said queue
+</span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_publish'>basic_publish</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Hello World!</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_queue_name'>queue_name</span>
+
+<span class='comment'># Poll the queue for a message
+</span><span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_get'>basic_get</span> <span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_queue_name'>queue_name</span>
+
+<span class='comment'># Print the message&#39;s body to STDOUT
+</span><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_body'>body</span>
+</code></pre>
+
+<h3 id="label-High+level+API">High level API</h3>
+
+<p>The library provides a high-level API that is a bit easier to get started with, and also handles reconnection automatically.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='comment'># Start the client, it will connect and once connected it will reconnect if that connection is lost
+</span><span class='comment'># Operation pending when the connection is lost will raise an exception (not timeout)
+</span><span class='id identifier rubyid_amqp'>amqp</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="AMQP.html" title="AMQP (module)">AMQP</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="AMQP/Client.html" title="AMQP::Client (class)">Client</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="AMQP/Client.html#initialize-instance_method" title="AMQP::Client#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amqp://localhost</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_start'><span class='object_link'><a href="AMQP/Client.html#start-instance_method" title="AMQP::Client#start (method)">start</a></span></span>
+
+<span class='comment'># Declares a durable queue
+</span><span class='id identifier rubyid_myqueue'>myqueue</span> <span class='op'>=</span> <span class='id identifier rubyid_amqp'>amqp</span><span class='period'>.</span><span class='id identifier rubyid_queue'>queue</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>myqueue</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+<span class='comment'># Bind the queue to any exchange, with any binding key
+</span><span class='id identifier rubyid_myqueue'>myqueue</span><span class='period'>.</span><span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>my.events.*</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+<span class='comment'># The message will be reprocessed if the client loses connection to the broker
+</span><span class='comment'># between message arrival and when the message was supposed to be ack&#39;ed.
+</span><span class='id identifier rubyid_myqueue'>myqueue</span><span class='period'>.</span><span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='label'>prefetch:</span> <span class='int'>20</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
+  <span class='id identifier rubyid_process'>process</span><span class='lparen'>(</span><span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_ack'>ack</span>
+<span class='kw'>rescue</span>
+  <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+<span class='kw'>end</span>
+
+<span class='comment'># Publish directly to the queue
+</span><span class='id identifier rubyid_myqueue'>myqueue</span><span class='period'>.</span><span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='lbrace'>{</span> <span class='label'>foo:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bar</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_to_json'>to_json</span><span class='comma'>,</span> <span class='label'>content_type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>application/json</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+<span class='comment'># Publish to any exchange
+</span><span class='id identifier rubyid_amqp'>amqp</span><span class='period'>.</span><span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>my message</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>topic.foo</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>headers:</span> <span class='lbrace'>{</span> <span class='label'>foo:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>bar</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_amqp'>amqp</span><span class='period'>.</span><span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='const'>Zlib</span><span class='period'>.</span><span class='id identifier rubyid_gzip'>gzip</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>an event</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>my.event</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>content_encoding:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>gzip</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+</code></pre>
+
+<h2 id="label-Supported+Ruby+versions">Supported Ruby versions</h2>
+
+<p>All maintained Ruby versions are supported.</p>
+<ul><li>
+<p>3.0</p>
+</li><li>
+<p>2.7</p>
+</li><li>
+<p>2.6</p>
+</li></ul>
 
 <h2 id="label-Installation">Installation</h2>
 
@@ -83,49 +154,6 @@
 <pre class="code ruby"><code class="ruby">$ gem install amqp-client
 </code></pre>
 
-<h2 id="label-Usage">Usage</h2>
-
-<p>Low level API</p>
-
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amqp-client</span><span class='tstring_end'>&quot;</span></span>
-
-<span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="AMQP.html" title="AMQP (module)">AMQP</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="AMQP/Client.html" title="AMQP::Client (class)">Client</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="AMQP/Client.html#initialize-instance_method" title="AMQP::Client#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amqp://guest:guest@localhost</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-<span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_connect'>connect</span>
-<span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_channel'>channel</span>
-<span class='id identifier rubyid_q'>q</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_queue_declare'>queue_declare</span>
-<span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_publish'>basic_publish</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Hello World!</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_q'>q</span><span class='lbracket'>[</span><span class='symbol'>:queue_name</span><span class='rbracket'>]</span>
-<span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_get'>basic_get</span> <span class='id identifier rubyid_q'>q</span><span class='lbracket'>[</span><span class='symbol'>:queue_name</span><span class='rbracket'>]</span>
-<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_body'>body</span>
-</code></pre>
-
-<p>High level API, is an easier and safer API, that only deal with durable queues and persisted messages. All methods are blocking in the case of connection loss etc. It&#39;s also fully thread-safe. Don&#39;t expect it to have extreme throughput, but expect 100% delivery guarantees (messages might be delivered twice, in the unlikely event of connection loss between message publish and message confirmation by the broker).</p>
-
-<pre class="code ruby"><code class="ruby">amqp = AMQP::Client.new(&quot;amqp://localhost&quot;)
-amqp.start
-
-# Declares a durable queue
-q = amqp.queue(&quot;myqueue&quot;)
-
-# Bind the queue to any exchange, with any binding key
-q.bind(&quot;amq.topic&quot;, &quot;my.events.*&quot;)
-
-# The message will be reprocessed if the client loses connection to the broker
-# between message arrival and when the message was supposed to be ack&#39;ed.
-q.subscribe(prefetch: 20) do |msg|
-  process(JSON.parse(msg.body))
-  msg.ack
-rescue
-  msg.reject(requeue: false)
-end
-
-# Publish directly to the queue
-q.publish { foo: &quot;bar&quot; }.to_json, content_type: &quot;application/json&quot;
-
-# Publish to any exchange
-amqp.publish(&quot;my message&quot;, &quot;amq.topic&quot;, &quot;topic.foo&quot;, headers: { foo: &#39;bar&#39; })
-amqp.publish(Zlib.gzip(&quot;an event&quot;), &quot;amq.topic&quot;, &quot;my.event&quot;, content_encoding: &#39;gzip&#39;)
-</code></pre>
-
 <h2 id="label-Development">Development</h2>
 
 <p>After checking out the repo, run <code>bin/setup</code> to install dependencies. Then, run <code>rake test</code> to run the tests. You can also run <code>bin/console</code> for an interactive prompt that will allow you to experiment.</p>
@@ -142,7 +170,7 @@ amqp.publish(Zlib.gzip(&quot;an event&quot;), &quot;amq.topic&quot;, &quot;my.ev
 </div></div>
 
       <div id="footer">
-  Generated on Tue Sep  7 21:14:45 2021 by
+  Generated on Wed Sep  8 07:22:12 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
