@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Fixed: Due to a race condition publishers could get stuck waiting for publish confirms
+- Added: Ruby 2.6 support
+
 ## [1.0.2] - 2021-09-07
 
 - Changed: Raise ConnectionClosed and ChannelClosed correctly (previous always ChannelClosed)
