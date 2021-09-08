@@ -209,7 +209,7 @@ module AMQP
               @replies.push [:close_ok]
               return false
             when 60 # connection#blocked
-              reason_len = buf.unpack1("@4 C")
+              reason_len = buf.getbyte(4)
               reason = buf.byteslice(5, reason_len).force_encoding("utf-8")
               @blocked = reason
               @write_lock.lock
@@ -249,7 +249,7 @@ module AMQP
           when 50 # queue
             case method_id
             when 11 # declare-ok
-              queue_name_len = buf.unpack1("@4 C")
+              queue_name_len = buf.getbyte(4)
               queue_name = buf.byteslice(5, queue_name_len).force_encoding("utf-8")
               message_count, consumer_count = buf.byteslice(5 + queue_name_len, 8).unpack("L> L>")
               @channels[channel_id].reply [:queue_declare_ok, queue_name, message_count, consumer_count]
@@ -269,17 +269,17 @@ module AMQP
             when 11 # qos-ok
               @channels[channel_id].reply [:basic_qos_ok]
             when 21 # consume-ok
-              tag_len = buf.unpack1("@4 C")
+              tag_len = buf.getbyte(4)
               tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
               @channels[channel_id].reply [:basic_consume_ok, tag]
             when 30 # cancel
-              tag_len = buf.unpack1("@4 C")
+              tag_len = buf.getbyte(4)
               tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
-              no_wait = buf[5 + tag_len].ord == 1
+              no_wait = buf.getbyte(5 + tag_len) == 1
               @channels[channel_id].close_consumer(tag)
               write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait
             when 31 # cancel-ok
-              tag_len = buf.unpack1("@4 C")
+              tag_len = buf.getbyte(4)
               tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
               @channels[channel_id].reply [:basic_cancel_ok, tag]
             when 50 # return
@@ -287,23 +287,23 @@ module AMQP
               pos = 7
               reply_text = buf.byteslice(pos, reply_text_len).force_encoding("utf-8")
               pos += reply_text_len
-              exchange_len = buf[pos].ord
+              exchange_len = buf.getbyte(pos)
               pos += 1
               exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
               pos += exchange_len
-              routing_key_len = buf[pos].ord
+              routing_key_len = buf.getbyte(pos)
               pos += 1
               routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
               @channels[channel_id].message_returned(reply_code, reply_text, exchange, routing_key)
             when 60 # deliver
-              ctag_len = buf[4].ord
+              ctag_len = buf.getbyte(4)
               consumer_tag = buf.byteslice(5, ctag_len).force_encoding("utf-8")
               pos = 5 + ctag_len
               delivery_tag, redelivered, exchange_len = buf.byteslice(pos, 10).unpack("Q> C C")
               pos += 8 + 1 + 1
               exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
               pos += exchange_len
-              rk_len = buf[pos].ord
+              rk_len = buf.getbyte(pos)
               pos += 1
               routing_key = buf.byteslice(pos, rk_len).force_encoding("utf-8")
               @channels[channel_id].message_delivered(consumer_tag, delivery_tag, redelivered == 1, exchange, routing_key)
@@ -312,11 +312,11 @@ module AMQP
               pos = 14
               exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
               pos += exchange_len
-              routing_key_len = buf[pos].ord
+              routing_key_len = buf.getbyte(pos)
               pos += 1
               routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
-              pos += routing_key_len
-              _message_count = buf.byteslice(pos, 4).unpack1("L>")
+              # pos += routing_key_len
+              # message_count = buf.byteslice(pos, 4).unpack1("L>")
               @channels[channel_id].message_delivered(nil, delivery_tag, redelivered == 1, exchange, routing_key)
             when 72 # get-empty
               @channels[channel_id].basic_get_empty
@@ -407,7 +407,7 @@ module AMQP
           end
 
           type, channel_id, frame_size = buf.unpack("C S> L>")
-          frame_end = buf[frame_size + 7].ord
+          frame_end = buf.getbyte(frame_size + 7)
           raise UnexpectedFrameEndError, frame_end if frame_end != 206
 
           case type

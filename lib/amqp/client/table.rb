@@ -23,7 +23,7 @@ module AMQP
         hash = {}
         pos = 0
         while pos < bytes.bytesize
-          key_len = bytes[pos].ord
+          key_len = bytes.getbyte(pos)
           pos += 1
           key = bytes.byteslice(pos, key_len).force_encoding("utf-8")
           pos += key_len
@@ -92,7 +92,7 @@ module AMQP
           end
           [4 + len, a]
         when "t"
-          [1, bytes[pos].ord == 1]
+          [1, bytes.getbyte(pos) == 1]
         when "b"
           [1, bytes.byteslice(pos, 1).unpack1("c")]
         when "B"
@@ -112,7 +112,7 @@ module AMQP
         when "d"
           [8, bytes.byteslice(pos, 8).unpack1("G")]
         when "D"
-          scale = bytes[pos].ord
+          scale = bytes.getbyte(pos)
           pos += 1
           value = bytes.byteslice(pos, 4).unpack1("L>")
           d = value / 10**scale
