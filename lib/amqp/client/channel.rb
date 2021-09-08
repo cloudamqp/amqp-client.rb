@@ -215,6 +215,7 @@ module AMQP
         def queue_unbind(name, exchange, binding_key, arguments: {})
           write_bytes FrameBytes.queue_unbind(@id, name, exchange, binding_key, arguments)
           expect :queue_unbind_ok
+          nil
         end
 
         # @!endgroup
