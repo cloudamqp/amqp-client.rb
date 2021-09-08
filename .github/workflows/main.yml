@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['2.7', '3.0']
+        ruby: ['2.6', '2.7', '3.0']
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
@@ -32,4 +32,3 @@ jobs:
         bundle exec rake
       env:
         AMQP_PORT: ${{ job.services.rabbitmq.ports[5672] }}
-

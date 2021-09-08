@@ -33,7 +33,7 @@ module AMQP
         vhost = URI.decode_www_form_component(uri.path[1..-1] || "/")
         options = URI.decode_www_form(uri.query || "").map! { |k, v| [k.to_sym, v] }.to_h.merge(options)
 
-        socket = Socket.tcp host, port, connect_timeout: 20, resolv_timeout: 5
+        socket = Socket.tcp host, port, connect_timeout: 30
         enable_tcp_keepalive(socket)
         if tls
           cert_store = OpenSSL::X509::Store.new
