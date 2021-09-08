@@ -38,12 +38,18 @@ module AMQP
     # Establishes and returns a new AMQP connection
     # @see Connection#initialize
     # @return [Connection]
+    # @example
+    #   connection = AMQP::Client.new("amqps://server.rmq.cloudamqp.com", connection_name: "My connection").connect
     def connect(read_loop_thread: true)
       Connection.new(@uri, read_loop_thread: read_loop_thread, **@options)
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first
     # @return [self]
+    # @example
+    #   amqp = AMQP::Client.new("amqps://server.rmq.cloudamqp.com")
+    #   amqp.start
+    #   amqp.queue("foobar")
     def start
       @stopped = false
       Thread.new(connect(read_loop_thread: false)) do |conn|
@@ -95,6 +101,10 @@ module AMQP
     #   (it won't be deleted until at least one consumer has consumed from it)
     # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
     # @return [Queue]
+    # @example
+    #   amqp = AMQP::Client.new.start
+    #   q = amqp.queue("foobar")
+    #   q.publish("body")
     def queue(name, durable: true, auto_delete: false, arguments: {})
       raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
 
@@ -108,6 +118,10 @@ module AMQP
 
     # Declare an exchange and return a high level Exchange object
     # @return [Exchange]
+    # @example
+    #   amqp = AMQP::Client.new.start
+    #   x = amqp.exchange("my.hash.exchange", "x-consistent-hash")
+    #   x.publish("body", "routing-key")
     def exchange(name, type, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
@@ -172,9 +186,7 @@ module AMQP
       with_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
-        ch.basic_consume(queue, no_ack: no_ack, worker_threads: worker_threads, arguments: arguments) do |msg|
-          blk.call(msg)
-        end
+        ch.basic_consume(queue, no_ack: no_ack, worker_threads: worker_threads, arguments: arguments, &blk)
       end
     end
 
