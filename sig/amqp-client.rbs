@@ -16,40 +16,40 @@ module AMQP
     def connect: (?read_loop_thread: bool) -> Connection
     def start: -> Client
     def stop: -> nil
-    def queue: (String name, ?durable: bool, ?auto_delete: bool, ?arguments: Hash[Symbol, (String | Integer | bool)]) -> Queue
-    def exchange: (String name, String `type`, ?durable: bool, ?auto_delete: bool, ?internal: bool, ?arguments: Hash[Symbol, untyped]) -> Exchange
+    def queue: (String name, ?durable: bool, ?auto_delete: bool, ?arguments: Hash[Symbol | String, (String | Integer | bool)]) -> Queue
+    def exchange: (String name, String `type`, ?durable: bool, ?auto_delete: bool, ?internal: bool, ?arguments: Hash[Symbol | String, untyped]) -> Exchange
     def publish: (String body, String exchange, String routing_key, **untyped) -> bool
     def publish_and_forget: (String body, String exchange, String routing_key, **untyped) -> nil
     def wait_for_confirms: -> bool
-    def subscribe: (String queue, ?no_ack: bool, ?prefetch: Integer, ?worker_threads: Integer, ?arguments: Hash[Symbol, untyped]) { (Message) -> void } -> [String, Array[Thread]]?
-    def bind: (String queue, String exchange, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
-    def unbind: (String queue, String exchange, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
+    def subscribe: (String queue, ?no_ack: bool, ?prefetch: Integer, ?worker_threads: Integer, ?arguments: Hash[Symbol | String, untyped]) { (Message) -> void } -> [String, Array[Thread]]?
+    def bind: (String queue, String exchange, String binding_key, ?arguments: Hash[Symbol | String, untyped]) -> nil
+    def unbind: (String queue, String exchange, String binding_key, ?arguments: Hash[Symbol | String, untyped]) -> nil
     def purge: (String queue) -> nil
     def delete_queue: (String name, ?if_unused: bool, ?if_empty: bool) -> Integer?
-    def exchange_bind: (String destination, String source, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
-    def exchange_unbind: (String destination, String source, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
+    def exchange_bind: (String destination, String source, String binding_key, ?arguments: Hash[Symbol | String, untyped]) -> nil
+    def exchange_unbind: (String destination, String source, String binding_key, ?arguments: Hash[Symbol | String, untyped]) -> nil
     def delete_exchange: (String name) -> nil
     def with_connection: { (Connection) -> void } -> void
 
     module Table
-      def self.encode: (Hash[(Symbol | String), untyped] hash) -> String
+      def self.encode: (Hash[Symbol | String, untyped] hash) -> String
       def self.decode: (String bytes) -> Hash[String, untyped]
     end
 
-    class Properties < Struct[untyped]
-      attr_accessor content_type(): String
-      attr_accessor content_encoding(): String
-      attr_accessor headers(): Hash[String, untyped] 
-      attr_accessor delivery_mode(): Integer
-      attr_accessor priority(): Integer
-      attr_accessor correlation_id(): String
-      attr_accessor reply_to(): String
-      attr_accessor expiration(): String
-      attr_accessor message_id(): String
-      attr_accessor timestamp(): Time
-      attr_accessor type(): String
-      attr_accessor user_id(): String
-      attr_accessor app_id(): String
+    class Properties
+      attr_accessor content_type(): String?
+      attr_accessor content_encoding(): String?
+      attr_accessor headers(): Hash[String | Symbol, untyped]?
+      attr_accessor delivery_mode(): Integer?
+      attr_accessor priority(): Integer?
+      attr_accessor correlation_id(): String?
+      attr_accessor reply_to(): String?
+      attr_accessor expiration(): (Integer | String)?
+      attr_accessor message_id(): String?
+      attr_accessor timestamp(): Time?
+      attr_accessor type(): String?
+      attr_accessor user_id(): String?
+      attr_accessor app_id(): String?
     end
 
     module FrameBytes
@@ -109,7 +109,7 @@ module AMQP
     end
 
     class Connection
-      CLIENT_PROPERTIES: Hash[Symbol, untyped]
+      CLIENT_PROPERTIES: Hash[Symbol | String, untyped]
       @socket: (IO | untyped)
       @channel_max: Integer
       @heartbeat: Integer
@@ -221,7 +221,7 @@ module AMQP
       end
 
       class UnsupportedMethodFrame < Error
-        def initialize: ((Float | Integer | String)? class_id, (Float | Integer | String)? method_id) -> void
+        def initialize: (Integer class_id, Integer method_id) -> void
       end
 
       class Closed < Error
