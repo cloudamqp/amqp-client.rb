@@ -1,10 +1,80 @@
 # AMQP::Client
 
-An AMQP 0-9-1 Ruby client, trying to keep things as simple as possible.
+A modern AMQP 0-9-1 Ruby client. Very fast (just as fast as the Java client, and >4x than other Ruby clients), fully thread-safe, blocking operations and straight-forward error handling.
 
 ## Documentation
 
 [API reference](https://cloudamqp.github.io/amqp-client.rb/)
+
+## Usage
+
+The client has two APIs.
+
+### Low level API
+
+This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn't handle reconnects.
+
+```ruby
+require "amqp-client"
+
+# Opens and establishes a connection
+conn = AMQP::Client.new("amqp://guest:guest@localhost").connect
+
+# Open a channel
+ch = conn.channel
+
+# Create a temporary queue
+q = ch.queue_declare
+
+# Publish a message to said queue
+ch.basic_publish "Hello World!", "", q.queue_name
+
+# Poll the queue for a message
+msg = ch.basic_get q.queue_name
+
+# Print the message's body to STDOUT
+puts msg.body
+```
+
+### High level API
+
+The library provides a high-level API that is a bit easier to get started with, and also handles reconnection automatically.
+
+```ruby
+# Start the client, it will connect and once connected it will reconnect if that connection is lost
+# Operation pending when the connection is lost will raise an exception (not timeout)
+amqp = AMQP::Client.new("amqp://localhost").start
+
+# Declares a durable queue
+myqueue = amqp.queue("myqueue")
+
+# Bind the queue to any exchange, with any binding key
+myqueue.bind("amq.topic", "my.events.*")
+
+# The message will be reprocessed if the client loses connection to the broker
+# between message arrival and when the message was supposed to be ack'ed.
+myqueue.subscribe(prefetch: 20) do |msg|
+  process(JSON.parse(msg.body))
+  msg.ack
+rescue
+  msg.reject(requeue: false)
+end
+
+# Publish directly to the queue
+myqueue.publish({ foo: "bar" }.to_json, content_type: "application/json")
+
+# Publish to any exchange
+amqp.publish("my message", "amq.topic", "topic.foo", headers: { foo: 'bar' })
+amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
+```
+
+## Supported Ruby versions
+
+All maintained Ruby versions are supported.
+
+- 3.0
+- 2.7
+- 2.6
 
 ## Installation
 
@@ -21,51 +91,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install amqp-client
-
-## Usage
-
-Low level API
-
-```ruby
-require "amqp-client"
-
-c = AMQP::Client.new("amqp://guest:guest@localhost")
-conn = c.connect
-ch = conn.channel
-q = ch.queue_declare
-ch.basic_publish "Hello World!", "", q[:queue_name]
-msg = ch.basic_get q[:queue_name]
-puts msg.body
-```
-
-High level API, is an easier and safer API, that only deal with durable queues and persisted messages. All methods are blocking in the case of connection loss etc. It's also fully thread-safe. Don't expect it to have extreme throughput, but expect 100% delivery guarantees (messages might be delivered twice, in the unlikely event of connection loss between message publish and message confirmation by the broker).
-
-```ruby
-amqp = AMQP::Client.new("amqp://localhost")
-amqp.start
-
-# Declares a durable queue
-q = amqp.queue("myqueue")
-
-# Bind the queue to any exchange, with any binding key
-q.bind("amq.topic", "my.events.*")
-
-# The message will be reprocessed if the client loses connection to the broker
-# between message arrival and when the message was supposed to be ack'ed.
-q.subscribe(prefetch: 20) do |msg|
-  process(JSON.parse(msg.body))
-  msg.ack
-rescue
-  msg.reject(requeue: false)
-end
-
-# Publish directly to the queue
-q.publish { foo: "bar" }.to_json, content_type: "application/json"
-
-# Publish to any exchange
-amqp.publish("my message", "amq.topic", "topic.foo", headers: { foo: 'bar' })
-amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
-```
 
 ## Development
 
