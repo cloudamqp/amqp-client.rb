@@ -383,7 +383,7 @@ class AMQPClientTest < Minitest::Test
   def test_handle_connection_closed_by_server
     conn = AMQP::Client.new("amqp://localhost").connect
     conn.with_channel do |ch|
-      assert_raises(AMQP::Client::Error::ConnectionClosed, /unknown exchange type/) do
+      assert_raises(AMQP::Client::Error::ConnectionClosed, AMQP::Client::Error::ChannelClosed, /unknown exchange type/) do
         ch.exchange_declare("foobar", "faulty.exchange.type")
       end
     end
