@@ -509,6 +509,7 @@ module AMQP
         # @api private
         def close_consumer(tag)
           @consumers.fetch(tag).close
+          nil
         end
 
         private
@@ -527,6 +528,7 @@ module AMQP
             Thread.pass until (consumer = @consumers[next_msg.consumer_tag])
             consumer.push next_msg
           end
+          nil
         ensure
           @next_msg = @next_body = @next_body_size = nil
         end

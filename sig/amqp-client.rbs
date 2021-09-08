@@ -192,7 +192,7 @@ module AMQP
         def basic_get_empty: -> void
         def header_delivered: (Integer body_size, Properties properties) -> void
         def body_delivered: (String body_part) -> void
-        def close_consumer: (String tag) -> Thread::Queue
+        def close_consumer: (String tag) -> nil
 
         private
         def next_message_finished!: -> void
