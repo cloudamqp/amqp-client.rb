@@ -967,13 +967,13 @@
       <pre class="lines">
 
 
-360
 361
 362
-363</pre>
+363
+364</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 360</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 361</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>multiple:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_basic_ack'>basic_ack</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='id identifier rubyid_multiple'>multiple</span><span class='rparen'>)</span>
@@ -1061,7 +1061,6 @@
       <pre class="lines">
 
 
-336
 337
 338
 339
@@ -1069,10 +1068,11 @@
 341
 342
 343
-344</pre>
+344
+345</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 336</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 337</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_cancel'>basic_cancel</span><span class='lparen'>(</span><span class='id identifier rubyid_consumer_tag'>consumer_tag</span><span class='comma'>,</span> <span class='label'>no_wait:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_consumer'>consumer</span> <span class='op'>=</span> <span class='ivar'>@consumers</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_consumer_tag'>consumer_tag</span><span class='rparen'>)</span>
@@ -1274,7 +1274,6 @@
       <pre class="lines">
 
 
-311
 312
 313
 314
@@ -1293,10 +1292,11 @@
 327
 328
 329
-330</pre>
+330
+331</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 311</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 312</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_consume'>basic_consume</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='label'>tag:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>exclusive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_basic_consume'>basic_consume</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='id identifier rubyid_tag'>tag</span><span class='comma'>,</span> <span class='id identifier rubyid_no_ack'>no_ack</span><span class='comma'>,</span> <span class='id identifier rubyid_exclusive'>exclusive</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span>
@@ -1414,17 +1414,17 @@
       <pre class="lines">
 
 
-228
 229
 230
 231
 232
 233
 234
-235</pre>
+235
+236</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 228</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 229</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_get'>basic_get</span><span class='lparen'>(</span><span class='id identifier rubyid_queue_name'>queue_name</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_basic_get'>basic_get</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='id identifier rubyid_queue_name'>queue_name</span><span class='comma'>,</span> <span class='id identifier rubyid_no_ack'>no_ack</span><span class='rparen'>)</span>
@@ -1534,13 +1534,13 @@
       <pre class="lines">
 
 
-370
 371
 372
-373</pre>
+373
+374</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 370</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 371</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_nack'>basic_nack</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>multiple:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_basic_nack'>basic_nack</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='id identifier rubyid_multiple'>multiple</span><span class='comma'>,</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
@@ -1863,7 +1863,6 @@
       <pre class="lines">
 
 
-258
 259
 260
 261
@@ -1891,10 +1890,11 @@
 283
 284
 285
-286</pre>
+286
+287</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 258</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 259</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_publish'>basic_publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_body_max'>body_max</span> <span class='op'>=</span> <span class='ivar'>@connection</span><span class='period'>.</span><span class='id identifier rubyid_frame_max'>frame_max</span> <span class='op'>-</span> <span class='int'>8</span>
@@ -2247,14 +2247,14 @@
       <pre class="lines">
 
 
-293
 294
 295
 296
-297</pre>
+297
+298</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 293</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 294</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_publish_confirm'>basic_publish_confirm</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_confirm_select'>confirm_select</span><span class='lparen'>(</span><span class='label'>no_wait:</span> <span class='kw'>true</span><span class='rparen'>)</span>
@@ -2361,14 +2361,14 @@
       <pre class="lines">
 
 
-351
 352
 353
 354
-355</pre>
+355
+356</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 351</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 352</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_qos'>basic_qos</span><span class='lparen'>(</span><span class='id identifier rubyid_prefetch_count'>prefetch_count</span><span class='comma'>,</span> <span class='label'>prefetch_size:</span> <span class='int'>0</span><span class='comma'>,</span> <span class='label'>global:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_basic_qos'>basic_qos</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='id identifier rubyid_prefetch_size'>prefetch_size</span><span class='comma'>,</span> <span class='id identifier rubyid_prefetch_count'>prefetch_count</span><span class='comma'>,</span> <span class='id identifier rubyid_global'>global</span><span class='rparen'>)</span>
@@ -2441,14 +2441,14 @@
       <pre class="lines">
 
 
-388
 389
 390
 391
-392</pre>
+392
+393</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 388</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 389</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_recover'>basic_recover</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_basic_recover'>basic_recover</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
@@ -2537,13 +2537,13 @@
       <pre class="lines">
 
 
-379
 380
 381
-382</pre>
+382
+383</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 379</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 380</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='label'>requeue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_basic_reject'>basic_reject</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='id identifier rubyid_delivery_tag'>delivery_tag</span><span class='comma'>,</span> <span class='id identifier rubyid_requeue'>requeue</span><span class='rparen'>)</span>
@@ -2687,17 +2687,17 @@
       <pre class="lines">
 
 
-400
 401
 402
 403
 404
 405
 406
-407</pre>
+407
+408</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 400</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 401</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_confirm_select'>confirm_select</span><span class='lparen'>(</span><span class='label'>no_wait:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@confirm</span>
@@ -4017,7 +4017,8 @@
 215
 216
 217
-218</pre>
+218
+219</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 215</span>
@@ -4025,6 +4026,7 @@
 <span class='kw'>def</span> <span class='id identifier rubyid_queue_unbind'>queue_unbind</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_queue_unbind'>queue_unbind</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_expect'>expect</span> <span class='symbol'>:queue_unbind_ok</span>
+  <span class='kw'>nil</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -4070,14 +4072,14 @@
       <pre class="lines">
 
 
-452
 453
 454
 455
-456</pre>
+456
+457</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 452</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 453</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tx_commit'>tx_commit</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_tx_commit'>tx_commit</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='rparen'>)</span>
@@ -4128,14 +4130,14 @@
       <pre class="lines">
 
 
-460
 461
 462
 463
-464</pre>
+464
+465</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 460</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 461</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tx_rollback'>tx_rollback</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_tx_rollback'>tx_rollback</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='rparen'>)</span>
@@ -4186,14 +4188,14 @@
       <pre class="lines">
 
 
-444
 445
 446
 447
-448</pre>
+448
+449</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 444</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 445</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tx_select'>tx_select</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_tx_select'>tx_select</span><span class='lparen'>(</span><span class='ivar'>@id</span><span class='rparen'>)</span>
@@ -4262,17 +4264,17 @@
       <pre class="lines">
 
 
-411
 412
 413
 414
 415
 416
 417
-418</pre>
+418
+419</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 411</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 412</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait_for_confirms'>wait_for_confirms</span>
   <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='ivar'>@unconfirmed</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -4292,7 +4294,7 @@
 </div>
 
       <div id="footer">
-  Generated on Wed Sep  8 09:33:02 2021 by
+  Generated on Wed Sep  8 11:08:14 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
