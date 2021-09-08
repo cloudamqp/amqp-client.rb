@@ -934,6 +934,7 @@
 <span class='kw'>def</span> <span class='id identifier rubyid_close'>close</span><span class='lparen'>(</span><span class='label'>reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>code:</span> <span class='int'>200</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@closed</span>
 
+  <span class='ivar'>@closed</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_code'>code</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rbracket'>]</span>
   <span class='ivar'>@channels</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ch'>ch</span><span class='op'>|</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_closed!'>closed!</span><span class='lparen'>(</span><span class='symbol'>:connection</span><span class='comma'>,</span> <span class='id identifier rubyid_code'>code</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>0</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
   <span class='kw'>if</span> <span class='ivar'>@blocked</span>
     <span class='ivar'>@socket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
@@ -941,7 +942,6 @@
     <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_connection_close'>connection_close</span><span class='lparen'>(</span><span class='id identifier rubyid_code'>code</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_expect'>expect</span><span class='lparen'>(</span><span class='symbol'>:close_ok</span><span class='rparen'>)</span>
   <span class='kw'>end</span>
-  <span class='ivar'>@closed</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_code'>code</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rbracket'>]</span>
   <span class='kw'>nil</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -1076,7 +1076,9 @@
 178
 179
 180
-181</pre>
+181
+182
+183</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 147</span>
@@ -1111,7 +1113,9 @@
   <span class='ivar'>@closed</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='int'>400</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>unknown</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
   <span class='ivar'>@replies</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
   <span class='kw'>begin</span>
-    <span class='ivar'>@socket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+    <span class='ivar'>@write_lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+      <span class='ivar'>@socket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+    <span class='kw'>end</span>
   <span class='kw'>rescue</span> <span class='const'>IOError</span><span class='comma'>,</span> <span class='const'>OpenSSL</span><span class='op'>::</span><span class='const'>OpenSSLError</span><span class='comma'>,</span> <span class='const'>SystemCallError</span>
     <span class='kw'>nil</span>
   <span class='kw'>end</span>
@@ -1208,7 +1212,7 @@
 </div>
 
       <div id="footer">
-  Generated on Wed Sep  8 11:08:14 2021 by
+  Generated on Wed Sep  8 16:08:43 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
