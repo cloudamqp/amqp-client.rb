@@ -107,7 +107,6 @@ module AMQP
       def close(reason: "", code: 200)
         return if @closed
 
-        @closed = [code, reason]
         @channels.each_value { |ch| ch.closed!(:connection, code, reason, 0, 0) }
         if @blocked
           @socket.close
@@ -115,6 +114,7 @@ module AMQP
           write_bytes FrameBytes.connection_close(code, reason)
           expect(:close_ok)
         end
+        @closed = [code, reason]
         nil
       end
 
