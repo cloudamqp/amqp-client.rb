@@ -5,35 +5,63 @@ require_relative "./table"
 module AMQP
   class Client
     # Encode/decode AMQP Properties
-    # @!attribute content_type
-    #   @return [String] Content type of the message body
-    # @!attribute content_encoding
-    #   @return [String] Content encoding of the body
-    # @!attribute headers
-    #   @return [Hash<String, Object>] Custom headers
-    # @!attribute delivery_mode
-    #   @return [Integer] 2 for persisted message, transient messages for all other values
-    # @!attribute priority
-    #   @return [Integer] A priority of the message (between 0 and 255)
-    # @!attribute correlation_id
-    #   @return [Integer] A correlation id, most often used used for RPC communication
-    # @!attribute reply_to
-    #   @return [String] Queue to reply RPC responses to
-    # @!attribute expiration
-    #   @return [Integer, String] Number of seconds the message will stay in the queue
-    # @!attribute message_id
-    #   @return [String]
-    # @!attribute timestamp
-    #   @return [Date] User-definable, but often used for the time the message was originally generated
-    # @!attribute type
-    #   @return [String] User-definable, but can can indicate what kind of message this is
-    # @!attribute user_id
-    #   @return [String] User-definable, but can be used to verify that this is the user that published the message
-    # @!attribute app_id
-    #   @return [String] User-definable, but often indicates which app that generated the message
-    Properties = Struct.new(:content_type, :content_encoding, :headers, :delivery_mode, :priority, :correlation_id,
-                            :reply_to, :expiration, :message_id, :timestamp, :type, :user_id, :app_id,
-                            keyword_init: true) do
+    class Properties
+      def initialize(content_type: nil, content_encoding: nil, headers: nil, delivery_mode: nil, priority: nil, correlation_id: nil,
+                     reply_to: nil, expiration: nil, message_id: nil, timestamp: nil, type: nil, user_id: nil, app_id: nil)
+        @content_type = content_type
+        @content_encoding = content_encoding
+        @headers = headers
+        @delivery_mode = delivery_mode
+        @priority = priority
+        @correlation_id = correlation_id
+        @reply_to = reply_to
+        @expiration = expiration
+        @message_id = message_id
+        @timestamp = timestamp
+        @type = type
+        @user_id = user_id
+        @app_id = app_id
+      end
+
+      # Content type of the message body
+      # @return [String, nil]
+      attr_accessor :content_type
+      # Content encoding of the body
+      # @return [String, nil]
+      attr_accessor :content_encoding
+      # Custom headers
+      # @return [Hash<String, Object>, nil]
+      attr_accessor :headers
+      # 2 for persisted message, transient messages for all other values
+      # @return [Integer, nil]
+      attr_accessor :delivery_mode
+      # A priority of the message (between 0 and 255)
+      # @return [Integer, nil]
+      attr_accessor :priority
+      # A correlation id, most often used used for RPC communication
+      # @return [Integer, nil]
+      attr_accessor :correlation_id
+      # Queue to reply RPC responses to
+      # @return [String, nil]
+      attr_accessor :reply_to
+      # Number of seconds the message will stay in the queue
+      # @return [Integer, String, nil]
+      attr_accessor :expiration
+      # @return [String, nil]
+      attr_accessor :message_id
+      # User-definable, but often used for the time the message was originally generated
+      # @return [Date, nil]
+      attr_accessor :timestamp
+      # User-definable, but can can indicate what kind of message this is
+      # @return [String, nil]
+      attr_accessor :type
+      # User-definable, but can be used to verify that this is the user that published the message
+      # @return [String, nil]
+      attr_accessor :user_id
+      # User-definable, but often indicates which app that generated the message
+      # @return [String, nil]
+      attr_accessor :app_id
+
       # Encode properties into a byte array
       # @return [String] byte array
       def encode
@@ -155,81 +183,81 @@ module AMQP
       # Decode a byte array
       # @return [Properties]
       def self.decode(bytes)
-        h = new
+        p = new
         flags = bytes.unpack1("S>")
         pos = 2
         if (flags & 0x8000).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:content_type] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.content_type = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x4000).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:content_encoding] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.content_encoding = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x2000).positive?
           len = bytes.byteslice(pos, 4).unpack1("L>")
           pos += 4
-          h[:headers] = Table.decode(bytes.byteslice(pos, len))
+          p.headers = Table.decode(bytes.byteslice(pos, len))
           pos += len
         end
         if (flags & 0x1000).positive?
-          h[:delivery_mode] = bytes[pos].ord
+          p.delivery_mode = bytes.getbyte(pos)
           pos += 1
         end
         if (flags & 0x0800).positive?
-          h[:priority] = bytes[pos].ord
+          p.priority = bytes.getbyte(pos)
           pos += 1
         end
         if (flags & 0x0400).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:correlation_id] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.correlation_id = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x0200).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:reply_to] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.reply_to = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x0100).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:expiration] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.expiration = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x0080).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:message_id] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.message_id = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x0040).positive?
-          h[:timestamp] = Time.at(bytes.byteslice(pos, 8).unpack1("Q>"))
+          p.timestamp = Time.at(bytes.byteslice(pos, 8).unpack1("Q>"))
           pos += 8
         end
         if (flags & 0x0020).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:type] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.type = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x0010).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:user_id] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.user_id = bytes.byteslice(pos, len).force_encoding("utf-8")
           pos += len
         end
         if (flags & 0x0008).positive?
-          len = bytes[pos].ord
+          len = bytes.getbyte(pos)
           pos += 1
-          h[:app_id] = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.app_id = bytes.byteslice(pos, len).force_encoding("utf-8")
         end
-        h
+        p
       end
     end
   end
