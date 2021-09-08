@@ -10,9 +10,7 @@ module AMQP
     # Having a class for each frame type is more expensive in terms of CPU and memory
     # @api private
     module FrameBytes
-      module_function
-
-      def connection_start_ok(response, properties)
+      def self.connection_start_ok(response, properties)
         prop_tbl = Table.encode(properties)
         [
           1, # type: method
@@ -28,7 +26,7 @@ module AMQP
         ].pack("C S> L> S> S> L>a* Ca* L>a* Ca* C")
       end
 
-      def connection_tune_ok(channel_max, frame_max, heartbeat)
+      def self.connection_tune_ok(channel_max, frame_max, heartbeat)
         [
           1, # type: method
           0, # channel id
@@ -42,7 +40,7 @@ module AMQP
         ].pack("CS>L>S>S>S>L>S>C")
       end
 
-      def connection_open(vhost)
+      def self.connection_open(vhost)
         [
           1, # type: method
           0, # channel id
@@ -56,7 +54,7 @@ module AMQP
         ].pack("C S> L> S> S> Ca* CCC")
       end
 
-      def connection_close(code, reason)
+      def self.connection_close(code, reason)
         frame_size = 2 + 2 + 2 + 1 + reason.bytesize + 2 + 2
         [
           1, # type: method
@@ -72,7 +70,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* S> S> C")
       end
 
-      def connection_close_ok
+      def self.connection_close_ok
         [
           1, # type: method
           0, # channel id
@@ -83,7 +81,7 @@ module AMQP
         ].pack("C S> L> S> S> C")
       end
 
-      def channel_open(id)
+      def self.channel_open(id)
         [
           1, # type: method
           id, # channel id
@@ -95,7 +93,7 @@ module AMQP
         ].pack("C S> L> S> S> C C")
       end
 
-      def channel_close(id, reason, code)
+      def self.channel_close(id, reason, code)
         frame_size = 2 + 2 + 2 + 1 + reason.bytesize + 2 + 2
         [
           1, # type: method
@@ -111,7 +109,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* S> S> C")
       end
 
-      def channel_close_ok(id)
+      def self.channel_close_ok(id)
         [
           1, # type: method
           id, # channel id
@@ -122,7 +120,7 @@ module AMQP
         ].pack("C S> L> S> S> C")
       end
 
-      def exchange_declare(id, name, type, passive, durable, auto_delete, internal, arguments)
+      def self.exchange_declare(id, name, type, passive, durable, auto_delete, internal, arguments)
         no_wait = false
         bits = 0
         bits |= (1 << 0) if passive
@@ -147,7 +145,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* C L>a* C")
       end
 
-      def exchange_delete(id, name, if_unused, no_wait)
+      def self.exchange_delete(id, name, if_unused, no_wait)
         bits = 0
         bits |= (1 << 0) if if_unused
         bits |= (1 << 1) if no_wait
@@ -165,7 +163,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* C C")
       end
 
-      def exchange_bind(id, destination, source, binding_key, no_wait, arguments)
+      def self.exchange_bind(id, destination, source, binding_key, no_wait, arguments)
         tbl = Table.encode(arguments)
         frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
                      binding_key.bytesize + 1 + 4 + tbl.bytesize
@@ -185,7 +183,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L>a* C")
       end
 
-      def exchange_unbind(id, destination, source, binding_key, no_wait, arguments)
+      def self.exchange_unbind(id, destination, source, binding_key, no_wait, arguments)
         tbl = Table.encode(arguments)
         frame_size = 2 + 2 + 2 + 1 + destination.bytesize + 1 + source.bytesize + 1 +
                      binding_key.bytesize + 1 + 4 + tbl.bytesize
@@ -205,7 +203,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L>a* C")
       end
 
-      def queue_declare(id, name, passive, durable, exclusive, auto_delete, arguments)
+      def self.queue_declare(id, name, passive, durable, exclusive, auto_delete, arguments)
         no_wait = false
         bits = 0
         bits |= (1 << 0) if passive
@@ -229,7 +227,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* C L>a* C")
       end
 
-      def queue_delete(id, name, if_unused, if_empty, no_wait)
+      def self.queue_delete(id, name, if_unused, if_empty, no_wait)
         bits = 0
         bits |= (1 << 0) if if_unused
         bits |= (1 << 1) if if_empty
@@ -248,7 +246,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* C C")
       end
 
-      def queue_bind(id, queue, exchange, binding_key, no_wait, arguments)
+      def self.queue_bind(id, queue, exchange, binding_key, no_wait, arguments)
         tbl = Table.encode(arguments)
         frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 +
                      binding_key.bytesize + 1 + 4 + tbl.bytesize
@@ -268,7 +266,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* Ca* C L>a* C")
       end
 
-      def queue_unbind(id, queue, exchange, binding_key, arguments)
+      def self.queue_unbind(id, queue, exchange, binding_key, arguments)
         tbl = Table.encode(arguments)
         frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1 + exchange.bytesize + 1 +
                      binding_key.bytesize + 4 + tbl.bytesize
@@ -287,7 +285,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* Ca* L>a* C")
       end
 
-      def queue_purge(id, queue, no_wait)
+      def self.queue_purge(id, queue, no_wait)
         frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1
         [
           1, # type: method
@@ -302,7 +300,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* C C")
       end
 
-      def basic_get(id, queue, no_ack)
+      def self.basic_get(id, queue, no_ack)
         frame_size = 2 + 2 + 2 + 1 + queue.bytesize + 1
         [
           1, # type: method
@@ -317,7 +315,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* C C")
       end
 
-      def basic_publish(id, exchange, routing_key, mandatory)
+      def self.basic_publish(id, exchange, routing_key, mandatory)
         frame_size = 2 + 2 + 2 + 1 + exchange.bytesize + 1 + routing_key.bytesize + 1
         [
           1, # type: method
@@ -333,7 +331,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* C C")
       end
 
-      def header(id, body_size, properties)
+      def self.header(id, body_size, properties)
         props = Properties.new(**properties).encode
         frame_size = 2 + 2 + 8 + props.bytesize
         [
@@ -348,7 +346,7 @@ module AMQP
         ].pack("C S> L> S> S> Q> a* C")
       end
 
-      def body(id, body_part)
+      def self.body(id, body_part)
         [
           3, # type: body
           id, # channel id
@@ -358,7 +356,7 @@ module AMQP
         ].pack("C S> L> a* C")
       end
 
-      def basic_consume(id, queue, tag, no_ack, exclusive, arguments)
+      def self.basic_consume(id, queue, tag, no_ack, exclusive, arguments)
         no_local = false
         no_wait = false
         bits = 0
@@ -383,7 +381,7 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* C L>a* C")
       end
 
-      def basic_cancel(id, consumer_tag, no_wait: false)
+      def self.basic_cancel(id, consumer_tag, no_wait: false)
         frame_size = 2 + 2 + 1 + consumer_tag.bytesize + 1
         [
           1, # type: method
@@ -397,7 +395,7 @@ module AMQP
         ].pack("C S> L> S> S> Ca* C C")
       end
 
-      def basic_cancel_ok(id, consumer_tag)
+      def self.basic_cancel_ok(id, consumer_tag)
         frame_size = 2 + 2 + 1 + consumer_tag.bytesize + 1
         [
           1, # type: method
@@ -410,7 +408,7 @@ module AMQP
         ].pack("C S> L> S> S> Ca* C")
       end
 
-      def basic_ack(id, delivery_tag, multiple)
+      def self.basic_ack(id, delivery_tag, multiple)
         frame_size = 2 + 2 + 8 + 1
         [
           1, # type: method
@@ -424,7 +422,7 @@ module AMQP
         ].pack("C S> L> S> S> Q> C C")
       end
 
-      def basic_nack(id, delivery_tag, multiple, requeue)
+      def self.basic_nack(id, delivery_tag, multiple, requeue)
         bits = 0
         bits |= (1 << 0) if multiple
         bits |= (1 << 1) if requeue
@@ -441,7 +439,7 @@ module AMQP
         ].pack("C S> L> S> S> Q> C C")
       end
 
-      def basic_reject(id, delivery_tag, requeue)
+      def self.basic_reject(id, delivery_tag, requeue)
         frame_size = 2 + 2 + 8 + 1
         [
           1, # type: method
@@ -455,7 +453,7 @@ module AMQP
         ].pack("C S> L> S> S> Q> C C")
       end
 
-      def basic_qos(id, prefetch_size, prefetch_count, global)
+      def self.basic_qos(id, prefetch_size, prefetch_count, global)
         frame_size = 2 + 2 + 4 + 2 + 1
         [
           1, # type: method
@@ -470,7 +468,7 @@ module AMQP
         ].pack("C S> L> S> S> L> S> C C")
       end
 
-      def basic_recover(id, requeue)
+      def self.basic_recover(id, requeue)
         frame_size = 2 + 2 + 1
         [
           1, # type: method
@@ -483,7 +481,7 @@ module AMQP
         ].pack("C S> L> S> S> C C")
       end
 
-      def confirm_select(id, no_wait)
+      def self.confirm_select(id, no_wait)
         [
           1, # type: method
           id, # channel id
@@ -495,7 +493,7 @@ module AMQP
         ].pack("C S> L> S> S> C C")
       end
 
-      def tx_select(id)
+      def self.tx_select(id)
         frame_size = 2 + 2
         [
           1, # type: method
@@ -507,7 +505,7 @@ module AMQP
         ].pack("C S> L> S> S> C")
       end
 
-      def tx_commit(id)
+      def self.tx_commit(id)
         frame_size = 2 + 2
         [
           1, # type: method
@@ -519,7 +517,7 @@ module AMQP
         ].pack("C S> L> S> S> C")
       end
 
-      def tx_rollback(id)
+      def self.tx_rollback(id)
         frame_size = 2 + 2
         [
           1, # type: method

@@ -5,11 +5,9 @@ module AMQP
     # Encode and decode an AMQP table to/from hash, only used internally
     # @api private
     module Table
-      module_function
-
       # Encodes a hash into a byte array
       # @return [String] Byte array
-      def encode(hash)
+      def self.encode(hash)
         tbl = StringIO.new
         hash.each do |k, v|
           key = k.to_s
@@ -21,7 +19,7 @@ module AMQP
 
       # Decodes an AMQP table into a hash
       # @return [Hash<String, Object>]
-      def decode(bytes)
+      def self.decode(bytes)
         hash = {}
         pos = 0
         while pos < bytes.bytesize
@@ -39,7 +37,7 @@ module AMQP
 
       # Encoding a single value in a table
       # @api private
-      def encode_field(value)
+      def self.encode_field(value)
         case value
         when Integer
           if value > 2**31
@@ -72,7 +70,7 @@ module AMQP
       # Decodes a single value
       # @return [Array<Integer, Object>] Bytes read and the parsed object
       # @api private
-      def decode_field(bytes)
+      def self.decode_field(bytes)
         type = bytes[0]
         pos = 1
         case type
