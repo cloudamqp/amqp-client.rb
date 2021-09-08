@@ -1,0 +1,264 @@
+# TypeProf 0.15.3
+
+# Classes
+module AMQP
+  class Client
+    VERSION: String
+    @uri: String
+    @options: Hash[Symbol, (String | Integer | bool)]
+    @queues: Hash[String, Queue]
+    @exchanges: Hash[String, Exchange]
+    @subscriptions: Set[[String, bool, Integer, Integer, Hash[Symbol, untyped], nil]]
+    @connq: Thread::SizedQueue
+    @stopped: bool
+
+    def initialize: (?String uri, **untyped) -> void
+    def connect: (?read_loop_thread: bool) -> Connection
+    def start: -> Client
+    def stop: -> nil
+    def queue: (String name, ?durable: bool, ?auto_delete: bool, ?arguments: Hash[Symbol, (String | Integer | bool)]) -> Queue
+    def exchange: (String name, String `type`, ?durable: bool, ?auto_delete: bool, ?internal: bool, ?arguments: Hash[Symbol, untyped]) -> Exchange
+    def publish: (String body, String exchange, String routing_key, **untyped) -> bool
+    def publish_and_forget: (String body, String exchange, String routing_key, **untyped) -> nil
+    def wait_for_confirms: -> bool
+    def subscribe: (String queue, ?no_ack: bool, ?prefetch: Integer, ?worker_threads: Integer, ?arguments: Hash[Symbol, untyped]) { (Message) -> void } -> [String, Array[Thread]]?
+    def bind: (String queue, String exchange, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
+    def unbind: (String queue, String exchange, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
+    def purge: (String queue) -> nil
+    def delete_queue: (String name, ?if_unused: bool, ?if_empty: bool) -> Integer?
+    def exchange_bind: (String destination, String source, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
+    def exchange_unbind: (String destination, String source, String binding_key, ?arguments: Hash[Symbol, untyped]) -> nil
+    def delete_exchange: (String name) -> nil
+    def with_connection: { (Connection) -> void } -> void
+
+    module Table
+      def self.encode: (Hash[(Symbol | String), untyped] hash) -> String
+      def self.decode: (String bytes) -> Hash[String, untyped]
+    end
+
+    class Properties < Struct[untyped]
+      attr_accessor content_type(): String
+      attr_accessor content_encoding(): String
+      attr_accessor headers(): Hash[String, untyped] 
+      attr_accessor delivery_mode(): Integer
+      attr_accessor priority(): Integer
+      attr_accessor correlation_id(): String
+      attr_accessor reply_to(): String
+      attr_accessor expiration(): String
+      attr_accessor message_id(): String
+      attr_accessor timestamp(): Time
+      attr_accessor type(): String
+      attr_accessor user_id(): String
+      attr_accessor app_id(): String
+    end
+
+    module FrameBytes
+      def self.connection_start_ok: (String response, Hash[untyped, untyped] properties) -> String
+      def self.connection_tune_ok: ((Float | Integer | String)? channel_max, (Float | Integer | String)? frame_max, (Float | Integer | String)? heartbeat) -> String
+      def self.connection_open: (String vhost) -> String
+      def self.connection_close: (Integer code, String reason) -> String
+      def self.connection_close_ok: -> String
+      def self.channel_open: (Integer id) -> String
+      def self.channel_close: (Integer id, String reason, Integer code) -> String
+      def self.channel_close_ok: ((Float | Integer | String)? id) -> String
+      def self.exchange_declare: (Integer id, untyped name, untyped `type`, bool passive, bool durable, bool auto_delete, bool internal, Hash[untyped, untyped] arguments) -> String
+      def self.exchange_delete: (Integer id, untyped name, bool if_unused, bool no_wait) -> String
+      def self.exchange_bind: (Integer id, untyped destination, untyped source, untyped binding_key, bool no_wait, Hash[untyped, untyped] arguments) -> String
+      def self.exchange_unbind: (Integer id, untyped destination, untyped source, untyped binding_key, bool no_wait, Hash[untyped, untyped] arguments) -> String
+      def self.queue_declare: (Integer id, String name, bool passive, bool durable, bool exclusive, bool auto_delete, Hash[untyped, untyped] arguments) -> String
+      def self.queue_delete: (Integer id, untyped name, bool if_unused, bool if_empty, bool no_wait) -> String
+      def self.queue_bind: (Integer id, untyped queue, untyped exchange, untyped binding_key, bool no_wait, Hash[untyped, untyped] arguments) -> String
+      def self.queue_unbind: (Integer id, untyped queue, untyped exchange, untyped binding_key, Hash[untyped, untyped] arguments) -> String
+      def self.queue_purge: (Integer id, untyped queue, bool no_wait) -> String
+      def self.basic_get: (Integer id, untyped queue, bool no_ack) -> String
+      def self.basic_publish: (Integer id, untyped exchange, untyped routing_key, bool mandatory) -> String
+      def self.header: (Integer id, untyped body_size, Hash[(Symbol | String), untyped] properties) -> String
+      def self.body: (Integer id, untyped body_part) -> String
+      def self.basic_consume: (Integer id, String queue, String? tag, bool? no_ack, bool? exclusive, Hash[untyped, untyped]? arguments) -> String
+      def self.basic_cancel: (Integer id, untyped consumer_tag, ?no_wait: bool) -> String
+      def self.basic_cancel_ok: (Integer id, String consumer_tag) -> String
+      def self.basic_ack: (Integer id, untyped delivery_tag, bool multiple) -> String
+      def self.basic_nack: (Integer id, untyped delivery_tag, bool multiple, bool requeue) -> String
+      def self.basic_reject: (Integer id, untyped delivery_tag, bool requeue) -> String
+      def self.basic_qos: (Integer id, Integer? prefetch_size, Integer? prefetch_count, bool? global) -> String
+      def self.basic_recover: (Integer id, untyped requeue) -> String
+      def self.confirm_select: (Integer id, bool no_wait) -> String
+      def self.tx_select: (Integer id) -> String
+      def self.tx_commit: (Integer id) -> String
+      def self.tx_rollback: (Integer id) -> String
+    end
+
+    class Message < Struct[untyped]
+      attr_accessor channel(): Connection::Channel
+      attr_accessor delivery_tag(): Integer
+      attr_accessor exchange_name(): String
+      attr_accessor routing_key(): String
+      attr_accessor properties(): Hash[String, untyped]
+      attr_accessor body(): String?
+      attr_accessor redelivered(): bool
+      attr_accessor consumer_tag(): String?
+    end
+
+    class ReturnMessage < Struct[untyped]
+      attr_accessor reply_code(): Integer
+      attr_accessor reply_text(): String
+      attr_accessor exchange(): String
+      attr_accessor routing_key(): String
+      attr_accessor properties(): Hash[String, untyped]
+      attr_accessor body(): String?
+    end
+
+    class Connection
+      CLIENT_PROPERTIES: Hash[Symbol, untyped]
+      @socket: (IO | untyped)
+      @channel_max: Integer
+      @heartbeat: Integer
+      @channels: Hash[Integer, Channel]
+      @closed: Array[untyped]?
+      @replies: Thread::Queue
+      @write_lock: Thread::Mutex
+      @blocked: String?
+      @id: Integer
+
+      def initialize: (?String uri, ?read_loop_thread: bool, **untyped) -> void
+      def self.connect: (?String uri, ?read_loop_thread: bool, **untyped) -> Connection
+      attr_reader frame_max: Integer
+      def inspect: -> String
+      def channel: (?Integer? id) -> Channel
+      def with_channel: { (Channel) -> void } -> void
+      def close: (?reason: String, ?code: Integer) -> nil
+      def closed?: -> bool
+      def write_bytes: (*String bytes) -> Integer
+      def read_loop: -> nil
+
+      private
+      def parse_frame: (Integer `type`, Integer channel_id, String buf) -> bool
+      def expect: (:close_ok expected_frame_type) -> untyped
+      def open_socket: (String host, Integer port, bool tls, Hash[Symbol, untyped] options) -> (IO | untyped)
+      def establish: ((IO | untyped) socket, String user, String password, String vhost, Hash[Symbol, untyped] options) -> [Integer, Integer, Integer]
+      def enable_tcp_keepalive: ((IO | untyped) socket) -> void
+      def port_from_env: -> Integer?
+
+      class Channel
+        @connection: Connection
+        @replies: Thread::Queue
+        @consumers: Hash[String, Thread::Queue]
+        @closed: Array[(:channel | :connection | Integer | String)]?
+        @open: bool
+        @on_return: nil
+        @confirm: Integer?
+        @unconfirmed: Thread::Queue
+        @unconfirmed_empty: Thread::Queue
+        @basic_gets: Thread::Queue
+        @next_msg: (Message | ReturnMessage)?
+        @next_body: StringIO?
+        @next_body_size: (Float | Integer | String)?
+
+        def initialize: (Connection connection, Integer? id) -> void
+        def inspect: -> String
+        attr_reader id: Integer?
+        def open: -> Channel
+        def close: (?reason: String, ?code: Integer) -> nil
+        def closed!: (:channel | :connection level, (Float | Integer | String)? code, String reason, (Float | Integer | String)? classid, (Float | Integer | String)? methodid) -> nil
+        def on_return: { (ReturnMessage) -> void } -> void
+        def exchange_declare: (String name, String `type`, ?passive: bool, ?durable: bool, ?auto_delete: bool, ?internal: bool, ?arguments: Hash[untyped, untyped]) -> nil
+        def exchange_delete: (String name, ?if_unused: bool, ?no_wait: bool) -> nil
+        def exchange_bind: (String destination, String source, String binding_key, ?arguments: Hash[untyped, untyped]) -> nil
+        def exchange_unbind: (String destination, String source, String binding_key, ?arguments: Hash[untyped, untyped]) -> nil
+        def queue_declare: (?String name, ?passive: bool, ?durable: bool, ?exclusive: bool, ?auto_delete: bool, ?arguments: Hash[untyped, untyped]) -> QueueOk
+        def queue_delete: (String name, ?if_unused: bool, ?if_empty: bool, ?no_wait: bool) -> Integer?
+        def queue_bind: (String name, String exchange, String binding_key, ?arguments: Hash[untyped, untyped]) -> nil
+        def queue_purge: (String name, ?no_wait: bool) -> nil
+        def queue_unbind: (String name, String exchange, String binding_key, ?arguments: Hash[untyped, untyped]) -> nil
+        def basic_get: (String queue_name, ?no_ack: bool) -> Message?
+        def basic_publish: (String body, String exchange, String routing_key, **untyped) -> nil
+        def basic_publish_confirm: (String body, String exchange, String routing_key, **untyped) -> bool
+        def basic_consume: (String queue, ?tag: String, ?no_ack: bool?, ?exclusive: bool, ?arguments: Hash[untyped, untyped]?, ?worker_threads: Integer?) { (Message) -> void } -> [String, Array[Thread]]?
+        def basic_cancel: (String consumer_tag, ?no_wait: bool) -> nil
+        def basic_qos: (Integer prefetch_count, ?prefetch_size: Integer, ?global: bool) -> nil
+        def basic_ack: (Integer delivery_tag, ?multiple: bool) -> nil
+        def basic_nack: (Integer delivery_tag, ?multiple: bool, ?requeue: bool) -> nil
+        def basic_reject: (Integer delivery_tag, ?requeue: bool) -> nil
+        def basic_recover: (?requeue: bool) -> nil
+        def confirm_select: (?no_wait: bool) -> nil
+        def wait_for_confirms: -> bool
+        def tx_select: -> nil
+        def tx_commit: -> nil
+        def tx_rollback: -> nil
+        def reply: (Array[untyped] args) -> void
+        def confirm: (Array[(:ack | :nack | Integer | bool)] args) -> nil
+        def message_returned: ((Float | Integer | String)? reply_code, String reply_text, String exchange, String routing_key) -> ReturnMessage
+        def message_delivered: (String? consumer_tag, (Float | Integer | String)? delivery_tag, bool redelivered, String exchange, String routing_key) -> Message
+        def basic_get_empty: -> void
+        def header_delivered: (Integer body_size, Properties properties) -> void
+        def body_delivered: (String body_part) -> void
+        def close_consumer: (String tag) -> Thread::Queue
+
+        private
+        def next_message_finished!: -> void
+        def write_bytes: (*String bytes) -> Integer
+        def expect: (Symbol expected_frame_type) -> Array[untyped]
+
+        class QueueOk < Struct[untyped]
+          attr_accessor queue_name(): String
+          attr_accessor message_count(): Integer
+          attr_accessor consumer_count(): Integer
+        end
+      end
+    end
+
+    class Error < StandardError
+      class UnexpectedFrame < Error
+        def initialize: (Symbol expected, Symbol actual) -> void
+      end
+
+      class UnexpectedFrameEnd < Error
+        def initialize: (untyped actual) -> void
+      end
+
+      class UnsupportedFrameType < Error
+        def initialize: (untyped `type`) -> void
+      end
+
+      class UnsupportedMethodFrame < Error
+        def initialize: ((Float | Integer | String)? class_id, (Float | Integer | String)? method_id) -> void
+      end
+
+      class Closed < Error
+        def self.new: (Integer id, (:channel | :connection) level, Integer code, String reason, ?Integer classid, ?Integer methodid) -> (ChannelClosed | ConnectionClosed)
+      end
+
+      class ChannelClosed < Error
+        def initialize: (Integer id, Integer code, String reason, ?Integer classid, ?Integer methodid) -> void
+      end
+
+      class ConnectionClosed < Error
+        def initialize: (Integer code, String reason, ?Integer classid, ?Integer methodid) -> void
+      end
+    end
+
+    class Exchange
+      @client: Client
+      @name: String
+
+      def initialize: (Client client, String name) -> void
+      def publish: (String body, String routing_key, **untyped) -> Exchange
+      def bind: (String exchange, String binding_key, ?arguments: Hash[String | Symbol, untyped]) -> Exchange
+      def unbind: (String exchange, String binding_key, ?arguments: Hash[String | Symbol, untyped]) -> Exchange
+      def delete: -> nil
+    end
+
+    class Queue
+      @client: Client
+      @name: String
+
+      def initialize: (Client client, String name) -> void
+      def publish: (String body, **untyped) -> Queue
+      def subscribe: (?no_ack: bool, ?prefetch: Integer, ?worker_threads: Integer, ?arguments: Hash[String | Symbol, untyped]) { (Message) -> void } -> Queue
+      def bind: (String exchange, String binding_key, ?arguments: Hash[String | Symbol, untyped]) -> Queue
+      def unbind: (String exchange, String binding_key, ?arguments: Hash[String | Symbol, untyped]) -> Queue
+      def purge: -> Queue
+      def delete: -> nil
+    end
+  end
+end
