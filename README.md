@@ -2,6 +2,10 @@
 
 A modern AMQP 0-9-1 Ruby client. Very fast (just as fast as the Java client, and >4x than other Ruby clients), fully thread-safe, blocking operations and straight-forward error handling.
 
+## Support
+
+The library is fully supported by [CloudAMQP](https://www.cloudamqp.com), the largest RabbitMQ hosting provider in the world. Open [an issue](https://github.com/cloudamqp/amqp-client.rb/issues) or [email our support](mailto:support@cloudamqp.com) if you have problems or questions.
+
 ## Documentation
 
 [API reference](https://cloudamqp.github.io/amqp-client.rb/)

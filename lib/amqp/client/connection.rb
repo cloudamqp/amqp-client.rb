@@ -18,6 +18,7 @@ module AMQP
       # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
       #   the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
+      # @option options [Integer] connect_timeout (30) TCP connection timeout
       # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
       # @option options [Integer] frame_max (131_072) Maximum frame size,
       #    the smallest of the client's and the broker's values will be used
@@ -49,7 +50,7 @@ module AMQP
         Thread.new { read_loop } if read_loop_thread
       end
 
-      # Alias for {#initialize
+      # Alias for {#initialize}
       # @see #initialize
       # @deprecated
       def self.connect(uri, read_loop_thread: true, **options)
@@ -371,14 +372,16 @@ module AMQP
       # @return [Socket]
       # @return [OpenSSL::SSL::SSLSocket]
       def open_socket(host, port, tls, options)
-        socket = Socket.tcp host, port, connect_timeout: 30
+        connect_timeout = options.fetch(:connect_timeout, 30).to_i
+        socket = Socket.tcp host, port, connect_timeout: connect_timeout
         enable_tcp_keepalive(socket)
         if tls
           cert_store = OpenSSL::X509::Store.new
           cert_store.set_default_paths
           context = OpenSSL::SSL::SSLContext.new
           context.cert_store = cert_store
-          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless [false, "false", "none"].include? options[:verify_peer]
+          verify_peer = [false, "false", "none"].include? options[:verify_peer]
+          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless verify_peer
           socket = OpenSSL::SSL::SSLSocket.new(socket, context)
           socket.sync_close = true # closing the TLS socket also closes the TCP socket
           socket.hostname = host # SNI host
