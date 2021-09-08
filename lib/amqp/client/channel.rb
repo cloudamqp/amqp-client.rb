@@ -411,11 +411,10 @@ module AMQP
         def wait_for_confirms
           return true if @unconfirmed.empty?
 
-          case @unconfirmed_empty.pop
-          when true then true
-          when false then false
-          else raise Error::Closed.new(@id, *@closed)
-          end
+          ok = @unconfirmed_empty.pop
+          raise Error::Closed.new(@id, *@closed) if ok.nil?
+
+          ok
         end
 
         # Called by Connection when received ack/nack from broker
@@ -433,9 +432,8 @@ module AMQP
           end
           return unless @unconfirmed.empty?
 
-          @unconfirmed_empty.num_waiting.times do
-            @unconfirmed_empty << (ack_or_nack == :ack)
-          end
+          ok = ack_or_nack == :ack
+          @unconfirmed_empty.push(ok) until @unconfirmed_empty.num_waiting.zero?
         end
 
         # @!endgroup
