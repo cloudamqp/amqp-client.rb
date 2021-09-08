@@ -69,12 +69,10 @@
   <dl>
     <dt>Inherits:</dt>
     <dd>
-      <span class="inheritName">Struct</span>
+      <span class="inheritName">Object</span>
       
         <ul class="fullTree">
           <li>Object</li>
-          
-            <li class="next">Struct</li>
           
             <li class="next">AMQP::Client::ReturnMessage</li>
           
@@ -158,6 +156,8 @@
   
   
     
+      <span class="note title readonly">readonly</span>
+    
     
   
   
@@ -193,7 +193,9 @@
   
 
   
-    <span class="summary_desc"><div class='inline'></div></span>
+    <span class="summary_desc"><div class='inline'>
+<p>Message properties.</p>
+</div></span>
   
 </li>
 
@@ -209,6 +211,8 @@
   
   
   
+    
+      <span class="note title readonly">readonly</span>
     
     
   
@@ -237,6 +241,8 @@
   
   
     
+      <span class="note title readonly">readonly</span>
+    
     
   
   
@@ -264,6 +270,8 @@
   
   
     
+      <span class="note title readonly">readonly</span>
+    
     
   
   
@@ -285,7 +293,6 @@
 
 
 
-  
   <div id="instance_attr_details" class="attr_details">
     <h2>Instance Attribute Details</h2>
     
@@ -303,7 +310,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns The message body.</p>
+<p>The message body</p>
 
 
   </div>
@@ -320,11 +327,6 @@
       
       
       
-        &mdash;
-        <div class='inline'>
-<p>The message body</p>
-</div>
-      
     </li>
   
 </ul>
@@ -335,23 +337,27 @@
       <pre class="lines">
 
 
-52</pre>
+108
+109
+110</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 108</span>
 
-<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_body'>body</span>
+  <span class='ivar'>@body</span>
+<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
 </div>
     
       
-      <span id="exchange=-instance_method"></span>
+      <span id=""></span>
       <div class="method_details ">
   <h3 class="signature " id="exchange-instance_method">
   
-    #<strong>exchange</strong>  &#x21d2; <tt>String</tt> 
+    #<strong>exchange</strong>  &#x21d2; <tt>String</tt>  <span class="extras">(readonly)</span>
   
 
   
@@ -360,7 +366,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns Name of the exchange the message was published to.</p>
+<p>Name of the exchange the message was published to</p>
 
 
   </div>
@@ -377,11 +383,6 @@
       
       
       
-        &mdash;
-        <div class='inline'>
-<p>Name of the exchange the message was published to</p>
-</div>
-      
     </li>
   
 </ul>
@@ -392,12 +393,16 @@
       <pre class="lines">
 
 
-52</pre>
+96
+97
+98</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 96</span>
 
-<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_exchange'>exchange</span>
+  <span class='ivar'>@exchange</span>
+<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
@@ -417,6 +422,8 @@
 </h3><div class="docstring">
   <div class="discussion">
     
+<p>Message properties</p>
+
 
   </div>
 </div>
@@ -442,23 +449,27 @@
       <pre class="lines">
 
 
-52</pre>
+104
+105
+106</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 104</span>
 
-<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_properties'>properties</span>
+  <span class='ivar'>@properties</span>
+<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
 </div>
     
       
-      <span id="reply_code=-instance_method"></span>
+      <span id=""></span>
       <div class="method_details ">
   <h3 class="signature " id="reply_code-instance_method">
   
-    #<strong>reply_code</strong>  &#x21d2; <tt>Integer</tt> 
+    #<strong>reply_code</strong>  &#x21d2; <tt>Integer</tt>  <span class="extras">(readonly)</span>
   
 
   
@@ -467,7 +478,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns Error code.</p>
+<p>Error code</p>
 
 
   </div>
@@ -484,11 +495,6 @@
       
       
       
-        &mdash;
-        <div class='inline'>
-<p>Error code</p>
-</div>
-      
     </li>
   
 </ul>
@@ -499,23 +505,27 @@
       <pre class="lines">
 
 
-52</pre>
+88
+89
+90</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 88</span>
 
-<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_reply_code'>reply_code</span>
+  <span class='ivar'>@reply_code</span>
+<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
 </div>
     
       
-      <span id="reply_text=-instance_method"></span>
+      <span id=""></span>
       <div class="method_details ">
   <h3 class="signature " id="reply_text-instance_method">
   
-    #<strong>reply_text</strong>  &#x21d2; <tt>String</tt> 
+    #<strong>reply_text</strong>  &#x21d2; <tt>String</tt>  <span class="extras">(readonly)</span>
   
 
   
@@ -524,7 +534,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns Description on why the message was returned.</p>
+<p>Description on why the message was returned</p>
 
 
   </div>
@@ -541,11 +551,6 @@
       
       
       
-        &mdash;
-        <div class='inline'>
-<p>Description on why the message was returned</p>
-</div>
-      
     </li>
   
 </ul>
@@ -556,23 +561,27 @@
       <pre class="lines">
 
 
-52</pre>
+92
+93
+94</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 92</span>
 
-<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_reply_text'>reply_text</span>
+  <span class='ivar'>@reply_text</span>
+<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
 </div>
     
       
-      <span id="routing_key=-instance_method"></span>
+      <span id=""></span>
       <div class="method_details ">
   <h3 class="signature " id="routing_key-instance_method">
   
-    #<strong>routing_key</strong>  &#x21d2; <tt>String</tt> 
+    #<strong>routing_key</strong>  &#x21d2; <tt>String</tt>  <span class="extras">(readonly)</span>
   
 
   
@@ -581,7 +590,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns The routing key the message was published with.</p>
+<p>The routing key the message was published with</p>
 
 
   </div>
@@ -598,11 +607,6 @@
       
       
       
-        &mdash;
-        <div class='inline'>
-<p>The routing key the message was published with</p>
-</div>
-      
     </li>
   
 </ul>
@@ -613,12 +617,16 @@
       <pre class="lines">
 
 
-52</pre>
+100
+101
+102</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/message.rb', line 100</span>
 
-<span class='const'><span class='object_link'><a href="" title="AMQP::Client::ReturnMessage (class)">ReturnMessage</a></span></span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:reply_code</span><span class='comma'>,</span> <span class='symbol'>:reply_text</span><span class='comma'>,</span> <span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:routing_key</span><span class='comma'>,</span> <span class='symbol'>:properties</span><span class='comma'>,</span> <span class='symbol'>:body</span><span class='rparen'>)</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_routing_key'>routing_key</span>
+  <span class='ivar'>@routing_key</span>
+<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
@@ -630,7 +638,7 @@
 </div>
 
       <div id="footer">
-  Generated on Wed Sep  8 16:08:44 2021 by
+  Generated on Wed Sep  8 17:30:56 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
