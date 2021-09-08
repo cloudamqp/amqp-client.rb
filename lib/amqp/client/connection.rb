@@ -13,7 +13,8 @@ module AMQP
     class Connection
       # Establish a connection to an AMQP broker
       # @param uri [String] URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection
-      # @param read_loop_thread [Boolean] Set to false if you manually want to run the {#read_loop}
+      # @param read_loop_thread [Boolean] If true run {#read_loop} in a background thread,
+      #   otherwise the user have to run it explicitly, without {#read_loop} the connection won't function
       # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
       #   the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
@@ -23,37 +24,19 @@ module AMQP
       # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
       #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
       # @return [Connection]
-      def self.connect(uri, read_loop_thread: true, **options)
+      def initialize(uri = "", read_loop_thread: true, **options)
         uri = URI.parse(uri)
         tls = uri.scheme == "amqps"
         port = port_from_env || uri.port || (tls ? 5671 : 5672)
         host = uri.host || "localhost"
         user = uri.user || "guest"
         password = uri.password || "guest"
-        vhost = URI.decode_www_form_component(uri.path[1..-1] || "/")
+        vhost = URI.decode_www_form_component(uri.path[1..] || "/")
         options = URI.decode_www_form(uri.query || "").map! { |k, v| [k.to_sym, v] }.to_h.merge(options)
 
-        socket = Socket.tcp host, port, connect_timeout: 30
-        enable_tcp_keepalive(socket)
-        if tls
-          cert_store = OpenSSL::X509::Store.new
-          cert_store.set_default_paths
-          context = OpenSSL::SSL::SSLContext.new
-          context.cert_store = cert_store
-          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless [false, "false", "none"].include? options[:verify_peer]
-          socket = OpenSSL::SSL::SSLSocket.new(socket, context)
-          socket.sync_close = true # closing the TLS socket also closes the TCP socket
-          socket.hostname = host # SNI host
-          socket.connect
-          socket.post_connection_check(host) || raise(Error, "TLS certificate hostname doesn't match requested")
-        end
+        socket = open_socket(host, port, tls, options)
         channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, options)
-        Connection.new(socket, channel_max, frame_max, heartbeat, read_loop_thread: read_loop_thread)
-      end
 
-      # Requires an already established TCP/TLS socket
-      # @api private
-      def initialize(socket, channel_max, frame_max, heartbeat, read_loop_thread: true)
         @socket = socket
         @channel_max = channel_max.zero? ? 65_536 : channel_max
         @frame_max = frame_max
@@ -64,6 +47,13 @@ module AMQP
         @write_lock = Mutex.new
         @blocked = nil
         Thread.new { read_loop } if read_loop_thread
+      end
+
+      # Alias for {#initialize
+      # @see #initialize
+      # @deprecated
+      def self.connect(uri, read_loop_thread: true, **options)
+        new(uri, read_loop_thread: read_loop_thread, **options)
       end
 
       # The max frame size negotiated between the client and the broker
@@ -377,9 +367,30 @@ module AMQP
         args
       end
 
+      # Connect to the host/port, optionally establish a TLS connection
+      # @return [Socket]
+      # @return [OpenSSL::SSL::SSLSocket]
+      def open_socket(host, port, tls, options)
+        socket = Socket.tcp host, port, connect_timeout: 30
+        enable_tcp_keepalive(socket)
+        if tls
+          cert_store = OpenSSL::X509::Store.new
+          cert_store.set_default_paths
+          context = OpenSSL::SSL::SSLContext.new
+          context.cert_store = cert_store
+          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless [false, "false", "none"].include? options[:verify_peer]
+          socket = OpenSSL::SSL::SSLSocket.new(socket, context)
+          socket.sync_close = true # closing the TLS socket also closes the TCP socket
+          socket.hostname = host # SNI host
+          socket.connect
+          socket.post_connection_check(host) || raise(Error, "TLS certificate hostname doesn't match requested")
+        end
+        socket
+      end
+
       # Negotiate a connection
       # @return [Array<Integer, Integer, Integer>] channel_max, frame_max, heartbeat
-      def self.establish(socket, user, password, vhost, options)
+      def establish(socket, user, password, vhost, options)
         channel_max, frame_max, heartbeat = nil
         socket.write "AMQP\x00\x00\x09\x01"
         buf = String.new(capacity: 4096)
@@ -437,7 +448,9 @@ module AMQP
         raise e
       end
 
-      def self.enable_tcp_keepalive(socket)
+      # Enable TCP keepalive, which is prefered to heartbeats
+      # @return [void]
+      def enable_tcp_keepalive(socket)
         socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
         socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPIDLE, 60)
         socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, 10)
@@ -446,13 +459,14 @@ module AMQP
         warn "AMQP-Client could not enable TCP keepalive on socket. #{e.inspect}"
       end
 
-      def self.port_from_env
+      # Fetch the AMQP port number from ENV
+      # @return [Integer] A port number
+      # @return [nil] When the environment variable AMQP_PORT isn't set
+      def port_from_env
         return unless (port = ENV["AMQP_PORT"])
 
         port.to_i
       end
-
-      private_class_method :establish, :enable_tcp_keepalive, :port_from_env
 
       CLIENT_PROPERTIES = {
         capabilities: {

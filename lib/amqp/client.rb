@@ -23,7 +23,7 @@ module AMQP
     #    the smallest of the client's and the broker's values will be used
     # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
     #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
-    def initialize(uri, **options)
+    def initialize(uri = "", **options)
       @uri = uri
       @options = options
 
@@ -35,11 +35,11 @@ module AMQP
 
     # @!group Connect and disconnect
 
-    # Establishes a new AMQP connection, does not try to reconnect
-    # @see Connection.connect
+    # Establishes and returns a new AMQP connection
+    # @see Connection#initialize
     # @return [Connection]
     def connect(read_loop_thread: true)
-      Connection.connect(@uri, read_loop_thread: read_loop_thread, **@options)
+      Connection.new(@uri, read_loop_thread: read_loop_thread, **@options)
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first
