@@ -94,10 +94,10 @@
 </span><span class='id identifier rubyid_q'>q</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_queue_declare'>queue_declare</span>
 
 <span class='comment'># Publish a message to said queue
-</span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_publish'>basic_publish</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Hello World!</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_queue_name'>queue_name</span>
+</span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_publish_confirm'>basic_publish_confirm</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Hello World!</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_queue_name'>queue_name</span><span class='comma'>,</span> <span class='label'>persistent:</span> <span class='kw'>true</span>
 
 <span class='comment'># Poll the queue for a message
-</span><span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_get'>basic_get</span> <span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_queue_name'>queue_name</span>
+</span><span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_get'>basic_get</span><span class='lparen'>(</span><span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_queue_name'>queue_name</span><span class='rparen'>)</span>
 
 <span class='comment'># Print the message&#39;s body to STDOUT
 </span><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_body'>body</span>
@@ -178,7 +178,7 @@
 </div></div>
 
       <div id="footer">
-  Generated on Wed Sep  8 18:27:27 2021 by
+  Generated on Thu Sep  9 09:29:48 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
