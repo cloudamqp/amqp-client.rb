@@ -35,10 +35,10 @@ ch = conn.channel
 q = ch.queue_declare
 
 # Publish a message to said queue
-ch.basic_publish "Hello World!", "", q.queue_name
+ch.basic_publish_confirm "Hello World!", "", q.queue_name, persistent: true
 
 # Poll the queue for a message
-msg = ch.basic_get q.queue_name
+msg = ch.basic_get(q.queue_name)
 
 # Print the message's body to STDOUT
 puts msg.body
