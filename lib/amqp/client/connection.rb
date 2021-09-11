@@ -3,7 +3,7 @@
 require "socket"
 require "uri"
 require "openssl"
-require_relative "./frames"
+require_relative "./frame_bytes"
 require_relative "./channel"
 require_relative "./errors"
 
