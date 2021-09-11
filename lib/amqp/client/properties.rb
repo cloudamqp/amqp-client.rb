@@ -65,14 +65,17 @@ module AMQP
       attr_accessor :app_id
 
       # Encode properties into a byte array
+      # @param properties [Hash]
       # @return [String] byte array
-      def encode
+      def self.encode(properties)
+        return "\x00\x00" if properties.empty?
+
         flags = 0
         arr = [flags]
         fmt = StringIO.new(String.new("S>", capacity: 35))
         fmt.pos = 2
 
-        if content_type
+        if (content_type = properties[:content_type])
           content_type.is_a?(String) || raise(ArgumentError, "content_type must be a string")
 
           flags |= (1 << 15)
@@ -80,7 +83,7 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if content_encoding
+        if (content_encoding = properties[:content_encoding])
           content_encoding.is_a?(String) || raise(ArgumentError, "content_encoding must be a string")
 
           flags |= (1 << 14)
@@ -88,7 +91,7 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if headers
+        if (headers = properties[:headers])
           headers.is_a?(Hash) || raise(ArgumentError, "headers must be a hash")
 
           flags |= (1 << 13)
@@ -97,7 +100,7 @@ module AMQP
           fmt << "L>a*"
         end
 
-        if delivery_mode
+        if (delivery_mode = properties[:delivery_mode])
           delivery_mode.is_a?(Integer) || raise(ArgumentError, "delivery_mode must be an int")
           delivery_mode.between?(0, 2) || raise(ArgumentError, "delivery_mode must be be between 0 and 2")
 
@@ -106,14 +109,14 @@ module AMQP
           fmt << "C"
         end
 
-        if priority
+        if (priority = properties[:priority])
           priority.is_a?(Integer) || raise(ArgumentError, "priority must be an int")
           flags |= (1 << 11)
           arr << priority
           fmt << "C"
         end
 
-        if correlation_id
+        if (correlation_id = properties[:correlation_id])
           priority.is_a?(String) || raise(ArgumentError, "correlation_id must be a string")
 
           flags |= (1 << 10)
@@ -121,7 +124,7 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if reply_to
+        if (reply_to = properties[:reply_to])
           reply_to.is_a?(String) || raise(ArgumentError, "reply_to must be a string")
 
           flags |= (1 << 9)
@@ -129,8 +132,8 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if expiration
-          self.expiration = expiration.to_s if expiration.is_a?(Integer)
+        if (expiration = properties[:expiration])
+          expiration = expiration.to_s if expiration.is_a?(Integer)
           expiration.is_a?(String) || raise(ArgumentError, "expiration must be a string or integer")
 
           flags |= (1 << 8)
@@ -138,7 +141,7 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if message_id
+        if (message_id = properties[:message_id])
           message_id.is_a?(String) || raise(ArgumentError, "message_id must be a string")
 
           flags |= (1 << 7)
@@ -146,7 +149,7 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if timestamp
+        if (timestamp = properties[:timestamp])
           timestamp.is_a?(Integer) || timestamp.is_a?(Time) || raise(ArgumentError, "timestamp must be an Integer or a Time")
 
           flags |= (1 << 6)
@@ -154,7 +157,7 @@ module AMQP
           fmt << "Q>"
         end
 
-        if type
+        if (type = properties[:type])
           type.is_a?(String) || raise(ArgumentError, "type must be a string")
 
           flags |= (1 << 5)
@@ -162,7 +165,7 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if user_id
+        if (user_id = properties[:user_id])
           user_id.is_a?(String) || raise(ArgumentError, "user_id must be a string")
 
           flags |= (1 << 4)
@@ -170,7 +173,7 @@ module AMQP
           fmt << "Ca*"
         end
 
-        if app_id
+        if (app_id = properties[:app_id])
           app_id.is_a?(String) || raise(ArgumentError, "app_id must be a string")
 
           flags |= (1 << 3)
