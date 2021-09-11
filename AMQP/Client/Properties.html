@@ -503,19 +503,10 @@
 </li>
 
       
-    </ul>
-  
-    <h2>
-      Instance Method Summary
-      <small><a href="#" class="summary_toggle">collapse</a></small>
-    </h2>
-
-    <ul class="summary">
-      
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#encode-instance_method" title="#encode (instance method)">#<strong>encode</strong>  &#x21d2; String </a>
+      <a href="#encode-class_method" title="encode (class method)">.<strong>encode</strong>(properties)  &#x21d2; String </a>
     
 
     
@@ -535,6 +526,15 @@
   
 </li>
 
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
       
         <li class="public ">
   <span class="summary_signature">
@@ -1430,9 +1430,6 @@
       <pre class="lines">
 
 
-187
-188
-189
 190
 191
 192
@@ -1506,10 +1503,13 @@
 260
 261
 262
-263</pre>
+263
+264
+265
+266</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/properties.rb', line 187</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/properties.rb', line 190</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_decode'>decode</span><span class='lparen'>(</span><span class='id identifier rubyid_bytes'>bytes</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_p'>p</span> <span class='op'>=</span> <span class='id identifier rubyid_new'>new</span>
@@ -1593,16 +1593,10 @@
 </table>
 </div>
     
-  </div>
-
-  <div id="instance_method_details" class="method_details_list">
-    <h2>Instance Method Details</h2>
-
-    
-      <div class="method_details first">
-  <h3 class="signature first" id="encode-instance_method">
+      <div class="method_details ">
+  <h3 class="signature " id="encode-class_method">
   
-    #<strong>encode</strong>  &#x21d2; <tt>String</tt> 
+    .<strong>encode</strong>(properties)  &#x21d2; <tt>String</tt> 
   
 
   
@@ -1617,7 +1611,22 @@
   </div>
 </div>
 <div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
   
+    <li>
+      
+        <span class='name'>properties</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
 <p class="tag_title">Returns:</p>
 <ul class="return">
   
@@ -1643,7 +1652,6 @@
       <pre class="lines">
 
 
-69
 70
 71
 72
@@ -1757,18 +1765,23 @@
 180
 181
 182
-183</pre>
+183
+184
+185
+186</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/properties.rb', line 69</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/properties.rb', line 70</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_encode'>encode</span>
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span><span class='lparen'>(</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\x00\x00</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_properties'>properties</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
   <span class='id identifier rubyid_flags'>flags</span> <span class='op'>=</span> <span class='int'>0</span>
   <span class='id identifier rubyid_arr'>arr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_flags'>flags</span><span class='rbracket'>]</span>
   <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>=</span> <span class='const'>StringIO</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>S&gt;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>capacity:</span> <span class='int'>35</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_fmt'>fmt</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span> <span class='op'>=</span> <span class='int'>2</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_content_type'>content_type</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_content_type'>content_type</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:content_type</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_content_type'>content_type</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>content_type must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>15</span><span class='rparen'>)</span>
@@ -1776,7 +1789,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_content_encoding'>content_encoding</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_content_encoding'>content_encoding</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:content_encoding</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_content_encoding'>content_encoding</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>content_encoding must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>14</span><span class='rparen'>)</span>
@@ -1784,7 +1797,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_headers'>headers</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_headers'>headers</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:headers</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_headers'>headers</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>headers must be a hash</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>13</span><span class='rparen'>)</span>
@@ -1793,7 +1806,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>L&gt;a*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_delivery_mode'>delivery_mode</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_delivery_mode'>delivery_mode</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:delivery_mode</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_delivery_mode'>delivery_mode</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>delivery_mode must be an int</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_delivery_mode'>delivery_mode</span><span class='period'>.</span><span class='id identifier rubyid_between?'>between?</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='int'>2</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>delivery_mode must be be between 0 and 2</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
@@ -1802,14 +1815,14 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>C</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_priority'>priority</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_priority'>priority</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:priority</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_priority'>priority</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>priority must be an int</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>11</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_arr'>arr</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_priority'>priority</span>
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>C</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_correlation_id'>correlation_id</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_correlation_id'>correlation_id</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:correlation_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_priority'>priority</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>correlation_id must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>10</span><span class='rparen'>)</span>
@@ -1817,7 +1830,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_reply_to'>reply_to</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_reply_to'>reply_to</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:reply_to</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_reply_to'>reply_to</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>reply_to must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>9</span><span class='rparen'>)</span>
@@ -1825,8 +1838,8 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_expiration'>expiration</span>
-    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_expiration'>expiration</span> <span class='op'>=</span> <span class='id identifier rubyid_expiration'>expiration</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='kw'>if</span> <span class='id identifier rubyid_expiration'>expiration</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_expiration'>expiration</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:expiration</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_expiration'>expiration</span> <span class='op'>=</span> <span class='id identifier rubyid_expiration'>expiration</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='kw'>if</span> <span class='id identifier rubyid_expiration'>expiration</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_expiration'>expiration</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>expiration must be a string or integer</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>8</span><span class='rparen'>)</span>
@@ -1834,7 +1847,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_message_id'>message_id</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_message_id'>message_id</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:message_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_message_id'>message_id</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>message_id must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>7</span><span class='rparen'>)</span>
@@ -1842,7 +1855,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_timestamp'>timestamp</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_timestamp'>timestamp</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:timestamp</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_timestamp'>timestamp</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_timestamp'>timestamp</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Time</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>timestamp must be an Integer or a Time</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>6</span><span class='rparen'>)</span>
@@ -1850,7 +1863,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Q&gt;</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>type must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>5</span><span class='rparen'>)</span>
@@ -1858,7 +1871,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_user_id'>user_id</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_user_id'>user_id</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:user_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_user_id'>user_id</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>user_id must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>4</span><span class='rparen'>)</span>
@@ -1866,7 +1879,7 @@
     <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Ca*</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_app_id'>app_id</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_app_id'>app_id</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:app_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_app_id'>app_id</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>app_id must be a string</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>3</span><span class='rparen'>)</span>
@@ -1887,7 +1900,7 @@
 </div>
 
       <div id="footer">
-  Generated on Thu Sep  9 10:35:26 2021 by
+  Generated on Sat Sep 11 09:35:23 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
