@@ -12,16 +12,14 @@ module AMQP
         return "" if hash.empty?
 
         arr = []
-        fmt = StringIO.new
+        fmt = String.new
         hash.each do |k, value|
           key = k.to_s
-          raise ArgumentError, "Header key too long" if key.bytesize > 255
-
           arr.push(key.bytesize, key)
           fmt << "Ca*"
           encode_field(value, arr, fmt)
         end
-        arr.pack(fmt.string)
+        arr.pack(fmt)
       end
 
       # Decodes an AMQP table into a hash
@@ -42,49 +40,50 @@ module AMQP
       end
 
       # Encoding a single value in a table
-      # @return [void]
+      # @return [nil]
       # @api private
       def self.encode_field(value, arr, fmt)
         case value
         when Integer
           if value > 2**31
             arr.push("l", value)
-            fmt << "a q>"
+            fmt << "aq>"
           else
             arr.push("I", value)
-            fmt << "a l>"
+            fmt << "al>"
           end
         when Float
           arr.push("d", value)
-          fmt << "a G"
+          fmt << "aG"
         when String
           arr.push("S", value.bytesize, value)
-          fmt << "a L> a*"
+          fmt << "aL>a*"
         when Time
           arr.push("T", value.to_i)
-          fmt << "a Q>"
+          fmt << "aQ>"
         when Array
           value_arr = []
-          value_fmt = StringIO.new
+          value_fmt = String.new
           value.each { |e| encode_field(e, value_arr, value_fmt) }
-          bytes = value_arr.pack(value_fmt.string)
+          bytes = value_arr.pack(value_fmt)
           arr.push("A", bytes.bytesize, bytes)
-          fmt << "a L> a*"
+          fmt << "aL>a*"
         when Hash
           bytes = Table.encode(value)
           arr.push("F", bytes.bytesize, bytes)
-          fmt << "a L> a*"
+          fmt << "aL>a*"
         when true
           arr.push("t", 1)
-          fmt << "a C"
+          fmt << "aC"
         when false
           arr.push("t", 0)
-          fmt << "a C"
+          fmt << "aC"
         when nil
-          arr.push("V")
+          arr << "V"
           fmt << "a"
         else raise ArgumentError, "unsupported table field type: #{value.class}"
         end
+        nil
       end
 
       # Decodes a single value

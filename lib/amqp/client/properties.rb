@@ -104,8 +104,7 @@ module AMQP
 
         flags = 0
         arr = [flags]
-        fmt = StringIO.new(String.new("S>", capacity: 35))
-        fmt.pos = 2
+        fmt = String.new("S>", capacity: 37)
 
         if (content_type = properties[:content_type])
           content_type.is_a?(String) || raise(ArgumentError, "content_type must be a string")
@@ -134,7 +133,6 @@ module AMQP
 
         if (delivery_mode = properties[:delivery_mode])
           delivery_mode.is_a?(Integer) || raise(ArgumentError, "delivery_mode must be an int")
-          delivery_mode.between?(0, 2) || raise(ArgumentError, "delivery_mode must be be between 0 and 2")
 
           flags |= (1 << 12)
           arr << delivery_mode
@@ -143,6 +141,7 @@ module AMQP
 
         if (priority = properties[:priority])
           priority.is_a?(Integer) || raise(ArgumentError, "priority must be an int")
+
           flags |= (1 << 11)
           arr << priority
           fmt << "C"
@@ -214,7 +213,7 @@ module AMQP
         end
 
         arr[0] = flags
-        arr.pack(fmt.string)
+        arr.pack(fmt)
       end
 
       # Decode a byte array
