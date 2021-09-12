@@ -117,7 +117,7 @@ module AMQP
         end
 
         if (correlation_id = properties[:correlation_id])
-          priority.is_a?(String) || raise(ArgumentError, "correlation_id must be a string")
+          correlation_id.is_a?(String) || raise(ArgumentError, "correlation_id must be a string")
 
           flags |= (1 << 10)
           arr << correlation_id.bytesize << correlation_id
