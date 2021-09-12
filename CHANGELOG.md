@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Added: Examples in the documentation
+- Added: Faster Properties and Table encoding and decoding
+
 ## [1.1.0] - 2021-09-08
 
 - Fixed: Due to a race condition publishers could get stuck waiting for publish confirms
