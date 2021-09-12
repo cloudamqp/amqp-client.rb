@@ -6,15 +6,22 @@ module AMQP
     # @api private
     module Table
       # Encodes a hash into a byte array
+      # @param hash [Hash]
       # @return [String] Byte array
       def self.encode(hash)
-        tbl = StringIO.new
-        hash.each do |k, v|
+        return "" if hash.empty?
+
+        arr = []
+        fmt = StringIO.new
+        hash.each do |k, value|
           key = k.to_s
-          tbl.write [key.bytesize, key].pack("Ca*")
-          tbl.write encode_field(v)
+          raise ArgumentError, "Header key too long" if key.bytesize > 255
+
+          arr.push(key.bytesize, key)
+          fmt << "Ca*"
+          encode_field(value, arr, fmt)
         end
-        tbl.string
+        arr.pack(fmt.string)
       end
 
       # Decodes an AMQP table into a hash
@@ -27,8 +34,7 @@ module AMQP
           pos += 1
           key = bytes.byteslice(pos, key_len).force_encoding("utf-8")
           pos += key_len
-          rest = bytes.byteslice(pos, bytes.bytesize - pos)
-          len, value = decode_field(rest)
+          len, value = decode_field(bytes, pos)
           pos += len + 1
           hash[key] = value
         end
@@ -36,43 +42,57 @@ module AMQP
       end
 
       # Encoding a single value in a table
+      # @return [void]
       # @api private
-      def self.encode_field(value)
+      def self.encode_field(value, arr, fmt)
         case value
         when Integer
           if value > 2**31
-            ["l", value].pack("a q>")
+            arr.push("l", value)
+            fmt << "a q>"
           else
-            ["I", value].pack("a l>")
+            arr.push("I", value)
+            fmt << "a l>"
           end
         when Float
-          ["d", value].pack("a G")
+          arr.push("d", value)
+          fmt << "a G"
         when String
-          ["S", value.bytesize, value].pack("a L> a*")
+          arr.push("S", value.bytesize, value)
+          fmt << "a L> a*"
         when Time
-          ["T", value.to_i].pack("a Q>")
+          arr.push("T", value.to_i)
+          fmt << "a Q>"
         when Array
-          bytes = value.map { |e| encode_field(e) }.join
-          ["A", bytes.bytesize, bytes].pack("a L> a*")
+          value_arr = []
+          value_fmt = StringIO.new
+          value.each { |e| encode_field(e, value_arr, value_fmt) }
+          bytes = value_arr.pack(value_fmt.string)
+          arr.push("A", bytes.bytesize, bytes)
+          fmt << "a L> a*"
         when Hash
           bytes = Table.encode(value)
-          ["F", bytes.bytesize, bytes].pack("a L> a*")
+          arr.push("F", bytes.bytesize, bytes)
+          fmt << "a L> a*"
         when true
-          ["t", 1].pack("a C")
+          arr.push("t", 1)
+          fmt << "a C"
         when false
-          ["t", 0].pack("a C")
+          arr.push("t", 0)
+          fmt << "a C"
         when nil
-          ["V"].pack("a")
+          arr.push("V")
+          fmt << "a"
         else raise ArgumentError, "unsupported table field type: #{value.class}"
         end
       end
 
       # Decodes a single value
-      # @return [Array<Integer, Object>] Bytes read and the parsed object
+      # @return [Array<Integer, Object>] Bytes read and the parsed value
       # @api private
-      def self.decode_field(bytes)
-        type = bytes[0]
-        pos = 1
+      def self.decode_field(bytes, pos)
+        type = bytes[pos]
+        pos += 1
         case type
         when "S"
           len = bytes.byteslice(pos, 4).unpack1("L>")
@@ -84,9 +104,11 @@ module AMQP
           [4 + len, decode(bytes.byteslice(pos, len))]
         when "A"
           len = bytes.byteslice(pos, 4).unpack1("L>")
+          pos += 4
+          array_end = pos + len
           a = []
-          while pos < len
-            length, value = decode_field(bytes.byteslice(pos, -1))
+          while pos < array_end
+            length, value = decode_field(bytes, pos)
             pos += length + 1
             a << value
           end

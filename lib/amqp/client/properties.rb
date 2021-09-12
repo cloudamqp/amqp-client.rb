@@ -23,44 +23,66 @@ module AMQP
         @app_id = app_id
       end
 
+      # Properties as a Hash
+      # @return [Hash] Properties
+      def to_h
+        {
+          content_type: content_type,
+          content_encoding: content_encoding,
+          headers: headers,
+          delivery_mode: delivery_mode,
+          priority: priority,
+          correlation_id: correlation_id,
+          reply_to: reply_to,
+          expiration: expiration,
+          message_id: message_id,
+          timestamp: timestamp,
+          type: type,
+          user_id: user_id,
+          app_id: app_id
+        }
+      end
+
       # Content type of the message body
       # @return [String, nil]
       attr_accessor :content_type
       # Content encoding of the body
       # @return [String, nil]
       attr_accessor :content_encoding
-      # Custom headers
+      # Headers, for applications and header exchange routing
       # @return [Hash<String, Object>, nil]
       attr_accessor :headers
-      # 2 for persisted message, transient messages for all other values
-      # @return [Integer, nil]
+      # Message persistent level
+      # @note The exchange and queue have to durable as well for the message to be persistent
+      # @return [1] Transient message
+      # @return [2] Persistent message
+      # @return [nil] Not specified (implicitly transient)
       attr_accessor :delivery_mode
       # A priority of the message (between 0 and 255)
       # @return [Integer, nil]
       attr_accessor :priority
-      # A correlation id, most often used used for RPC communication
-      # @return [Integer, nil]
+      # Message correlation id, commonly used to correlate RPC requests and responses
+      # @return [String, nil]
       attr_accessor :correlation_id
       # Queue to reply RPC responses to
       # @return [String, nil]
       attr_accessor :reply_to
       # Number of seconds the message will stay in the queue
-      # @return [Integer]
-      # @return [String]
-      # @return [nil]
+      # @return [String, nil]
       attr_accessor :expiration
+      # Application message identifier
       # @return [String, nil]
       attr_accessor :message_id
-      # User-definable, but often used for the time the message was originally generated
+      # Message timestamp, often indicates when the message was originally generated
       # @return [Date, nil]
       attr_accessor :timestamp
-      # User-definable, but can can indicate what kind of message this is
+      # Message type name
       # @return [String, nil]
       attr_accessor :type
-      # User-definable, but can be used to verify that this is the user that published the message
+      # The user that published the message
       # @return [String, nil]
       attr_accessor :user_id
-      # User-definable, but often indicates which app that generated the message
+      # Name of application that generated the message
       # @return [String, nil]
       attr_accessor :app_id
 
