@@ -43,6 +43,16 @@ module AMQP
         }
       end
 
+      alias to_hash to_h
+
+      # Returns true if two Property objects holds the same information
+      # @return [Boolean]
+      def ==(other)
+        return false unless other.is_a? self.class
+
+        instance_variables.all? { |v| instance_variable_get(v) == other.instance_variable_get(v) }
+      end
+
       # Content type of the message body
       # @return [String, nil]
       attr_accessor :content_type

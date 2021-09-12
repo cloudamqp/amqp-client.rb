@@ -3,6 +3,7 @@
 require_relative "../test_helper"
 require "net/http"
 require "json"
+require "time"
 
 class AMQPClientTest < Minitest::Test
   def test_that_it_has_a_version_number
@@ -507,6 +508,42 @@ class AMQPClientTest < Minitest::Test
     connection.close
     t.join
     system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
+  ensure
+    connection&.close
+  end
+
+  def test_it_will_publish_and_consume_properties
+    props = AMQP::Client::Properties.new(
+      delivery_mode: 2,
+      content_type: "text/plain",
+      content_encoding: "encoding",
+      priority: 240,
+      correlation_id: "corrid",
+      reply_to: "replyto",
+      expiration: "9999",
+      message_id: "msgid",
+      type: "type",
+      user_id: "guest",
+      app_id: "appId",
+      timestamp: Time.parse("2017-02-03T10:15:30+01:00"),
+      headers: {
+        "hdr1" => "value1",
+        "int" => 1,
+        "b" => false,
+        "f" => 0.1,
+        "array" => [1, "b", true],
+        "hash" => { "inner" => "val" },
+        "big" => 2**32,
+        "nil" => nil
+      }
+    )
+
+    connection = AMQP::Client.new("amqp://localhost").connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    channel.basic_publish_confirm "", "", q.queue_name, **props
+    msg = channel.basic_get q.queue_name
+    assert_equal props, msg.properties
   ensure
     connection&.close
   end
