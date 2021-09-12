@@ -350,7 +350,7 @@ module AMQP
           end
         when 2 # header
           body_size = buf.unpack1("@4 Q>")
-          properties = Properties.decode(buf.byteslice(12, buf.bytesize - 12))
+          properties = Properties.decode(buf, 12)
           @channels[channel_id].header_delivered body_size, properties
         when 3 # body
           @channels[channel_id].body_delivered buf

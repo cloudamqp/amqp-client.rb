@@ -209,10 +209,10 @@ module AMQP
 
       # Decode a byte array
       # @return [Properties]
-      def self.decode(bytes)
+      def self.decode(bytes, pos = 0)
         p = new
-        flags = bytes.unpack1("S>")
-        pos = 2
+        flags = bytes.byteslice(pos, 2).unpack1("S>")
+        pos += 2
         if (flags & 0x8000).positive?
           len = bytes.getbyte(pos)
           pos += 1
