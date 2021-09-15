@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.1.1] - 2021-09-15
+
 - Added: Examples in the documentation
 - Added: Faster Properties and Table encoding and decoding
 
