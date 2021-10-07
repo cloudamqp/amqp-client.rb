@@ -152,12 +152,12 @@ module AMQP
         frame_start = String.new(capacity: 7)
         frame_buffer = String.new(capacity: frame_max)
         loop do
-          socket.read(7, frame_start)
+          socket.read(7, frame_start) || raise(IOError)
           type, channel_id, frame_size = frame_start.unpack("C S> L>")
           frame_max >= frame_size || raise(Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}")
 
           # read the frame content
-          socket.read(frame_size, frame_buffer)
+          socket.read(frame_size, frame_buffer) || raise(IOError)
 
           # make sure that the frame end is correct
           frame_end = socket.readchar.ord
