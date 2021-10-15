@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [1.1.2] - 2021-10-15
+
+- Added: Support for JRuby and TruffleRuby
+
 ## [1.1.1] - 2021-09-15
 
 - Added: Examples in the documentation
