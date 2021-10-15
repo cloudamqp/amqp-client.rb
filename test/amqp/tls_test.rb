@@ -3,7 +3,7 @@
 require_relative "../test_helper"
 
 class AMQPSClientTest < Minitest::Test
-  def test_it_can_connect
+  def test_it_can_connect_to_tls
     connection = AMQP::Client.new("amqps://localhost", verify_peer: false).connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -14,7 +14,7 @@ class AMQPSClientTest < Minitest::Test
     end
   end
 
-  def test_it_can_ack_a_lot_of_msgs
+  def test_it_can_ack_a_lot_of_msgs_on_tls
     msgs1 = Queue.new
     connection = AMQP::Client.new("amqps://localhost", verify_peer: false).connect
     ch1 = connection.channel
