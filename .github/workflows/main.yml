@@ -27,10 +27,9 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
     - name: Run the default task
-      env:
-        TESTOPTS: --exclude=/_tls$/
       run: |
         bundle install
         bundle exec rake
       env:
+        TESTOPTS: --exclude=/_tls$/
         AMQP_PORT: ${{ job.services.rabbitmq.ports[5672] }}
