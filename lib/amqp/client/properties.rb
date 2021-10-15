@@ -6,8 +6,10 @@ module AMQP
   class Client
     # Encode/decode AMQP Properties
     class Properties
-      def initialize(content_type: nil, content_encoding: nil, headers: nil, delivery_mode: nil, priority: nil, correlation_id: nil,
-                     reply_to: nil, expiration: nil, message_id: nil, timestamp: nil, type: nil, user_id: nil, app_id: nil)
+      # rubocop:disable Metrics/ParameterLists
+      def initialize(content_type: nil, content_encoding: nil, headers: nil, delivery_mode: nil,
+                     priority: nil, correlation_id: nil, reply_to: nil, expiration: nil,
+                     message_id: nil, timestamp: nil, type: nil, user_id: nil, app_id: nil)
         @content_type = content_type
         @content_encoding = content_encoding
         @headers = headers
@@ -22,6 +24,7 @@ module AMQP
         @user_id = user_id
         @app_id = app_id
       end
+      # rubocop:enable Metrics/ParameterLists
 
       # Properties as a Hash
       # @return [Hash] Properties
