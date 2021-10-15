@@ -83,6 +83,8 @@ All maintained Ruby versions are supported.
 - 3.0
 - 2.7
 - 2.6
+- jruby
+- truffleruby
 
 ## Installation
 

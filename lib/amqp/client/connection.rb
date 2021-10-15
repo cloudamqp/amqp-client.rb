@@ -133,9 +133,13 @@ module AMQP
         warn "AMQP-Client blocked by broker: #{blocked}" if blocked
         @write_lock.synchronize do
           warn "AMQP-Client unblocked by broker" if blocked
-          @socket.write(*bytes)
+          if RUBY_ENGINE == "truffleruby"
+            bytes.each { |b| @socket.write b }
+          else
+            @socket.write(*bytes)
+          end
         end
-      rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
+      rescue *READ_EXCEPTIONS => e
         raise Error::ConnectionClosed.new(*@closed) if @closed
 
         raise Error, "Could not write to socket, #{e.message}"
@@ -167,7 +171,7 @@ module AMQP
           parse_frame(type, channel_id, frame_buffer) || return
         end
         nil
-      rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
+      rescue *READ_EXCEPTIONS => e
         @closed ||= [400, "read error: #{e.message}"]
         nil # ignore read errors
       ensure
@@ -177,12 +181,14 @@ module AMQP
           @write_lock.synchronize do
             @socket.close
           end
-        rescue IOError, OpenSSL::OpenSSLError, SystemCallError
+        rescue *READ_EXCEPTIONS
           nil
         end
       end
 
       private
+
+      READ_EXCEPTIONS = [IOError, OpenSSL::OpenSSLError, SystemCallError, RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
 
       def parse_frame(type, channel_id, buf)
         case type
@@ -402,7 +408,7 @@ module AMQP
         loop do
           begin
             socket.readpartial(4096, buf)
-          rescue IOError, OpenSSL::OpenSSLError, SystemCallError => e
+          rescue *READ_EXCEPTIONS => e
             raise Error, "Could not establish AMQP connection: #{e.message}"
           end
 
@@ -444,10 +450,10 @@ module AMQP
           else raise Error, "Unexpected frame type: #{type}"
           end
         end
-      rescue StandardError => e
+      rescue Exception => e
         begin
           socket.close
-        rescue IOError, OpenSSL::OpenSSLError, SystemCallError
+        rescue *READ_EXCEPTIONS
           nil
         end
         raise e
