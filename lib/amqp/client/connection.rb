@@ -188,7 +188,8 @@ module AMQP
 
       private
 
-      READ_EXCEPTIONS = [IOError, OpenSSL::OpenSSLError, SystemCallError, RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
+      READ_EXCEPTIONS = [IOError, OpenSSL::OpenSSLError, SystemCallError,
+                         RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
 
       def parse_frame(type, channel_id, buf)
         case type
