@@ -464,7 +464,13 @@ module AMQP
       # @return [void]
       def enable_tcp_keepalive(socket)
         socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
-        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPIDLE, 60)
+        if Socket.const_defined?(:TCP_KEEPIDLE) # linux/bsd
+          socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPIDLE, 60)
+        elsif RUBY_PLATFORM =~ /darwin/ # os x
+          # https://www.quickhack.net/nom/blog/2018-01-19-enable-tcp-keepalive-of-macos-and-linux-in-ruby.html
+          socket.setsockopt(Socket::IPPROTO_TCP, 0x10, 60)
+        else return # windows
+        end
         socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPINTVL, 10)
         socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPCNT, 3)
       rescue StandardError => e
