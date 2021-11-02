@@ -24,6 +24,7 @@ module AMQP
       #    the smallest of the client's and the broker's values will be used
       # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
       #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
+      # @option options [String] keepalive (60:10:3) TCP keepalive setting, 60s idle, 10s interval between probes, 3 probes
       # @return [Connection]
       def initialize(uri = "", read_loop_thread: true, **options)
         uri = URI.parse(uri)
