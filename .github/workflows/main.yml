@@ -4,7 +4,6 @@ on: [push,pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     services:
       rabbitmq:
         image: rabbitmq:latest
@@ -19,7 +18,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         ruby: ['2.6', '2.7', '3.0', 'jruby', 'truffleruby']
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
