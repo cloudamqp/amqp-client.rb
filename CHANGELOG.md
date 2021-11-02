@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Fixed: Keepalive support in OS X
+- Added: Make keepalive settings configurable (eg. amqp://?keepalive=60:10:3)
+
 ## [1.1.2] - 2021-10-15
 
 - Added: Support for JRuby and TruffleRuby
