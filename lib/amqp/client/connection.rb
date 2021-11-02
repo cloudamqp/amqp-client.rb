@@ -383,7 +383,8 @@ module AMQP
       def open_socket(host, port, tls, options)
         connect_timeout = options.fetch(:connect_timeout, 30).to_i
         socket = Socket.tcp host, port, connect_timeout: connect_timeout
-        enable_tcp_keepalive(socket)
+        keepalive = options.fetch(:keepalive, "").split(":", 3).map!(&:to_i)
+        enable_tcp_keepalive(socket, *keepalive)
         if tls
           cert_store = OpenSSL::X509::Store.new
           cert_store.set_default_paths
@@ -462,17 +463,17 @@ module AMQP
 
       # Enable TCP keepalive, which is prefered to heartbeats
       # @return [void]
-      def enable_tcp_keepalive(socket)
+      def enable_tcp_keepalive(socket, idle = 60, interval = 10, count = 3)
         socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
         if Socket.const_defined?(:TCP_KEEPIDLE) # linux/bsd
-          socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPIDLE, 60)
+          socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPIDLE, idle)
         elsif RUBY_PLATFORM.include? "darwin" # os x
           # https://www.quickhack.net/nom/blog/2018-01-19-enable-tcp-keepalive-of-macos-and-linux-in-ruby.html
-          socket.setsockopt(Socket::IPPROTO_TCP, 0x10, 60)
+          socket.setsockopt(Socket::IPPROTO_TCP, 0x10, idle)
         else return # windows
         end
-        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPINTVL, 10)
-        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPCNT, 3)
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPINTVL, interval)
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPCNT, count)
       rescue StandardError => e
         warn "AMQP-Client could not enable TCP keepalive on socket. #{e.inspect}"
       end
