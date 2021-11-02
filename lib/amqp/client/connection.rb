@@ -464,9 +464,9 @@ module AMQP
       # @return [void]
       def enable_tcp_keepalive(socket)
         socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
-        socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPIDLE, 60)
-        socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, 10)
-        socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, 3)
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPIDLE, 60)
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPINTVL, 10)
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPCNT, 3)
       rescue StandardError => e
         warn "AMQP-Client could not enable TCP keepalive on socket. #{e.inspect}"
       end
