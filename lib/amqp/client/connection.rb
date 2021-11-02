@@ -466,7 +466,7 @@ module AMQP
         socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
         if Socket.const_defined?(:TCP_KEEPIDLE) # linux/bsd
           socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_KEEPIDLE, 60)
-        elsif RUBY_PLATFORM =~ /darwin/ # os x
+        elsif RUBY_PLATFORM.include? "darwin" # os x
           # https://www.quickhack.net/nom/blog/2018-01-19-enable-tcp-keepalive-of-macos-and-linux-in-ruby.html
           socket.setsockopt(Socket::IPPROTO_TCP, 0x10, 60)
         else return # windows
