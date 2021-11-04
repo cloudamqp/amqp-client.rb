@@ -60,6 +60,8 @@
       <div id="content"><div id='filecontents'>
 <h2 id="label-5BUnreleased-5D">[Unreleased]</h2>
 <ul><li>
+<p>Fixed: Reraise SystemcallError in connect so that reconnect works</p>
+</li><li>
 <p>Fixed: Keepalive support in OS X</p>
 </li><li>
 <p>Added: Make keepalive settings configurable (eg. amqp://?keepalive=60:10:3)</p>
@@ -187,7 +189,7 @@
 </div></div>
 
       <div id="footer">
-  Generated on Thu Nov  4 17:49:42 2021 by
+  Generated on Thu Nov  4 17:51:24 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-3.0.2).
 </div>
