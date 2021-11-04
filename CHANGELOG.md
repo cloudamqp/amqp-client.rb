@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.1.3] - 2021-11-04
+
 - Fixed: Reraise SystemcallError in connect so that reconnect works
 - Fixed: Keepalive support in OS X
 - Added: Make keepalive settings configurable (eg. amqp://?keepalive=60:10:3)
