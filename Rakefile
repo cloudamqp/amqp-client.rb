@@ -15,4 +15,4 @@ RuboCop::RakeTask.new do |task|
   task.requires << "rubocop-minitest"
 end
 
-task default: %i[test rubocop]
+task default: [:test, *(:rubocop if RUBY_ENGINE == "ruby")]
