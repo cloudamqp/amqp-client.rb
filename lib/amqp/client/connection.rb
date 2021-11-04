@@ -400,7 +400,7 @@ module AMQP
           socket.post_connection_check(host) || raise(Error, "TLS certificate hostname doesn't match requested")
         end
         socket
-      rescue Errno::ECONNREFUSED => e
+      rescue SystemCallError, OpenSSL::OpenSSLError => e
         raise Error, "Could not open a socket: #{e.message}"
       end
 
