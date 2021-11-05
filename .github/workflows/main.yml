@@ -29,7 +29,7 @@ jobs:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
     - name: Run the default task
-      run: bundle exec rake
+      run: rake
       env:
         TESTOPTS: --exclude=/_tls$/
         AMQP_PORT: ${{ job.services.rabbitmq.ports[5672] }}
@@ -54,6 +54,6 @@ jobs:
     - name: Verify RabbitMQ started correctly
       run: while true; do rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
     - name: Run the default task
-      run: bundle exec rake
       env:
         TESTOPTS: --exclude=/_tls$/
+      run: rake
