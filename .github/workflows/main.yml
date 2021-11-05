@@ -35,7 +35,6 @@ jobs:
       continue-on-error: ${{ matrix.allow-failure || false }}
       run: bundle exec rake
       env:
-        TESTOPTS: --exclude=/_tls$/
         AMQP_PORT: ${{ job.services.rabbitmq.ports[5672] }}
   macos:
     runs-on: macos-latest
@@ -59,5 +58,3 @@ jobs:
       run: while true; do rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
     - name: Run tests (excluding TLS tests)
       run: bundle exec rake
-      env:
-        TESTOPTS: --exclude=/_tls$/
