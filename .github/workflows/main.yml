@@ -20,7 +20,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['2.6', '2.7', '3.0', 'jruby', 'truffleruby']
+        ruby: ['2.6', '2.7', '3.0']
+        include:
+          - { ruby: jruby, allow-failure: true }
+          - { ruby: truffleruby, allow-failure: true }
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
@@ -28,7 +31,8 @@ jobs:
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
-    - name: Run the default task
+    - name: Run tests (excluding TLS tests)
+      continue-on-error: ${{ matrix.allow-failure || false }}
       run: bundle exec rake
       env:
         TESTOPTS: --exclude=/_tls$/
@@ -53,7 +57,7 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
     - name: Verify RabbitMQ started correctly
       run: while true; do rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
-    - name: Run the default task
+    - name: Run tests (excluding TLS tests)
       run: bundle exec rake
       env:
         TESTOPTS: --exclude=/_tls$/
