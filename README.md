@@ -80,6 +80,7 @@ amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: '
 
 All maintained Ruby versions are supported.
 
+- 3.1
 - 3.0
 - 2.7
 - 2.6
