@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [1.1.4] - 2021-12-27
+
+- Fixed: Ruby 3.1.0 compability, StringIO have to be required manually
+
 ## [1.1.3] - 2021-11-04
 
 - Fixed: Reraise SystemcallError in connect so that reconnect works
