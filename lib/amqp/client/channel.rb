@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "./message"
+require "stringio"
 
 module AMQP
   class Client
