@@ -85,6 +85,13 @@ amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: '
 | amqp-client.rb | 237.000 msgs/s | 154.000 msgs/s | 23 MB |
 | bunny | 39.000 msgs/s | 44.000 msgs/s | 31 MB |
 
+Gem comparison:
+
+| Client | Runtime dependencies | [Lines of code](https://github.com/AlDanial/cloc) |
+| --- | --- | --- |
+| amqp-client.rb | 0 | 1876 |
+| bunny | 2 | 4003 |
+
 ## Supported Ruby versions
 
 All maintained Ruby versions are supported.
