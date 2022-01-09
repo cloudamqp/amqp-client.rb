@@ -134,6 +134,12 @@
 <span class='id identifier rubyid_amqp'>amqp</span><span class='period'>.</span><span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='const'>Zlib</span><span class='period'>.</span><span class='id identifier rubyid_gzip'>gzip</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>an event</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>my.event</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>content_encoding:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>gzip</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
 </code></pre>
 
+<h2 id="label-Benchmark">Benchmark</h2>
+
+<p>1 byte messages:</p>
+
+<p>| Client | Publish rate | Consume rate | | —— | ———— | ———— | | amqp-client.rb | 237.000 msgs/s | 154.000 msgs/s | | bunny | 39.000 msgs/s | 44.000 msgs/s |</p>
+
 <h2 id="label-Supported+Ruby+versions">Supported Ruby versions</h2>
 
 <p>All maintained Ruby versions are supported.</p>
@@ -184,7 +190,7 @@
 </div></div>
 
       <div id="footer">
-  Generated on Mon Dec 27 00:24:14 2021 by
+  Generated on Sun Jan  9 00:40:05 2022 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.27 (ruby-3.1.0).
 </div>
