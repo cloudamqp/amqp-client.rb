@@ -80,10 +80,10 @@ amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: '
 
 1 byte messages:
 
-| Client | Publish rate | Consume rate |
-| ------ | ------------ | ------------ |
-| amqp-client.rb | 237.000 msgs/s | 154.000 msgs/s |
-| bunny | 39.000 msgs/s | 44.000 msgs/s |
+| Client | Publish rate | Consume rate | Memory usage |
+| ------ | ------------ | ------------ | ------------ |
+| amqp-client.rb | 237.000 msgs/s | 154.000 msgs/s | 23 MB |
+| bunny | 39.000 msgs/s | 44.000 msgs/s | 31 MB |
 
 ## Supported Ruby versions
 
