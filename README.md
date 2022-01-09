@@ -76,6 +76,15 @@ amqp.publish("my message", "amq.topic", "topic.foo", headers: { foo: 'bar' })
 amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
 ```
 
+## Benchmark
+
+1 byte messages:
+
+| Client | Publish rate | Consume rate |
+| ------ | ------------ | ------------ |
+| amqp-client.rb | 237.000 msgs/s | 154.000 msgs/s |
+| bunny | 39.000 msgs/s | 44.000 msgs/s |
+
 ## Supported Ruby versions
 
 All maintained Ruby versions are supported.
