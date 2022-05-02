@@ -48,6 +48,9 @@ module AMQP
         @replies = ::Queue.new
         @write_lock = Mutex.new
         @blocked = nil
+        @on_blocked = ->(reason) { warn "AMQP-Client blocked by broker: #{reason}" }
+        @on_unblocked = -> { warn "AMQP-Client unblocked by broker" }
+
         Thread.new { read_loop } if read_loop_thread
       end
 
@@ -125,15 +128,32 @@ module AMQP
         !@closed.nil?
       end
 
+      # @!group Callbacks
+
+      # Callback called when client is blocked by the broker
+      # @yield [String] reason to why the connection is being blocked
+      # @return [nil]
+      def on_blocked(&blk)
+        @on_blocked = blk
+        nil
+      end
+
+      # Callback called when client is unblocked by the broker
+      # @yield
+      # @return [nil]
+      def on_unblocked(&blk)
+        @on_unblocked = blk
+        nil
+      end
+
+      # @!endgroup
+
       # Write byte array(s) directly to the socket (thread-safe)
       # @param bytes [String] One or more byte arrays
       # @return [Integer] number of bytes written
       # @api private
       def write_bytes(*bytes)
-        blocked = @blocked
-        warn "AMQP-Client blocked by broker: #{blocked}" if blocked
         @write_lock.synchronize do
-          warn "AMQP-Client unblocked by broker" if blocked
           if RUBY_ENGINE == "truffleruby"
             bytes.each { |b| @socket.write b }
           else
