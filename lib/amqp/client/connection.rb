@@ -199,8 +199,12 @@ module AMQP
         @closed ||= [400, "unknown"]
         @replies.close
         begin
-          @write_lock.synchronize do
+          if @blocked
             @socket.close
+          else
+            @write_lock.synchronize do
+              @socket.close
+            end
           end
         rescue *READ_EXCEPTIONS
           nil
@@ -241,9 +245,11 @@ module AMQP
               reason = buf.byteslice(5, reason_len).force_encoding("utf-8")
               @blocked = reason
               @write_lock.lock
+              @on_blocked.call(reason)
             when 61 # connection#unblocked
-              @blocked = nil
               @write_lock.unlock
+              @blocked = nil
+              @on_unblocked.call
             else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
           when 20 # channel

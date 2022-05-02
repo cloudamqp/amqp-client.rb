@@ -547,4 +547,24 @@ class AMQPClientTest < Minitest::Test
   ensure
     connection&.close
   end
+
+  def test_blocked_handler
+    q = Queue.new
+    client = AMQP::Client.new("amqp://localhost")
+    connection = client.connect
+    connection.on_blocked do |reason|
+      q << reason
+    end
+    connection.on_unblocked do
+      q << nil
+    end
+    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
+    ch = connection.channel
+    ch.basic_publish("", "", "")
+    reason = q.pop
+    assert_equal "low on memory", reason
+    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
+    unblocked = q.pop
+    assert_nil unblocked
+  end
 end
