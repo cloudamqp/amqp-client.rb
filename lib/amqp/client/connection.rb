@@ -199,7 +199,7 @@ module AMQP
         @closed ||= [400, "unknown"]
         @replies.close
         begin
-          if @blocked
+          if @write_lock.owned? # if connection is blocked
             @socket.close
           else
             @write_lock.synchronize do
