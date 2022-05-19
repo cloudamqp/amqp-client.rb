@@ -216,7 +216,7 @@ module AMQP
       READ_EXCEPTIONS = [IOError, OpenSSL::OpenSSLError, SystemCallError,
                          RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
 
-      def parse_frame(type, channel_id, buf)
+      def parse_frame(type, channel_id, buf) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         case type
         when 1 # method frame
           class_id, method_id = buf.unpack("S> S>")

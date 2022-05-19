@@ -5,7 +5,7 @@ require "net/http"
 require "json"
 require "time"
 
-class AMQPClientTest < Minitest::Test
+class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   def test_that_it_has_a_version_number
     refute_nil ::AMQP::Client::VERSION
   end
