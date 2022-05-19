@@ -5,18 +5,7 @@ on: [push,pull_request]
 jobs:
   tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    services:
-      rabbitmq:
-        image: rabbitmq:latest
-        ports:
-        - 5672/tcp
-        # needed because the rabbitmq container does not provide a healthcheck
-        options: >-
-          --health-cmd "rabbitmqctl node_health_check"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +14,12 @@ jobs:
           - { ruby: jruby, allow-failure: true }
           - { ruby: truffleruby, allow-failure: true }
     steps:
-    - uses: actions/checkout@v2
+    - name: Install RabbitMQ
+      run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
+    - name: Verify RabbitMQ started correctly
+      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+
+    - uses: actions/checkout@v3
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -34,11 +28,9 @@ jobs:
     - name: Run tests (excluding TLS tests)
       continue-on-error: ${{ matrix.allow-failure || false }}
       run: bundle exec rake
-      env:
-        AMQP_PORT: ${{ job.services.rabbitmq.ports[5672] }}
   tls:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -70,7 +62,7 @@ jobs:
     - name: Verify RabbitMQ started correctly
       run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -82,7 +74,7 @@ jobs:
         TESTOPTS: --name=/_tls$/
   macos:
     runs-on: macos-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
