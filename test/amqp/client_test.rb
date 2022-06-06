@@ -549,6 +549,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_blocked_handler
+    skip "requires sudo"
     q = Queue.new
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect
