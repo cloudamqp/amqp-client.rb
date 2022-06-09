@@ -31,6 +31,7 @@ module AMQP
       @exchanges = {}
       @subscriptions = Set.new
       @connq = SizedQueue.new(1)
+      @subscribe_connq = SizedQueue.new(1)
     end
 
     # @!group Connect and disconnect
@@ -67,6 +68,7 @@ module AMQP
               ch.basic_consume(queue_name, no_ack: no_ack, worker_threads: wt, arguments: args, &blk)
             end
             @connq << conn
+            @subscribe_connq << conn
           end
           conn.read_loop # blocks until connection is closed, then reconnect
         rescue Error => e
@@ -183,7 +185,7 @@ module AMQP
     def subscribe(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
       @subscriptions.add? [queue, no_ack, prefetch, worker_threads, arguments, blk]
 
-      with_connection do |conn|
+      with_subscribe_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
         ch.basic_consume(queue, no_ack: no_ack, worker_threads: worker_threads, arguments: arguments, &blk)
@@ -290,6 +292,21 @@ module AMQP
         yield conn
       ensure
         @connq << conn unless conn.closed?
+      end
+    end
+
+    def with_subscribe_connection
+      conn = nil
+      loop do
+        conn = @subscribe_connq.pop
+        next if conn.closed?
+
+        break
+      end
+      begin
+        yield conn
+      ensure
+        @subscribe_connq << conn unless conn.closed?
       end
     end
   end

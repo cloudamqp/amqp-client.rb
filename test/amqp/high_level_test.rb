@@ -142,7 +142,7 @@ class HighLevelTest < Minitest::Test
     input_queue = client.queue("test.in")
     output_queue = client.queue("test.out")
     begin
-      input_queue.subscribe do |msg|
+      input_queue.subscribe(no_ack: true) do |msg|
         output_queue.publish("baz")
         msgs.push msg
       end
@@ -155,10 +155,10 @@ class HighLevelTest < Minitest::Test
       input_queue.publish("bar")
       msg = msgs.pop
       assert_equal "test.in", msg.routing_key
-      assert_equal "foo", msg.body
+      assert_equal "bar", msg.body
     ensure
       input_queue.delete
-      input_queue.delete
+      output_queue.delete
       client.stop
     end
   end
