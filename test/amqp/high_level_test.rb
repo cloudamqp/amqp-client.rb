@@ -134,4 +134,32 @@ class HighLevelTest < Minitest::Test
       client.stop
     end
   end
+
+  def test_it_can_publish_inside_subscribe
+    msgs = Queue.new
+    client = AMQP::Client.new("amqp://localhost")
+    client.start
+    input_queue = client.queue("test.in")
+    output_queue = client.queue("test.out")
+    begin
+      input_queue.subscribe(no_ack: true) do |msg|
+        output_queue.publish("baz")
+        msgs.push msg
+      end
+
+      input_queue.publish("foo")
+      msg = msgs.pop
+      assert_equal "test.in", msg.routing_key
+      assert_equal "foo", msg.body
+
+      input_queue.publish("bar")
+      msg = msgs.pop
+      assert_equal "test.in", msg.routing_key
+      assert_equal "bar", msg.body
+    ensure
+      input_queue.delete
+      output_queue.delete
+      client.stop
+    end
+  end
 end
