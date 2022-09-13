@@ -154,11 +154,7 @@ module AMQP
       # @api private
       def write_bytes(*bytes)
         @write_lock.synchronize do
-          if RUBY_ENGINE == "truffleruby"
-            bytes.each { |b| @socket.write b }
-          else
-            @socket.write(*bytes)
-          end
+          @socket.write(*bytes)
         end
       rescue *READ_EXCEPTIONS => e
         raise Error::ConnectionClosed.new(*@closed) if @closed
