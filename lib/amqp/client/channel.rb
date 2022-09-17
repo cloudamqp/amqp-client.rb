@@ -200,11 +200,12 @@ module AMQP
         # Purge a queue
         # @param name [String] Name of the queue
         # @param no_wait [Boolean] Don't wait for a broker confirmation if true
-        # @return [nil]
+        # @return [Integer] Number of messages in queue when purged
+        # @return [nil] If no_wait was set true
         def queue_purge(name, no_wait: false)
           write_bytes FrameBytes.queue_purge(@id, name, no_wait)
-          expect :queue_purge_ok unless no_wait
-          nil
+          message_count, = expect :queue_purge_ok unless no_wait
+          message_count
         end
 
         # Unbind a queue from an exchange

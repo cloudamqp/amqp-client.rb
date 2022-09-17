@@ -567,4 +567,17 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     unblocked = q.pop
     assert_nil unblocked
   end
+
+  def test_queue_pruge_returns_msg_count
+    connection = AMQP::Client.new("amqp://localhost").connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    3.times do
+      channel.basic_publish_confirm "", "", q.queue_name
+    end
+    msg_count = channel.queue_purge(q.queue_name)
+    assert_equal msg_count, 3
+  ensure
+    connection&.close
+  end
 end

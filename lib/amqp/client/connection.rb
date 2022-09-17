@@ -287,7 +287,8 @@ module AMQP
             when 21 # bind-ok
               channel.reply [:queue_bind_ok]
             when 31 # purge-ok
-              channel.reply [:queue_purge_ok]
+              message_count = buf.unpack1("@4 L>")
+              channel.reply [:queue_purge_ok, message_count]
             when 41 # delete-ok
               message_count = buf.unpack1("@4 L>")
               channel.reply [:queue_delete, message_count]
