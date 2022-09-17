@@ -26,7 +26,6 @@ module AMQP
     def initialize(uri = "", **options)
       @uri = uri
       @options = options
-
       @queues = {}
       @exchanges = {}
       @subscriptions = Set.new
