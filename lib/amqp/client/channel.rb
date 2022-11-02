@@ -312,22 +312,16 @@ module AMQP
         # @yield [Message] Delivered message from the queue
         # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
         # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
-        def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {}, worker_threads: 1)
+        def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {}, worker_threads: 1, &blk)
           write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
           tag, = expect(:basic_consume_ok)
-          q = @consumers[tag] = ::Queue.new
+          @consumers[tag] = q = ::Queue.new
           if worker_threads.zero?
-            loop do
-              yield (q.pop || break)
-            end
+            consume_loop(q, tag, &blk)
             nil
           else
             threads = Array.new(worker_threads) do
-              Thread.new do
-                loop do
-                  yield (q.pop || break)
-                end
-              end
+              Thread.new { consume_loop(q, tag, &blk) }
             end
             [tag, threads]
           end
@@ -548,6 +542,21 @@ module AMQP
           raise Error::UnexpectedFrame.new(expected_frame_type, frame_type) unless frame_type == expected_frame_type
 
           args
+        end
+
+        def consume_loop(queue, tag)
+          while (msg = queue.pop)
+            begin
+              yield msg
+            rescue StandardError # cancel the consumer if an uncaught exception is raised
+              begin
+                close("Unexpected exception in consumer #{tag} thread", 500)
+              rescue StandardError # ignore sockets errors while canceling
+                nil
+              end
+              raise # reraise original exception
+            end
+          end
         end
       end
     end
