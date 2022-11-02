@@ -75,6 +75,7 @@ module AMQP
           @basic_gets.close
           @unconfirmed_empty.close
           @consumers.each_value(&:close)
+          @consumers.each_value(&:clear) # empty the queues too, messages can't be acked anymore
           nil
         end
 
