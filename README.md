@@ -49,6 +49,10 @@ puts msg.body
 The library provides a high-level API that is a bit easier to get started with, and also handles reconnection automatically.
 
 ```ruby
+require "amqp-client"
+require "json"
+require "zlib"
+
 # Start the client, it will connect and once connected it will reconnect if that connection is lost
 # Operation pending when the connection is lost will raise an exception (not timeout)
 amqp = AMQP::Client.new("amqp://localhost").start
@@ -62,9 +66,10 @@ myqueue.bind("amq.topic", "my.events.*")
 # The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack'ed.
 myqueue.subscribe(prefetch: 20) do |msg|
-  process(JSON.parse(msg.body))
+  puts JSON.parse(msg.body)
   msg.ack
-rescue
+rescue => e
+  puts e.full_message
   msg.reject(requeue: false)
 end
 
