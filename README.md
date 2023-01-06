@@ -49,9 +49,9 @@ puts msg.body
 The library provides a high-level API that is a bit easier to get started with, and also handles reconnection automatically.
 
 ```ruby
-require 'amqp-client'
-require 'json'
-require 'zlib'
+require "amqp-client"
+require "json"
+require "zlib"
 
 # Start the client, it will connect and once connected it will reconnect if that connection is lost
 # Operation pending when the connection is lost will raise an exception (not timeout)
