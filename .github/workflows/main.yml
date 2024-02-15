@@ -28,6 +28,8 @@ jobs:
     - name: Run tests (excluding TLS tests)
       continue-on-error: ${{ matrix.allow-failure || false }}
       run: bundle exec rake
+      env:
+        RUN_SUDO_TESTS: true
   tls:
     runs-on: ubuntu-latest
     timeout-minutes: 10

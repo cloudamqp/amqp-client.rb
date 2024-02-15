@@ -469,7 +469,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_be_blocked
-    skip "requires sudo"
+    skip_if_no_sudo
     connection = AMQP::Client.new("amqp://localhost").connect
     ch = connection.channel
     system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
@@ -487,7 +487,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_will_raise_if_closed_while_blocked
-    skip "requires sudo"
+    skip_if_no_sudo
     connection = AMQP::Client.new("amqp://localhost").connect
     ch = connection.channel
     system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
@@ -549,6 +549,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_blocked_handler
+    skip_if_no_sudo
     q = Queue.new
     client = AMQP::Client.new("amqp://localhost")
     connection = client.connect

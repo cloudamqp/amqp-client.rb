@@ -31,4 +31,11 @@ module TimeoutEveryTestCase
   end
 end
 
+module SkipSudoTestCase
+  def skip_if_no_sudo
+    skip "requires sudo" unless %w[1 true].include?(ENV["RUN_SUDO_TESTS"])
+  end
+end
+
 Minitest::Test.prepend TimeoutEveryTestCase
+Minitest::Test.prepend SkipSudoTestCase
