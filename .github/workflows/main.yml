@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sudo: true
+        sudo: [true]
         ruby: ['2.6', '2.7', '3.0', '3.1']
         include:
           - { ruby: jruby, allow-failure: true, sudo: false }
