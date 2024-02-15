@@ -374,7 +374,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     100.times do
       sleep 0.1
       res = http.request(req)
-      assert_equal Net::HTTPOK, res.class
+      assert_instance_of Net::HTTPOK, res.class
       connection_names = JSON.parse(res.body).map! { |conn| conn.dig("client_properties", "connection_name") }
       break if connection_names.include? "foobar"
     end
