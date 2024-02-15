@@ -4,6 +4,8 @@ on: [push,pull_request]
 
 jobs:
   tests:
+    name: >-
+      ${{ matrix.ruby }} (sudo: ${{ matrix.sudo }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
