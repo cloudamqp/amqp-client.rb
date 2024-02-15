@@ -9,10 +9,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        sudo: true
         ruby: ['2.6', '2.7', '3.0', '3.1']
         include:
-          - { ruby: jruby, allow-failure: true }
-          - { ruby: truffleruby, allow-failure: true }
+          - { ruby: jruby, allow-failure: true, sudo: false }
+          - { ruby: truffleruby, allow-failure: true, sudo: false }
     steps:
     - name: Install RabbitMQ
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
@@ -29,7 +30,7 @@ jobs:
       continue-on-error: ${{ matrix.allow-failure || false }}
       run: bundle exec rake
       env:
-        RUN_SUDO_TESTS: true
+        RUN_SUDO_TESTS: ${{ matrix.sudo }}
   tls:
     runs-on: ubuntu-latest
     timeout-minutes: 10
