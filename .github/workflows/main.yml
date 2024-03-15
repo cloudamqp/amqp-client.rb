@@ -44,8 +44,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: # no need to test all CRuby versions here
-          - "3.3"
+        ruby:
+          - "ruby" # latest stable release
           - "jruby"
           - "truffleruby"
     steps:
@@ -92,7 +92,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: # enough to test one Ruby on macOS
-          - "3.3"
+          - "ruby" # latest stable release
     steps:
     - name: Install RabbitMQ
       run: brew install rabbitmq
