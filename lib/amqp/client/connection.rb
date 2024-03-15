@@ -182,7 +182,7 @@ module AMQP
 
           # make sure that the frame end is correct
           frame_end = socket.readchar.ord
-          raise UnexpectedFrameEnd, frame_end if frame_end != 206
+          raise Error::UnexpectedFrameEnd, frame_end if frame_end != 206
 
           # parse the frame, will return false if a close frame was received
           parse_frame(type, channel_id, frame_buffer) || return
@@ -443,7 +443,7 @@ module AMQP
 
           type, channel_id, frame_size = buf.unpack("C S> L>")
           frame_end = buf.getbyte(frame_size + 7)
-          raise UnexpectedFrameEndError, frame_end if frame_end != 206
+          raise Error::UnexpectedFrameEnd, frame_end if frame_end != 206
 
           case type
           when 1 # method frame

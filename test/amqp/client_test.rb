@@ -16,6 +16,15 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert connection
   end
 
+  def test_it_raises_on_connecting_to_unrelated_service
+    with_fake_server do |port|
+      client = AMQP::Client.new("amqp://guest1:guest2@localhost:#{port}")
+      assert_raises(AMQP::Client::Error) do
+        client.connect
+      end
+    end
+  end
+
   def test_it_raises_on_bad_credentials
     client = AMQP::Client.new("amqp://guest1:guest2@localhost")
     assert_raises(AMQP::Client::Error) do

@@ -37,5 +37,28 @@ module SkipSudoTestCase
   end
 end
 
+require "socket"
+module FakeServer
+  def with_fake_server(host: "127.0.0.1")
+    server = TCPServer.new(host, 0)
+
+    Thread.new do
+      loop do
+        client = server.accept
+        client.puts "foobar"
+        client.close
+        break
+      rescue IOError
+        break
+      end
+    end
+
+    yield server.connect_address.ip_port
+
+    server.close
+  end
+end
+
 Minitest::Test.prepend TimeoutEveryTestCase
 Minitest::Test.prepend SkipSudoTestCase
+Minitest::Test.prepend FakeServer
