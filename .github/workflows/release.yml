@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+  release:
+    if: github.repository == 'cloudamqp/amqp-client.rb'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: ruby
+      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+      - run: ruby -v
+      # ensure gem can be built and installed, push to rubygems.org
+      - run: gem build *.gemspec
+      - run: gem install *.gem
+      - run: gem push *.gem
