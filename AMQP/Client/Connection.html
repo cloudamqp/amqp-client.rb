@@ -6,7 +6,7 @@
 <title>
   Class: AMQP::Client::Connection
   
-    &mdash; Documentation by YARD 0.9.27
+    &mdash; Documentation by YARD 0.9.36
   
 </title>
 
@@ -163,6 +163,63 @@
 
 
 
+  
+    <h2>
+      Callbacks
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_blocked-instance_method" title="#on_blocked (instance method)">#<strong>on_blocked</strong> {|String| ... } &#x21d2; nil </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Callback called when client is blocked by the broker.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_unblocked-instance_method" title="#on_unblocked (instance method)">#<strong>on_unblocked</strong> { ... } &#x21d2; nil </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Callback called when client is unblocked by the broker.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
   
     <h2>
       Class Method Summary
@@ -584,7 +641,10 @@
 49
 50
 51
-52</pre>
+52
+53
+54
+55</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 29</span>
@@ -611,6 +671,9 @@
   <span class='ivar'>@replies</span> <span class='op'>=</span> <span class='op'>::</span><span class='const'>Queue</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
   <span class='ivar'>@write_lock</span> <span class='op'>=</span> <span class='const'>Mutex</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
   <span class='ivar'>@blocked</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@on_blocked</span> <span class='op'>=</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>AMQP-Client blocked by broker: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_reason'>reason</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
+  <span class='ivar'>@on_unblocked</span> <span class='op'>=</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>AMQP-Client unblocked by broker</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
+
   <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_read_loop'>read_loop</span> <span class='rbrace'>}</span> <span class='kw'>if</span> <span class='id identifier rubyid_read_loop_thread'>read_loop_thread</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -664,12 +727,12 @@
       <pre class="lines">
 
 
-63
-64
-65</pre>
+66
+67
+68</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 63</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 66</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_frame_max'>frame_max</span>
   <span class='ivar'>@frame_max</span>
@@ -720,12 +783,12 @@
       <pre class="lines">
 
 
-57
-58
-59</pre>
+60
+61
+62</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 57</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 60</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span> <span class='id identifier rubyid_read_loop_thread'>read_loop_thread</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
@@ -815,9 +878,6 @@
       <pre class="lines">
 
 
-75
-76
-77
 78
 79
 80
@@ -830,10 +890,13 @@
 87
 88
 89
-90</pre>
+90
+91
+92
+93</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_channel'>channel</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Channel ID cannot be 0</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_id'>id</span><span class='op'>&amp;.</span><span class='id identifier rubyid_zero?'>zero?</span>
@@ -930,9 +993,6 @@
       <pre class="lines">
 
 
-108
-109
-110
 111
 112
 113
@@ -942,10 +1002,13 @@
 117
 118
 119
-120</pre>
+120
+121
+122
+123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 108</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 111</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_close'>close</span><span class='lparen'>(</span><span class='label'>reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>code:</span> <span class='int'>200</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@closed</span>
@@ -1004,15 +1067,158 @@
       <pre class="lines">
 
 
-124
-125
-126</pre>
+127
+128
+129</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 124</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 127</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_closed?'>closed?</span>
   <span class='op'>!</span><span class='ivar'>@closed</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_blocked-instance_method">
+  
+    #<strong>on_blocked</strong> {|String| ... } &#x21d2; <tt>nil</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Callback called when client is blocked by the broker</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>reason to why the connection is being blocked</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+136
+137
+138
+139</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 136</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_blocked'>on_blocked</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
+  <span class='ivar'>@on_blocked</span> <span class='op'>=</span> <span class='id identifier rubyid_blk'>blk</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_unblocked-instance_method">
+  
+    #<strong>on_unblocked</strong> { ... } &#x21d2; <tt>nil</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Callback called when client is unblocked by the broker</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+144
+145
+146
+147</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 144</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_unblocked'>on_unblocked</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
+  <span class='ivar'>@on_unblocked</span> <span class='op'>=</span> <span class='id identifier rubyid_blk'>blk</span>
+  <span class='kw'>nil</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1058,22 +1264,6 @@
       <pre class="lines">
 
 
-152
-153
-154
-155
-156
-157
-158
-159
-160
-161
-162
-163
-164
-165
-166
-167
 168
 169
 170
@@ -1094,10 +1284,30 @@
 185
 186
 187
-188</pre>
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 152</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 168</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_read_loop'>read_loop</span>
   <span class='comment'># read more often than write so that channel errors crop up early
@@ -1116,7 +1326,7 @@
 
     <span class='comment'># make sure that the frame end is correct
 </span>    <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='op'>=</span> <span class='id identifier rubyid_socket'>socket</span><span class='period'>.</span><span class='id identifier rubyid_readchar'>readchar</span><span class='period'>.</span><span class='id identifier rubyid_ord'>ord</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>UnexpectedFrameEnd</span><span class='comma'>,</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='kw'>if</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='op'>!=</span> <span class='int'>206</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Error.html" title="AMQP::Client::Error (class)">Error</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Error/UnexpectedFrameEnd.html" title="AMQP::Client::Error::UnexpectedFrameEnd (class)">UnexpectedFrameEnd</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='kw'>if</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='op'>!=</span> <span class='int'>206</span>
 
     <span class='comment'># parse the frame, will return false if a close frame was received
 </span>    <span class='id identifier rubyid_parse_frame'>parse_frame</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_channel_id'>channel_id</span><span class='comma'>,</span> <span class='id identifier rubyid_frame_buffer'>frame_buffer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='kw'>return</span>
@@ -1129,8 +1339,12 @@
   <span class='ivar'>@closed</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='int'>400</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>unknown</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
   <span class='ivar'>@replies</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
   <span class='kw'>begin</span>
-    <span class='ivar'>@write_lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
-      <span class='ivar'>@socket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+    <span class='kw'>if</span> <span class='ivar'>@write_lock</span><span class='period'>.</span><span class='id identifier rubyid_owned?'>owned?</span> <span class='comment'># if connection is blocked
+</span>      <span class='ivar'>@socket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+    <span class='kw'>else</span>
+      <span class='ivar'>@write_lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+        <span class='ivar'>@socket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+      <span class='kw'>end</span>
     <span class='kw'>end</span>
   <span class='kw'>rescue</span> <span class='op'>*</span><span class='const'>READ_EXCEPTIONS</span>
     <span class='kw'>nil</span>
@@ -1198,17 +1412,17 @@
       <pre class="lines">
 
 
-95
-96
-97
 98
 99
 100
 101
-102</pre>
+102
+103
+104
+105</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 95</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 98</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_channel'>with_channel</span>
   <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_channel'>channel</span>
@@ -1228,9 +1442,9 @@
 </div>
 
       <div id="footer">
-  Generated on Sun Jan  9 01:39:04 2022 by
-  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.27 (ruby-3.1.0).
+  Generated on Fri Mar 15 15:23:06 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.36 (ruby-3.3.0).
 </div>
 
     </div>
