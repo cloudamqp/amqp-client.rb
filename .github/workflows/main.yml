@@ -22,7 +22,7 @@ jobs:
     - name: Verify RabbitMQ started correctly
       run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -69,7 +69,7 @@ jobs:
     - name: Verify RabbitMQ started correctly
       run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -91,7 +91,7 @@ jobs:
       run: brew install rabbitmq
     - name: Start RabbitMQ
       run: brew services start rabbitmq
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
