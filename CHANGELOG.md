@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [1.1.5] - 2024-03-15
+
+- Fixed: Correctly reference the `UnexpectedFrameEnd` exception
+
 ## [1.1.4] - 2021-12-27
 
 - Fixed: Ruby 3.1.0 compability, StringIO have to be required manually
