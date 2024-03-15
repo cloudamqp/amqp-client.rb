@@ -101,12 +101,7 @@ Gem comparison:
 
 All maintained Ruby versions are supported.
 
-- 3.1
-- 3.0
-- 2.7
-- 2.6
-- jruby
-- truffleruby
+See the [CI workflow](https://github.com/cloudamqp/amqp-client.rb/blob/main/.github/workflows/main.yml) for the exact versions.
 
 ## Installation
 
