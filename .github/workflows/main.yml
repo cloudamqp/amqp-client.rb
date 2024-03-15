@@ -12,7 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         sudo: [true]
-        ruby: ['2.6', '2.7', '3.0', '3.1']
+        ruby:
+          - "2.6"
+          - "2.7"
+          - "3.0"
+          - "3.1"
+          - "3.2"
+          - "3.3"
         include:
           - { ruby: jruby, allow-failure: true, sudo: false }
           - { ruby: truffleruby, allow-failure: true, sudo: false }
@@ -21,10 +27,8 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
     - name: Verify RabbitMQ started correctly
       run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
-
     - uses: actions/checkout@v4
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
@@ -33,19 +37,22 @@ jobs:
       run: bundle exec rake
       env:
         RUN_SUDO_TESTS: ${{ matrix.sudo }}
+
   tls:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.0', 'jruby', 'truffleruby']
+        ruby: # no need to test all CRuby versions here
+          - "3.3"
+          - "jruby"
+          - "truffleruby"
     steps:
     - name: Install RabbitMQ
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
     - name: Stop RabbitMQ
       run: sudo systemctl stop rabbitmq-server
-
     - name: Set up Homebrew
       uses: Homebrew/actions/setup-homebrew@master
     - name: Install github.com/FiloSottile/mkcert
@@ -68,10 +75,8 @@ jobs:
       run: sudo systemctl start rabbitmq-server
     - name: Verify RabbitMQ started correctly
       run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
-
     - uses: actions/checkout@v4
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
@@ -79,21 +84,22 @@ jobs:
       run: bundle exec rake
       env:
         TESTOPTS: --name=/_tls$/
+
   macos:
     runs-on: macos-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.0']
+        ruby: # enough to test one Ruby on macOS
+          - "3.3"
     steps:
     - name: Install RabbitMQ
       run: brew install rabbitmq
     - name: Start RabbitMQ
       run: brew services start rabbitmq
     - uses: actions/checkout@v4
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
