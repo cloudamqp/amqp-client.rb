@@ -54,6 +54,16 @@ module AMQP
         Thread.new { read_loop } if read_loop_thread
       end
 
+      # Indicates that the server is blocking publishes.
+      # If the client keeps publishing the server will stop reading from the socket.
+      # Use the #on_blocked callback to get notified when the server is resource constrained.
+      # @see #on_blocked
+      # @see #on_unblocked
+      # @return [Bool]
+      def blocked?
+        !@blocked.nil?
+      end
+
       # Alias for {#initialize}
       # @see #initialize
       # @deprecated
@@ -241,10 +251,8 @@ module AMQP
               reason_len = buf.getbyte(4)
               reason = buf.byteslice(5, reason_len).force_encoding("utf-8")
               @blocked = reason
-              @write_lock.lock
               @on_blocked.call(reason)
             when 61 # connection#unblocked
-              @write_lock.unlock
               @blocked = nil
               @on_unblocked.call
             else raise Error::UnsupportedMethodFrame, class_id, method_id

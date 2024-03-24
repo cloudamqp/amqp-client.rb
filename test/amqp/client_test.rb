@@ -479,46 +479,20 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
   def test_it_can_be_blocked
     skip_if_no_sudo
-    connection = AMQP::Client.new("amqp://localhost").connect
-    ch = connection.channel
-    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
-    t = Thread.new do
+    begin
+      connection = AMQP::Client.new("amqp://localhost").connect
+      ch = connection.channel
+      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
       ch.basic_publish("body", "", "q")
       sleep 0.01 # server blocks after first publish
-      ch.basic_publish("body", "", "q")
-    end
-    assert_nil t.join(0.1) # make sure the thread is blocked
-    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-    assert t.join
-    refute t.status # status is false when terminated normal
-  ensure
-    connection&.close
-  end
-
-  def test_it_will_raise_if_closed_while_blocked
-    skip_if_no_sudo
-    connection = AMQP::Client.new("amqp://localhost").connect
-    ch = connection.channel
-    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
-    t = Thread.new do
-      ch.basic_publish("body", "", "q")
+      assert connection.blocked?
+      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
       sleep 0.01 # server blocks after first publish
-      assert_raises(AMQP::Client::Error::ConnectionClosed) do
-        ch.basic_publish("body", "", "q")
-      end
+      refute connection.blocked?
+    ensure
+      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
+      connection&.close
     end
-    assert_nil t.join(0.1) # make sure the thread is blocked
-    Thread.new do
-      assert_raises(AMQP::Client::Error::ConnectionClosed) do
-        ch.exchange_declare("foo", "not.an.exchange.type")
-      end
-    end
-    sleep 0.01
-    connection.close
-    t.join
-    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-  ensure
-    connection&.close
   end
 
   def test_it_will_publish_and_consume_properties
@@ -559,23 +533,27 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
   def test_blocked_handler
     skip_if_no_sudo
-    q = Queue.new
-    client = AMQP::Client.new("amqp://localhost")
-    connection = client.connect
-    connection.on_blocked do |reason|
-      q << reason
+    begin
+      q = Queue.new
+      client = AMQP::Client.new("amqp://localhost")
+      connection = client.connect
+      connection.on_blocked do |reason|
+        q << reason
+      end
+      connection.on_unblocked do
+        q << nil
+      end
+      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
+      ch = connection.channel
+      ch.basic_publish("", "", "")
+      reason = q.pop
+      assert_equal "low on memory", reason
+      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
+      unblocked = q.pop
+      assert_nil unblocked
+    ensure
+      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
     end
-    connection.on_unblocked do
-      q << nil
-    end
-    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
-    ch = connection.channel
-    ch.basic_publish("", "", "")
-    reason = q.pop
-    assert_equal "low on memory", reason
-    system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-    unblocked = q.pop
-    assert_nil unblocked
   end
 
   def test_queue_pruge_returns_msg_count
