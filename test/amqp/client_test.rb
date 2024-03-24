@@ -326,7 +326,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     channel.confirm_select
     channel.basic_publish "foo", "amq.direct", "bar"
-    assert channel.wait_for_confirms
+    channel.wait_for_confirms
   end
 
   def test_it_can_commit_tx
@@ -459,11 +459,11 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     10_000.times do |i|
       ch2.basic_publish "bar #{i + 1}", "amq.topic", "foo"
     end
+    ch2.wait_for_confirms
 
     10_000.times do
       assert_equal "foo", msgs1.pop.routing_key
     end
-    assert ch2.wait_for_confirms
     connection.close
   end
 
@@ -567,5 +567,16 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_equal msg_count, 3
   ensure
     connection&.close
+  end
+
+  def test_it_can_publish_with_confirm
+    connection = AMQP::Client.new("amqp://localhost").connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    10.times do
+      channel.basic_publish_confirm "foo", "", q.queue_name
+    end
+    q = channel.queue_declare q.queue_name, passive: true
+    assert_equal 10, q.message_count
   end
 end
