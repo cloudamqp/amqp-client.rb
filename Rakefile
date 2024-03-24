@@ -22,4 +22,8 @@ RuboCop::RakeTask.new do |task|
   task.requires << "rubocop-minitest"
 end
 
+require "yard"
+
+YARD::Rake::YardocTask.new
+
 task default: [:test, *(:rubocop if RUBY_ENGINE == "ruby")]

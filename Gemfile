@@ -11,6 +11,8 @@ gem "minitest", "~> 5.0"
 
 gem "rubocop", "~> 1.7"
 
+gem "rubocop-minitest", require: false
+
 gem "yard", require: false
 
-gem "rubocop-minitest", require: false
+gem "redcarpet", require: false, platforms: :ruby
