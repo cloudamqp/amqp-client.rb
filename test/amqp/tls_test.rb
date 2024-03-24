@@ -31,11 +31,11 @@ class AMQPSClientTest < Minitest::Test
     10_000.times do |i|
       ch2.basic_publish "bar #{i + 1}", "amq.topic", "foo"
     end
+    ch2.wait_for_confirms
 
     10_000.times do
       assert_equal "foo", msgs1.pop.routing_key
     end
-    assert ch2.wait_for_confirms
     connection.close
   end
 end
