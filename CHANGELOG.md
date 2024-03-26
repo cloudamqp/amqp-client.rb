@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [1.1.6] - 2024-03-26
+
+- Fixed: Channel#wait_for_confirms now waits for all confirms, in a thread safe way
+- Changed: When server sends Connection.blocked the client isn't write blocked anymore, and can continue consume for instance. However, the on_blocked/unblocked callbacks should be used and manually stop publishing as the server otherwise will stop reading from the client socket.
+
 ## [1.1.5] - 2024-03-15
 
 - Fixed: Correctly reference the `UnexpectedFrameEnd` exception
