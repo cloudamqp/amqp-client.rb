@@ -522,7 +522,7 @@ module AMQP
             if @on_return
               Thread.new { @on_return.call(next_msg) }
             else
-              warn "AMQP-Client message returned: #{msg.inspect}"
+              warn "AMQP-Client message returned: #{next_msg.inspect}"
             end
           elsif next_msg.consumer_tag.nil?
             @basic_gets.push next_msg
