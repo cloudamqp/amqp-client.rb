@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [1.1.7] - 2024-05-12
+
+- Support for Connection.update-secret
+- Allow sub-second connect_timeout
+- Fixed: undefinied variable if message was returned and no on_return block was set
+
 ## [1.1.6] - 2024-03-26
 
 - Fixed: Channel#wait_for_confirms now waits for all confirms, in a thread safe way
