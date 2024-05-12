@@ -579,4 +579,9 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     q = channel.queue_declare q.queue_name, passive: true
     assert_equal 10, q.message_count
   end
+
+  def test_it_can_update_secret
+    connection = AMQP::Client.new("amqp://localhost").connect
+    connection.update_secret "secret", "testing"
+  end
 end
