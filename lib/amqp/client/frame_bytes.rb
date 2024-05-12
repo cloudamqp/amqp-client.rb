@@ -81,6 +81,20 @@ module AMQP
         ].pack("C S> L> S> S> C")
       end
 
+      def self.update_secret(secret, reason)
+        frame_size = 4 + 4 + secret.bytesize + 1 + reason.bytesize
+        [
+          1, # type: method
+          0, # channel id
+          frame_size, # frame size
+          10, # class: connection
+          70, # method: close-ok
+          secret.bytesize, secret,
+          reason.bytesize, reason,
+          206 # frame end
+        ].pack("C S> L> S> S> L>a* Ca* C")
+      end
+
       def self.channel_open(id)
         [
           1, # type: method

@@ -132,6 +132,16 @@ module AMQP
         nil
       end
 
+      # Update authentication secret, for example when an OAuth backend is used
+      # @param secret [String] The new secret
+      # @param reason [String] A reason to update it
+      # @return [nil]
+      def update_secret(secret, reason)
+        write_bytes FrameBytes.update_secret(secret, reason)
+        expect(:update_secret_ok)
+        nil
+      end
+
       # True if the connection is closed
       # @return [Boolean]
       def closed?
@@ -255,6 +265,8 @@ module AMQP
             when 61 # connection#unblocked
               @blocked = nil
               @on_unblocked.call
+            when 71 # connection#update_secret_ok
+              @replies.push [:update_secret_ok]
             else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
           when 20 # channel
