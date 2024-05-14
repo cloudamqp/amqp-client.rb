@@ -9,7 +9,7 @@ module AMQP
       # @param hash [Hash]
       # @return [String] Byte array
       def self.encode(hash)
-        return "" if hash.empty?
+        return "" if hash.nil? || hash.empty?
 
         arr = []
         fmt = String.new
