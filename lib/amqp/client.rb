@@ -274,6 +274,41 @@ module AMQP
       end
     end
 
+    # Create a RPC server for a single method/function/procedure
+    # @param queue [String] name of the queue that RPC calls will be sent to
+    # @param worker_threads [Integer] number of threads that process requests
+    # @yield [String] The body of the request message, return a response String
+    # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
+    def rpc_server(queue, worker_threads: 1, &callback)
+      queue(queue)
+      subscribe(queue, prefetch: worker_threads, worker_threads:) do |msg|
+        begin
+          result = yield msg.body
+          msg.channel.basic_publish(result, "", msg.properties.reply_to)
+          msg.ack
+        rescue
+          msg.reject
+          raise
+        end
+      end
+    end
+
+    # Do a RPC call, sends a messages, waits for a response
+    # @param queue [String] name of the queue that RPC calls will be sent to
+    # @param arguments [String] arguments/body to the call
+    # @return [String] Returns the result from the call
+    def rpc_call(queue, arguments)
+      ch = with_connection { |conn| conn.channel }
+      begin
+        msg = ch.basic_consume_once("amq.rabbitmq.reply-to") do
+          ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to")
+        end
+        msg.body
+      ensure
+        ch.close
+      end
+    end
+
     # @!endgroup
 
     private
