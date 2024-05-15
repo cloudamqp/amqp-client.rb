@@ -53,7 +53,7 @@ jobs:
         ruby:
           - "ruby" # latest stable release
           - "jruby"
-          - "truffleruby"
+          - "truffleruby-23" # https://github.com/cloudamqp/amqp-client.rb/issues/16#issuecomment-2111624251
     steps:
     - name: Install RabbitMQ
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
