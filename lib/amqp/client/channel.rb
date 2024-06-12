@@ -251,7 +251,7 @@ module AMQP
         # @option properties [Hash<String, Object>] headers Custom headers
         # @option properties [Integer] delivery_mode 2 for persisted message, transient messages for all other values
         # @option properties [Integer] priority A priority of the message (between 0 and 255)
-        # @option properties [Integer] correlation_id A correlation id, most often used used for RPC communication
+        # @option properties [String] correlation_id A correlation id, most often used used for RPC communication
         # @option properties [String] reply_to Queue to reply RPC responses to
         # @option properties [Integer, String] expiration Number of seconds the message will stay in the queue
         # @option properties [String] message_id Can be used to uniquely identify the message, e.g. for deduplication
