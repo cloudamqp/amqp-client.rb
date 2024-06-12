@@ -284,7 +284,7 @@ module AMQP
       subscribe(queue, prefetch: worker_threads, worker_threads:) do |msg|
         begin
           result = yield msg.body
-          msg.channel.basic_publish(result, "", msg.properties.reply_to)
+          msg.channel.basic_publish(result, "", msg.properties.reply_to, correlation_id: msg.properties.correlation_id)
           msg.ack
         rescue
           msg.reject
