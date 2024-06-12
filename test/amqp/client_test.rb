@@ -594,6 +594,6 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
         end
       end
     end.each &:join
-    assert_equal 2000, connection.open_channels
+    assert_equal 2000, connection.instance_variable_get("@channels").size
   end
 end
