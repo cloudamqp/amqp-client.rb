@@ -309,6 +309,46 @@ module AMQP
       end
     end
 
+    # Create a reusable RPC client
+    # @return [RPCClient]
+    def rpc_client
+      ch = with_connection { |conn| conn.channel }
+      RPCClient.new(ch)
+    end
+
+    # Reusable RPC client, when RPC performance is important
+    class RPCClient
+      # @param ch [AMQP::Client::Connection::Channel] the channel to use for the RPC calls
+      def initialize(ch)
+        @ch = ch
+        @correlation_id = 0
+        @messages = ::Queue.new
+        @ch.basic_consume("amq.rabbitmq.reply-to") do |msg|
+          @messages.push msg
+        end
+      end
+
+      # Do a RPC call, sends a messages, waits for a response
+      # @param queue [String] name of the queue that RPC call will be sent to
+      # @param arguments [String] arguments/body to the call
+      # @return [String] Returns the result from the call
+      def call(queue, arguments)
+        correlation_id = (@correlation_id += 1).to_s
+        @ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to", correlation_id:)
+        loop do
+          msg = @messages.pop
+          return msg.body if msg.properties.correlation_id == correlation_id
+          @messages.push msg
+        end
+      end
+
+      # Closes the channel used by the RPCClient
+      def close
+        @ch.close
+        @messages.close
+      end
+    end
+
     # @!endgroup
 
     private

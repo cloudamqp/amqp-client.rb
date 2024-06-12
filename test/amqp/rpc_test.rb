@@ -11,4 +11,17 @@ class RPCTest < Minitest::Test
     result = client.rpc_call("rpc-test-method", "bar")
     assert_equal "foo bar", result
   end
+
+  def test_rpc_client_is_reusable
+    client = AMQP::Client.new("amqp://localhost").start
+    client.rpc_server("rpc-test-method") do |request|
+      "foo #{request}"
+    end
+
+    rpc_client = client.rpc_client
+    result = rpc_client.call("rpc-test-method", "bar")
+    assert_equal "foo bar", result
+    result = rpc_client.call("rpc-test-method", "foo")
+    assert_equal "foo foo", result
+  end
 end
