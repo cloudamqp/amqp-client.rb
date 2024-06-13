@@ -44,6 +44,7 @@ module AMQP
         @frame_max = frame_max
         @heartbeat = heartbeat
         @channels = {}
+        @channels_lock = Mutex.new
         @closed = nil
         @replies = ::Queue.new
         @write_lock = Mutex.new
@@ -89,15 +90,17 @@ module AMQP
         raise ArgumentError, "Channel ID cannot be 0" if id&.zero?
         raise ArgumentError, "Channel ID higher than connection's channel max #{@channel_max}" if id && id > @channel_max
 
-        if id
-          ch = @channels[id] ||= Channel.new(self, id)
-        else
-          1.upto(@channel_max) do |i|
-            break id = i unless @channels.key? i
-          end
-          raise Error, "Max channels reached" if id.nil?
+        ch = @channels_lock.synchronize do
+          if id
+            @channels[id] ||= Channel.new(self, id)
+          else
+            1.upto(@channel_max) do |i|
+              break id = i unless @channels.key? i
+            end
+            raise Error, "Max channels reached" if id.nil?
 
-          ch = @channels[id] = Channel.new(self, id)
+            @channels[id] = Channel.new(self, id)
+          end
         end
         ch.open
       end
@@ -277,11 +280,11 @@ module AMQP
               reply_code, reply_text_len = buf.unpack("@4 S> C")
               reply_text = buf.byteslice(7, reply_text_len).force_encoding("utf-8")
               classid, methodid = buf.byteslice(7 + reply_text_len, 4).unpack("S> S>")
-              channel = @channels.delete(channel_id)
+              channel = @channels_lock.synchronize { @channels.delete(channel_id) }
               channel.closed!(:channel, reply_code, reply_text, classid, methodid)
               write_bytes FrameBytes.channel_close_ok(channel_id)
             when 41 # channel#close-ok
-              channel = @channels.delete(channel_id)
+              channel = @channels_lock.synchronize { @channels.delete(channel_id) }
               channel.reply [:channel_close_ok]
             else raise Error::UnsupportedMethodFrame, class_id, method_id
             end
@@ -417,7 +420,8 @@ module AMQP
           return if expected_frame_type == :close_ok
 
           raise Error::ConnectionClosed.new(*@closed) if @closed
-          raise Error.new("Connection closed while waiting for #{expected_frame_type}")
+
+          raise Error, "Connection closed while waiting for #{expected_frame_type}"
         end
         frame_type == expected_frame_type || raise(Error::UnexpectedFrame.new(expected_frame_type, frame_type))
         args

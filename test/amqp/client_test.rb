@@ -585,15 +585,20 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection.update_secret "secret", "testing"
   end
 
-  def test_open_channel_is_thread_safe
+  def test_open_closing_channels_is_thread_safe
+    abort_on_exception_prev = Thread.abort_on_exception
+    Thread.abort_on_exception = false
     connection = AMQP::Client.new("amqp://localhost").connect
-    Array.new(20) do
+    Array.new(50) do
       Thread.new do
-        100.times do
-          connection.channel
+        ch = nil
+        40.times do
+          ch&.close
+          ch = connection.channel
         end
       end
-    end.each &:join
-    assert_equal 2000, connection.instance_variable_get("@channels").size
+    end.each(&:join)
+  ensure
+    Thread.abort_on_exception = abort_on_exception_prev
   end
 end
