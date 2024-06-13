@@ -420,7 +420,8 @@ module AMQP
           return if expected_frame_type == :close_ok
 
           raise Error::ConnectionClosed.new(*@closed) if @closed
-          raise Error.new("Connection closed while waiting for #{expected_frame_type}")
+
+          raise Error, "Connection closed while waiting for #{expected_frame_type}"
         end
         frame_type == expected_frame_type || raise(Error::UnexpectedFrame.new(expected_frame_type, frame_type))
         args
