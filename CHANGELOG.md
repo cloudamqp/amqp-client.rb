@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Fixed: `Connection#channel` wasn't thread-safe
+
 ## [1.1.7] - 2024-05-12
 
 - Support for Connection.update-secret
