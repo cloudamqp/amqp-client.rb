@@ -279,17 +279,15 @@ module AMQP
     # @param worker_threads [Integer] number of threads that process requests
     # @yield [String] The body of the request message, return a response String
     # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
-    def rpc_server(queue, worker_threads: 1, &callback)
+    def rpc_server(queue, worker_threads: 1, &_)
       queue(queue)
-      subscribe(queue, prefetch: worker_threads, worker_threads:) do |msg|
-        begin
-          result = yield msg.body
-          msg.channel.basic_publish(result, "", msg.properties.reply_to, correlation_id: msg.properties.correlation_id)
-          msg.ack
-        rescue
-          msg.reject
-          raise
-        end
+      subscribe(queue, prefetch: worker_threads, worker_threads: worker_threads) do |msg|
+        result = yield msg.body
+        msg.channel.basic_publish(result, "", msg.properties.reply_to, correlation_id: msg.properties.correlation_id)
+        msg.ack
+      rescue StandardError => e
+        msg.reject
+        raise e
       end
     end
 
@@ -298,7 +296,7 @@ module AMQP
     # @param arguments [String] arguments/body to the call
     # @return [String] Returns the result from the call
     def rpc_call(queue, arguments)
-      ch = with_connection { |conn| conn.channel }
+      ch = with_connection(&:channel)
       begin
         msg = ch.basic_consume_once("amq.rabbitmq.reply-to") do
           ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to")
@@ -312,15 +310,15 @@ module AMQP
     # Create a reusable RPC client
     # @return [RPCClient]
     def rpc_client
-      ch = with_connection { |conn| conn.channel }
+      ch = with_connection(&:channel)
       RPCClient.new(ch)
     end
 
     # Reusable RPC client, when RPC performance is important
     class RPCClient
-      # @param ch [AMQP::Client::Connection::Channel] the channel to use for the RPC calls
-      def initialize(ch)
-        @ch = ch
+      # @param channel [AMQP::Client::Connection::Channel] the channel to use for the RPC calls
+      def initialize(channel)
+        @ch = channel
         @correlation_id = 0
         @lock = Mutex.new
         @messages = ::Queue.new
