@@ -322,6 +322,7 @@ module AMQP
       def initialize(ch)
         @ch = ch
         @correlation_id = 0
+        @lock = Mutex.new
         @messages = ::Queue.new
         @ch.basic_consume("amq.rabbitmq.reply-to") do |msg|
           @messages.push msg
@@ -333,11 +334,12 @@ module AMQP
       # @param arguments [String] arguments/body to the call
       # @return [String] Returns the result from the call
       def call(queue, arguments)
-        correlation_id = (@correlation_id += 1).to_s
-        @ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to", correlation_id:)
+        correlation_id = (@lock.synchronize { @correlation_id += 1 }).to_s
+        @ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to", correlation_id: correlation_id)
         loop do
           msg = @messages.pop
           return msg.body if msg.properties.correlation_id == correlation_id
+
           @messages.push msg
         end
       end
