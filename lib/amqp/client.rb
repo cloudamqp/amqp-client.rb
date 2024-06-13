@@ -332,7 +332,7 @@ module AMQP
       # @param arguments [String] arguments/body to the call
       # @return [String] Returns the result from the call
       def call(queue, arguments)
-        correlation_id = (@lock.synchronize { @correlation_id += 1 }).to_s
+        correlation_id = (@lock.synchronize { @correlation_id += 1 }).to_s(36)
         @ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to", correlation_id: correlation_id)
         loop do
           msg = @messages.pop
