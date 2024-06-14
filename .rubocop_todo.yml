@@ -14,7 +14,7 @@ Lint/RescueException:
 # Offense count: 19
 # Configuration parameters: AllowedMethods, AllowedPatterns, CountRepeatedAttributes.
 Metrics/AbcSize:
-  Max: 156
+  Max: 158
 
 # Offense count: 1
 # Configuration parameters: CountComments, CountAsOne, AllowedMethods, AllowedPatterns.
@@ -22,6 +22,10 @@ Metrics/AbcSize:
 Metrics/BlockLength:
   Max: 40
 
+# Offense count: 3
+# Configuration parameters: CountBlocks.
+Metrics/BlockNesting:
+  Max: 4
 
 # Offense count: 9
 # Configuration parameters: AllowedMethods, AllowedPatterns.
