@@ -22,30 +22,11 @@ Metrics/AbcSize:
 Metrics/BlockLength:
   Max: 40
 
-# Offense count: 3
-# Configuration parameters: CountBlocks.
-Metrics/BlockNesting:
-  Max: 4
-
-# Offense count: 4
-# Configuration parameters: CountComments, CountAsOne.
-Metrics/ClassLength:
-  Max: 423
 
 # Offense count: 9
 # Configuration parameters: AllowedMethods, AllowedPatterns.
 Metrics/CyclomaticComplexity:
   Max: 47
-
-# Offense count: 45
-# Configuration parameters: CountComments, CountAsOne, AllowedMethods, AllowedPatterns.
-Metrics/MethodLength:
-  Max: 86
-
-# Offense count: 2
-# Configuration parameters: CountComments, CountAsOne.
-Metrics/ModuleLength:
-  Max: 498
 
 # Offense count: 5
 # Configuration parameters: AllowedMethods, AllowedPatterns.

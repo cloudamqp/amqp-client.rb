@@ -4,7 +4,7 @@ module AMQP
   class Client
     # Encode and decode an AMQP table to/from hash, only used internally
     # @api private
-    module Table
+    module Table # rubocop:disable Metrics/ModuleLength
       # Encodes a hash into a byte array
       # @param hash [Hash]
       # @return [String] Byte array
