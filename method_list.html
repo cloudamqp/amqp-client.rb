@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html >
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8" />
@@ -38,7 +38,10 @@
           
         </div>
 
-        <div id="search">Search: <input type="text" /></div>
+        <div id="search">
+          <label for="search-class">Search:</label>
+          <input id="search-class" type="text" />
+        </div>
       </div>
 
       <ul id="full_list" class="method">
@@ -174,13 +177,21 @@
 
   <li class="odd ">
     <div class="item">
+      <span class='object_link'><a href="AMQP/Client/Connection.html#blocked%3F-instance_method" title="AMQP::Client::Connection#blocked? (method)">#blocked?</a></span>
+      <small>AMQP::Client::Connection</small>
+    </div>
+  </li>
+  
+
+  <li class="even ">
+    <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#body-instance_method" title="AMQP::Client::Message#body (method)">#body</a></span>
       <small>AMQP::Client::Message</small>
     </div>
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/ReturnMessage.html#body-instance_method" title="AMQP::Client::ReturnMessage#body (method)">#body</a></span>
       <small>AMQP::Client::ReturnMessage</small>
@@ -188,7 +199,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#channel-instance_method" title="AMQP::Client::Message#channel (method)">#channel</a></span>
       <small>AMQP::Client::Message</small>
@@ -196,7 +207,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#channel-instance_method" title="AMQP::Client::Connection#channel (method)">#channel</a></span>
       <small>AMQP::Client::Connection</small>
@@ -204,7 +215,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#close-instance_method" title="AMQP::Client::Connection::Channel#close (method)">#close</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -212,7 +223,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#close-instance_method" title="AMQP::Client::Connection#close (method)">#close</a></span>
       <small>AMQP::Client::Connection</small>
@@ -220,7 +231,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#closed%3F-instance_method" title="AMQP::Client::Connection#closed? (method)">#closed?</a></span>
       <small>AMQP::Client::Connection</small>
@@ -228,7 +239,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#confirm_select-instance_method" title="AMQP::Client::Connection::Channel#confirm_select (method)">#confirm_select</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -236,7 +247,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#connect-instance_method" title="AMQP::Client#connect (method)">#connect</a></span>
       <small>AMQP::Client</small>
@@ -244,7 +255,7 @@
   </li>
   
 
-  <li class="even deprecated">
+  <li class="odd deprecated">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#connect-class_method" title="AMQP::Client::Connection.connect (method)">connect</a></span>
       <small>AMQP::Client::Connection</small>
@@ -252,7 +263,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel/QueueOk.html#consumer_count-instance_method" title="AMQP::Client::Connection::Channel::QueueOk#consumer_count (method)">#consumer_count</a></span>
       <small>AMQP::Client::Connection::Channel::QueueOk</small>
@@ -260,7 +271,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#consumer_tag-instance_method" title="AMQP::Client::Message#consumer_tag (method)">#consumer_tag</a></span>
       <small>AMQP::Client::Message</small>
@@ -268,7 +279,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#content_encoding-instance_method" title="AMQP::Client::Properties#content_encoding (method)">#content_encoding</a></span>
       <small>AMQP::Client::Properties</small>
@@ -276,7 +287,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#content_type-instance_method" title="AMQP::Client::Properties#content_type (method)">#content_type</a></span>
       <small>AMQP::Client::Properties</small>
@@ -284,7 +295,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#correlation_id-instance_method" title="AMQP::Client::Properties#correlation_id (method)">#correlation_id</a></span>
       <small>AMQP::Client::Properties</small>
@@ -292,7 +303,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#decode-class_method" title="AMQP::Client::Properties.decode (method)">decode</a></span>
       <small>AMQP::Client::Properties</small>
@@ -300,7 +311,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Queue.html#delete-instance_method" title="AMQP::Client::Queue#delete (method)">#delete</a></span>
       <small>AMQP::Client::Queue</small>
@@ -308,7 +319,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Exchange.html#delete-instance_method" title="AMQP::Client::Exchange#delete (method)">#delete</a></span>
       <small>AMQP::Client::Exchange</small>
@@ -316,7 +327,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#delete_exchange-instance_method" title="AMQP::Client#delete_exchange (method)">#delete_exchange</a></span>
       <small>AMQP::Client</small>
@@ -324,7 +335,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#delete_queue-instance_method" title="AMQP::Client#delete_queue (method)">#delete_queue</a></span>
       <small>AMQP::Client</small>
@@ -332,7 +343,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#delivery_mode-instance_method" title="AMQP::Client::Properties#delivery_mode (method)">#delivery_mode</a></span>
       <small>AMQP::Client::Properties</small>
@@ -340,7 +351,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#delivery_tag-instance_method" title="AMQP::Client::Message#delivery_tag (method)">#delivery_tag</a></span>
       <small>AMQP::Client::Message</small>
@@ -348,7 +359,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#encode-class_method" title="AMQP::Client::Properties.encode (method)">encode</a></span>
       <small>AMQP::Client::Properties</small>
@@ -356,7 +367,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#exchange-instance_method" title="AMQP::Client#exchange (method)">#exchange</a></span>
       <small>AMQP::Client</small>
@@ -364,7 +375,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#exchange-instance_method" title="AMQP::Client::Message#exchange (method)">#exchange</a></span>
       <small>AMQP::Client::Message</small>
@@ -372,7 +383,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/ReturnMessage.html#exchange-instance_method" title="AMQP::Client::ReturnMessage#exchange (method)">#exchange</a></span>
       <small>AMQP::Client::ReturnMessage</small>
@@ -380,7 +391,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#exchange_bind-instance_method" title="AMQP::Client#exchange_bind (method)">#exchange_bind</a></span>
       <small>AMQP::Client</small>
@@ -388,7 +399,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#exchange_bind-instance_method" title="AMQP::Client::Connection::Channel#exchange_bind (method)">#exchange_bind</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -396,7 +407,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#exchange_declare-instance_method" title="AMQP::Client::Connection::Channel#exchange_declare (method)">#exchange_declare</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -404,7 +415,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#exchange_delete-instance_method" title="AMQP::Client::Connection::Channel#exchange_delete (method)">#exchange_delete</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -412,7 +423,7 @@
   </li>
   
 
-  <li class="odd deprecated">
+  <li class="even deprecated">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#exchange_name-instance_method" title="AMQP::Client::Message#exchange_name (method)">#exchange_name</a></span>
       <small>AMQP::Client::Message</small>
@@ -420,7 +431,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#exchange_unbind-instance_method" title="AMQP::Client#exchange_unbind (method)">#exchange_unbind</a></span>
       <small>AMQP::Client</small>
@@ -428,7 +439,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#exchange_unbind-instance_method" title="AMQP::Client::Connection::Channel#exchange_unbind (method)">#exchange_unbind</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -436,7 +447,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#expiration-instance_method" title="AMQP::Client::Properties#expiration (method)">#expiration</a></span>
       <small>AMQP::Client::Properties</small>
@@ -444,7 +455,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#frame_max-instance_method" title="AMQP::Client::Connection#frame_max (method)">#frame_max</a></span>
       <small>AMQP::Client::Connection</small>
@@ -452,7 +463,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#headers-instance_method" title="AMQP::Client::Properties#headers (method)">#headers</a></span>
       <small>AMQP::Client::Properties</small>
@@ -460,7 +471,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#id-instance_method" title="AMQP::Client::Connection::Channel#id (method)">#id</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -468,7 +479,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#initialize-instance_method" title="AMQP::Client#initialize (method)">#initialize</a></span>
       <small>AMQP::Client</small>
@@ -476,7 +487,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Error/UnexpectedFrame.html#initialize-instance_method" title="AMQP::Client::Error::UnexpectedFrame#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Error::UnexpectedFrame</small>
@@ -484,7 +495,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Error/UnexpectedFrameEnd.html#initialize-instance_method" title="AMQP::Client::Error::UnexpectedFrameEnd#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Error::UnexpectedFrameEnd</small>
@@ -492,7 +503,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Error/UnsupportedFrameType.html#initialize-instance_method" title="AMQP::Client::Error::UnsupportedFrameType#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Error::UnsupportedFrameType</small>
@@ -500,7 +511,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Error/UnsupportedMethodFrame.html#initialize-instance_method" title="AMQP::Client::Error::UnsupportedMethodFrame#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Error::UnsupportedMethodFrame</small>
@@ -508,7 +519,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Error/ChannelClosed.html#initialize-instance_method" title="AMQP::Client::Error::ChannelClosed#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Error::ChannelClosed</small>
@@ -516,7 +527,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Error/ConnectionClosed.html#initialize-instance_method" title="AMQP::Client::Error::ConnectionClosed#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Error::ConnectionClosed</small>
@@ -524,7 +535,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#initialize-instance_method" title="AMQP::Client::Connection#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Connection</small>
@@ -532,7 +543,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#initialize-instance_method" title="AMQP::Client::Properties#initialize (method)">#initialize</a></span>
       <small>AMQP::Client::Properties</small>
@@ -540,7 +551,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel/QueueOk.html#message_count-instance_method" title="AMQP::Client::Connection::Channel::QueueOk#message_count (method)">#message_count</a></span>
       <small>AMQP::Client::Connection::Channel::QueueOk</small>
@@ -548,7 +559,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#message_id-instance_method" title="AMQP::Client::Properties#message_id (method)">#message_id</a></span>
       <small>AMQP::Client::Properties</small>
@@ -556,7 +567,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Error/Closed.html#new-class_method" title="AMQP::Client::Error::Closed.new (method)">new</a></span>
       <small>AMQP::Client::Error::Closed</small>
@@ -564,7 +575,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#on_blocked-instance_method" title="AMQP::Client::Connection#on_blocked (method)">#on_blocked</a></span>
       <small>AMQP::Client::Connection</small>
@@ -572,7 +583,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#on_return-instance_method" title="AMQP::Client::Connection::Channel#on_return (method)">#on_return</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -580,7 +591,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#on_unblocked-instance_method" title="AMQP::Client::Connection#on_unblocked (method)">#on_unblocked</a></span>
       <small>AMQP::Client::Connection</small>
@@ -588,7 +599,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#priority-instance_method" title="AMQP::Client::Properties#priority (method)">#priority</a></span>
       <small>AMQP::Client::Properties</small>
@@ -596,7 +607,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#properties-instance_method" title="AMQP::Client::Message#properties (method)">#properties</a></span>
       <small>AMQP::Client::Message</small>
@@ -604,7 +615,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/ReturnMessage.html#properties-instance_method" title="AMQP::Client::ReturnMessage#properties (method)">#properties</a></span>
       <small>AMQP::Client::ReturnMessage</small>
@@ -612,7 +623,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#publish-instance_method" title="AMQP::Client#publish (method)">#publish</a></span>
       <small>AMQP::Client</small>
@@ -620,7 +631,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Queue.html#publish-instance_method" title="AMQP::Client::Queue#publish (method)">#publish</a></span>
       <small>AMQP::Client::Queue</small>
@@ -628,7 +639,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Exchange.html#publish-instance_method" title="AMQP::Client::Exchange#publish (method)">#publish</a></span>
       <small>AMQP::Client::Exchange</small>
@@ -636,7 +647,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#publish_and_forget-instance_method" title="AMQP::Client#publish_and_forget (method)">#publish_and_forget</a></span>
       <small>AMQP::Client</small>
@@ -644,7 +655,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#purge-instance_method" title="AMQP::Client#purge (method)">#purge</a></span>
       <small>AMQP::Client</small>
@@ -652,7 +663,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Queue.html#purge-instance_method" title="AMQP::Client::Queue#purge (method)">#purge</a></span>
       <small>AMQP::Client::Queue</small>
@@ -660,7 +671,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#queue-instance_method" title="AMQP::Client#queue (method)">#queue</a></span>
       <small>AMQP::Client</small>
@@ -668,7 +679,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#queue_bind-instance_method" title="AMQP::Client::Connection::Channel#queue_bind (method)">#queue_bind</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -676,7 +687,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#queue_declare-instance_method" title="AMQP::Client::Connection::Channel#queue_declare (method)">#queue_declare</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -684,7 +695,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#queue_delete-instance_method" title="AMQP::Client::Connection::Channel#queue_delete (method)">#queue_delete</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -692,7 +703,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel/QueueOk.html#queue_name-instance_method" title="AMQP::Client::Connection::Channel::QueueOk#queue_name (method)">#queue_name</a></span>
       <small>AMQP::Client::Connection::Channel::QueueOk</small>
@@ -700,7 +711,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#queue_purge-instance_method" title="AMQP::Client::Connection::Channel#queue_purge (method)">#queue_purge</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -708,7 +719,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#queue_unbind-instance_method" title="AMQP::Client::Connection::Channel#queue_unbind (method)">#queue_unbind</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -716,7 +727,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection.html#read_loop-instance_method" title="AMQP::Client::Connection#read_loop (method)">#read_loop</a></span>
       <small>AMQP::Client::Connection</small>
@@ -724,7 +735,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#redelivered-instance_method" title="AMQP::Client::Message#redelivered (method)">#redelivered</a></span>
       <small>AMQP::Client::Message</small>
@@ -732,7 +743,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#reject-instance_method" title="AMQP::Client::Message#reject (method)">#reject</a></span>
       <small>AMQP::Client::Message</small>
@@ -740,7 +751,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/ReturnMessage.html#reply_code-instance_method" title="AMQP::Client::ReturnMessage#reply_code (method)">#reply_code</a></span>
       <small>AMQP::Client::ReturnMessage</small>
@@ -748,7 +759,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/ReturnMessage.html#reply_text-instance_method" title="AMQP::Client::ReturnMessage#reply_text (method)">#reply_text</a></span>
       <small>AMQP::Client::ReturnMessage</small>
@@ -756,7 +767,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#reply_to-instance_method" title="AMQP::Client::Properties#reply_to (method)">#reply_to</a></span>
       <small>AMQP::Client::Properties</small>
@@ -764,7 +775,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Message.html#routing_key-instance_method" title="AMQP::Client::Message#routing_key (method)">#routing_key</a></span>
       <small>AMQP::Client::Message</small>
@@ -772,7 +783,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/ReturnMessage.html#routing_key-instance_method" title="AMQP::Client::ReturnMessage#routing_key (method)">#routing_key</a></span>
       <small>AMQP::Client::ReturnMessage</small>
@@ -780,7 +791,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#start-instance_method" title="AMQP::Client#start (method)">#start</a></span>
       <small>AMQP::Client</small>
@@ -788,7 +799,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#stop-instance_method" title="AMQP::Client#stop (method)">#stop</a></span>
       <small>AMQP::Client</small>
@@ -796,7 +807,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#subscribe-instance_method" title="AMQP::Client#subscribe (method)">#subscribe</a></span>
       <small>AMQP::Client</small>
@@ -804,7 +815,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Queue.html#subscribe-instance_method" title="AMQP::Client::Queue#subscribe (method)">#subscribe</a></span>
       <small>AMQP::Client::Queue</small>
@@ -812,7 +823,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#timestamp-instance_method" title="AMQP::Client::Properties#timestamp (method)">#timestamp</a></span>
       <small>AMQP::Client::Properties</small>
@@ -820,7 +831,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#to_h-instance_method" title="AMQP::Client::Properties#to_h (method)">#to_h</a></span>
       <small>AMQP::Client::Properties</small>
@@ -828,7 +839,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#tx_commit-instance_method" title="AMQP::Client::Connection::Channel#tx_commit (method)">#tx_commit</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -836,7 +847,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#tx_rollback-instance_method" title="AMQP::Client::Connection::Channel#tx_rollback (method)">#tx_rollback</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -844,7 +855,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Connection/Channel.html#tx_select-instance_method" title="AMQP::Client::Connection::Channel#tx_select (method)">#tx_select</a></span>
       <small>AMQP::Client::Connection::Channel</small>
@@ -852,7 +863,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Properties.html#type-instance_method" title="AMQP::Client::Properties#type (method)">#type</a></span>
       <small>AMQP::Client::Properties</small>
@@ -860,7 +871,7 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client.html#unbind-instance_method" title="AMQP::Client#unbind (method)">#unbind</a></span>
       <small>AMQP::Client</small>
@@ -868,7 +879,7 @@
   </li>
   
 
-  <li class="even ">
+  <li class="odd ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Queue.html#unbind-instance_method" title="AMQP::Client::Queue#unbind (method)">#unbind</a></span>
       <small>AMQP::Client::Queue</small>
@@ -876,10 +887,18 @@
   </li>
   
 
-  <li class="odd ">
+  <li class="even ">
     <div class="item">
       <span class='object_link'><a href="AMQP/Client/Exchange.html#unbind-instance_method" title="AMQP::Client::Exchange#unbind (method)">#unbind</a></span>
       <small>AMQP::Client::Exchange</small>
+    </div>
+  </li>
+  
+
+  <li class="odd ">
+    <div class="item">
+      <span class='object_link'><a href="AMQP/Client/Connection.html#update_secret-instance_method" title="AMQP::Client::Connection#update_secret (method)">#update_secret</a></span>
+      <small>AMQP::Client::Connection</small>
     </div>
   </li>
   

@@ -6,7 +6,7 @@
 <title>
   File: CHANGELOG
   
-    &mdash; Documentation by YARD 0.9.36
+    &mdash; Documentation by YARD 0.9.37
   
 </title>
 
@@ -59,6 +59,25 @@
 
       <div id="content"><div id='filecontents'>
 <h2 id="label-5BUnreleased-5D">[Unreleased]</h2>
+<ul><li>
+<p>Fixed: <code>Connection#channel</code> wasn’t thread-safe</p>
+</li></ul>
+
+<h2 id="label-5B1.1.7-5D+-+2024-05-12">[1.1.7] - 2024-05-12</h2>
+<ul><li>
+<p>Support for Connection.update-secret</p>
+</li><li>
+<p>Allow sub-second connect_timeout</p>
+</li><li>
+<p>Fixed: undefinied variable if message was returned and no on_return block was set</p>
+</li></ul>
+
+<h2 id="label-5B1.1.6-5D+-+2024-03-26">[1.1.6] - 2024-03-26</h2>
+<ul><li>
+<p>Fixed: Channel#wait_for_confirms now waits for all confirms, in a thread safe way</p>
+</li><li>
+<p>Changed: When server sends Connection.blocked the client isn’t write blocked anymore, and can continue consume for instance. However, the on_blocked/unblocked callbacks should be used and manually stop publishing as the server otherwise will stop reading from the client socket.</p>
+</li></ul>
 
 <h2 id="label-5B1.1.5-5D+-+2024-03-15">[1.1.5] - 2024-03-15</h2>
 <ul><li>
@@ -201,9 +220,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Fri Mar 15 15:23:05 2024 by
+  Generated on Thu Feb 20 10:16:54 2025 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.36 (ruby-3.3.0).
+  0.9.37 (ruby-3.4.2).
 </div>
 
     </div>
