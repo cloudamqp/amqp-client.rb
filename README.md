@@ -8,7 +8,7 @@ It's safe by default, messages are published as persistent, and is waiting for c
 
 ## Support
 
-The library is fully supported by [CloudAMQP](https://www.cloudamqp.com), the largest RabbitMQ hosting provider in the world. Open [an issue](https://github.com/cloudamqp/amqp-client.rb/issues) or [email our support](mailto:support@cloudamqp.com) if you have problems or questions.
+The library is fully supported by [CloudAMQP](https://www.cloudamqp.com), the largest LavinMQ and RabbitMQ hosting provider in the world. Open [an issue](https://github.com/cloudamqp/amqp-client.rb/issues) or [email our support](mailto:support@cloudamqp.com) if you have problems or questions.
 
 ## Documentation
 
