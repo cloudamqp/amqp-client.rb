@@ -345,8 +345,8 @@ module AMQP
         end
 
         # Specify how many messages to prefetch for consumers with `no_ack: false`
-        # @param prefetch_count [Integer] Number of messages to maxium keep in flight
-        # @param prefetch_size [Integer] Number of bytes to maxium keep in flight
+        # @param prefetch_count [Integer] Number of messages to maximum keep in flight
+        # @param prefetch_size [Integer] Number of bytes to maximum keep in flight
         # @param global [Boolean] If true the limit will apply to channel rather than the consumer
         # @return [nil]
         def basic_qos(prefetch_count, prefetch_size: 0, global: false)
