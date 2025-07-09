@@ -409,6 +409,8 @@ module AMQP
           channel.header_delivered body_size, properties
         when 3 # body
           channel.body_delivered buf
+        when 8 # heartbeat
+          write_bytes FrameBytes.heartbeat
         else raise Error::UnsupportedFrameType, type
         end
         true

@@ -542,6 +542,15 @@ module AMQP
           206 # frame end
         ].pack("C S> L> S> S> C")
       end
+
+      def self.heartbeat
+        [
+          8, # type: heartbeat
+          0, # channel id
+          0, # frame size
+          206 # frame end
+        ].pack("C S> L> C")
+      end
     end
   end
 end
