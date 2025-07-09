@@ -52,7 +52,7 @@ module AMQP
     def start
       @stopped = false
       Thread.new(connect(read_loop_thread: false)) do |conn|
-        Thread.abort_on_exception = true # Raising an unhandled exception is a bug
+        Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
         loop do
           break if @stopped
 
