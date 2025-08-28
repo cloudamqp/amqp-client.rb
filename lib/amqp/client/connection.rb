@@ -411,6 +411,7 @@ module AMQP
           channel.body_delivered buf
         when 8 # heartbeat
           handle_server_heartbeat(channel_id)
+          handle_server_heartbeat(channel_id)
         else raise Error::UnsupportedFrameType, type
         end
         true
