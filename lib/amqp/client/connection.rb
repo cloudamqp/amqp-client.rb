@@ -436,17 +436,26 @@ module AMQP
         keepalive = options.fetch(:keepalive, "").split(":", 3).map!(&:to_i)
         enable_tcp_keepalive(socket, *keepalive)
         if tls
-          cert_store = OpenSSL::X509::Store.new
-          cert_store.set_default_paths
           context = OpenSSL::SSL::SSLContext.new
-          context.cert_store = cert_store
           skip_verify = [false, "false", "none"].include? options[:verify_peer]
-          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless skip_verify
+
+          if skip_verify
+            context.verify_mode = OpenSSL::SSL::VERIFY_NONE
+          else
+            cert_store = OpenSSL::X509::Store.new
+            cert_store.set_default_paths
+            context.cert_store = cert_store
+            context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+          end
+
+          # Set minimum SSL version for better compatibility
+          context.ssl_version = :TLSv1_2 if context.respond_to?(:ssl_version=)
+
           socket = OpenSSL::SSL::SSLSocket.new(socket, context)
           socket.sync_close = true # closing the TLS socket also closes the TCP socket
-          socket.hostname = host # SNI host
+          socket.hostname = host if context.verify_mode != OpenSSL::SSL::VERIFY_NONE # SNI host
           socket.connect
-          socket.post_connection_check(host) unless skip_verify
+          socket.post_connection_check(host) if context.verify_mode == OpenSSL::SSL::VERIFY_PEER
         end
         socket
       rescue SystemCallError, OpenSSL::OpenSSLError => e
