@@ -410,10 +410,16 @@ module AMQP
         when 3 # body
           channel.body_delivered buf
         when 8 # heartbeat
-          write_bytes FrameBytes.heartbeat
+          handle_server_heartbeat(channel_id)
         else raise Error::UnsupportedFrameType, type
         end
         true
+      end
+
+      def handle_server_heartbeat(channel_id)
+        return if channel_id.zero?
+
+        raise Error::ConnectionClosed.new(501, "Heartbeat frame received on non-zero channel #{channel_id}", 0, 0)
       end
 
       def expect(expected_frame_type)
