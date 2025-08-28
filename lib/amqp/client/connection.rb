@@ -441,6 +441,8 @@ module AMQP
 
           if skip_verify
             context.verify_mode = OpenSSL::SSL::VERIFY_NONE
+            # On JRuby, we might need to be more explicit about disabling all verification
+            context.verify_hostname = false if context.respond_to?(:verify_hostname=)
           else
             cert_store = OpenSSL::X509::Store.new
             cert_store.set_default_paths
@@ -448,12 +450,23 @@ module AMQP
             context.verify_mode = OpenSSL::SSL::VERIFY_PEER
           end
 
-          # Set minimum SSL version for better compatibility
-          context.ssl_version = :TLSv1_2 if context.respond_to?(:ssl_version=)
+          # Set SSL options for better JRuby compatibility
+          if defined?(JRUBY_VERSION)
+            # For JRuby, try to disable problematic SSL options
+            context.options = OpenSSL::SSL::OP_ALL | OpenSSL::SSL::OP_NO_SSLv2 | OpenSSL::SSL::OP_NO_SSLv3
+          elsif context.respond_to?(:ssl_version=)
+            # Set minimum SSL version for better compatibility on MRI Ruby
+            context.ssl_version = :TLSv1_2 # rubocop:disable Naming/VariableNumber
+          end
 
           socket = OpenSSL::SSL::SSLSocket.new(socket, context)
           socket.sync_close = true # closing the TLS socket also closes the TCP socket
-          socket.hostname = host if context.verify_mode != OpenSSL::SSL::VERIFY_NONE # SNI host
+
+          # Only set hostname if we're actually verifying
+          if context.verify_mode == OpenSSL::SSL::VERIFY_PEER
+            socket.hostname = host # SNI host
+          end
+
           socket.connect
           socket.post_connection_check(host) if context.verify_mode == OpenSSL::SSL::VERIFY_PEER
         end
