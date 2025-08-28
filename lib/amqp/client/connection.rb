@@ -53,8 +53,8 @@ module AMQP
         @on_unblocked = -> { warn "AMQP-Client unblocked by broker" }
 
         # Only used with heartbeats
-        @last_sent = Time.now
-        @last_recv = Time.now
+        @last_sent = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        @last_recv = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
         Thread.new { read_loop } if read_loop_thread
       end
@@ -182,7 +182,7 @@ module AMQP
       def write_bytes(*bytes)
         @write_lock.synchronize do
           @socket.write(*bytes)
-          @last_sent = Time.now if @heartbeat&.positive?
+          update_last_sent
         end
       rescue *READ_EXCEPTIONS => e
         raise Error::ConnectionClosed.new(*@closed) if @closed
@@ -424,7 +424,15 @@ module AMQP
       end
 
       def update_last_recv
-        @last_recv = Time.now
+        return unless @heartbeat&.positive?
+
+        @last_recv = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      end
+
+      def update_last_sent
+        return unless @heartbeat&.positive?
+
+        @last_sent = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       end
 
       def handle_server_heartbeat(channel_id)
@@ -443,7 +451,7 @@ module AMQP
             break if @closed
             next if @socket.nil?
 
-            now = Time.now
+            now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
             # If we haven't sent anything recently, send a heartbeat
             if now - @last_sent >= interval
               begin
