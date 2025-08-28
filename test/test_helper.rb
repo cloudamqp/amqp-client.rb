@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+$stdout.sync = $stderr.sync = true
+
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "amqp/client"
 
@@ -58,6 +60,8 @@ module FakeServer
     server.close
   end
 end
+
+$VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase
 Minitest::Test.prepend SkipSudoTestCase
