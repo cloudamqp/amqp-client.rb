@@ -513,7 +513,7 @@ module AMQP
         raise e
       end
 
-      # Enable TCP keepalive, which is prefered to heartbeats
+      # Enable TCP keepalive, which is preferred to heartbeats
       # @return [void]
       def enable_tcp_keepalive(socket, idle = 60, interval = 10, count = 3)
         socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
