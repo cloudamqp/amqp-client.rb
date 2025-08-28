@@ -440,13 +440,13 @@ module AMQP
           cert_store.set_default_paths
           context = OpenSSL::SSL::SSLContext.new
           context.cert_store = cert_store
-          verify_peer = [false, "false", "none"].include? options[:verify_peer]
-          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless verify_peer
+          skip_verify = [false, "false", "none"].include? options[:verify_peer]
+          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless skip_verify
           socket = OpenSSL::SSL::SSLSocket.new(socket, context)
           socket.sync_close = true # closing the TLS socket also closes the TCP socket
           socket.hostname = host # SNI host
           socket.connect
-          socket.post_connection_check(host) || raise(Error, "TLS certificate hostname doesn't match requested")
+          socket.post_connection_check(host) unless skip_verify
         end
         socket
       rescue SystemCallError, OpenSSL::OpenSSLError => e
