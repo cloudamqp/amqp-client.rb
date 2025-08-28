@@ -436,17 +436,47 @@ module AMQP
         keepalive = options.fetch(:keepalive, "").split(":", 3).map!(&:to_i)
         enable_tcp_keepalive(socket, *keepalive)
         if tls
-          cert_store = OpenSSL::X509::Store.new
-          cert_store.set_default_paths
           context = OpenSSL::SSL::SSLContext.new
-          context.cert_store = cert_store
-          verify_peer = [false, "false", "none"].include? options[:verify_peer]
-          context.verify_mode = OpenSSL::SSL::VERIFY_PEER unless verify_peer
+          skip_verify = [false, "false", "none"].include? options[:verify_peer]
+
+          if skip_verify
+            context.verify_mode = OpenSSL::SSL::VERIFY_NONE
+            # For JRuby, we need to be very explicit about disabling verification
+            if defined?(JRUBY_VERSION)
+              context.verify_hostname = false if context.respond_to?(:verify_hostname=)
+              # Disable additional security checks that might interfere
+              context.security_level = 0 if context.respond_to?(:security_level=)
+              # Set very permissive SSL options for JRuby
+              context.options = 0 if context.respond_to?(:options=)
+            elsif context.respond_to?(:verify_hostname=)
+              context.verify_hostname = false
+            end
+          else
+            cert_store = OpenSSL::X509::Store.new
+            cert_store.set_default_paths
+            context.cert_store = cert_store
+            context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+            context.verify_hostname = true if context.respond_to?(:verify_hostname=)
+          end
+
+          # Handle SSL version configuration differently for JRuby
+          unless skip_verify || defined?(JRUBY_VERSION)
+            # Only set SSL version constraints when not on JRuby and when verifying
+            if context.respond_to?(:min_version=) && context.respond_to?(:max_version=)
+              context.min_version = OpenSSL::SSL::TLS1_2_VERSION
+            elsif context.respond_to?(:ssl_version=)
+              context.ssl_version = :TLSv1_2 # rubocop:disable Naming/VariableNumber
+            end
+          end
+
           socket = OpenSSL::SSL::SSLSocket.new(socket, context)
           socket.sync_close = true # closing the TLS socket also closes the TCP socket
-          socket.hostname = host # SNI host
+
+          # Never set hostname when skipping verification, especially on JRuby
+          socket.hostname = host unless skip_verify
+
           socket.connect
-          socket.post_connection_check(host) || raise(Error, "TLS certificate hostname doesn't match requested")
+          socket.post_connection_check(host) unless skip_verify
         end
         socket
       rescue SystemCallError, OpenSSL::OpenSSLError => e
