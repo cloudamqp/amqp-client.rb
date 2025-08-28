@@ -1,4 +1,6 @@
 inherit_from: .rubocop_todo.yml
+plugins:
+  - rubocop-minitest
 
 AllCops:
   NewCops: disable
@@ -18,11 +20,11 @@ Layout/LineLength:
 
 Naming/FileName:
   Exclude:
-    - 'lib/amqp-client.rb'
+    - "lib/amqp-client.rb"
 
 Metrics/PerceivedComplexity:
   Exclude:
-    - 'lib/amqp/client/properties.rb'
+    - "lib/amqp/client/properties.rb"
 
 Metrics/ParameterLists:
   Max: 8
