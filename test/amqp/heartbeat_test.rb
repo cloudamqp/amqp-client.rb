@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "../test_helper"
-require "time"
 
 class AMQPHeartbeatTest < Minitest::Test
   def test_client_stays_alive_by_getting_heartbeats

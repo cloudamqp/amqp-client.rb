@@ -419,7 +419,7 @@ module AMQP
       def handle_server_heartbeat(channel_id)
         return if channel_id.zero?
 
-        raise Error::ConnectionClosed.new(501, "Heartbeat frame received on non-zero channel #{channel_id}", 0, 0)
+        raise Error::ConnectionClosed.new(501, "Heartbeat frame received on non-zero channel #{channel_id}")
       end
 
       def expect(expected_frame_type)
