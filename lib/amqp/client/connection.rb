@@ -528,7 +528,7 @@ module AMQP
         channel_max, frame_max, heartbeat = nil
         socket.write "AMQP\x00\x00\x09\x01"
         buf = String.new(capacity: 4096)
-        loop do
+        loop do # rubocop:disable Metrics/BlockLength
           begin
             socket.readpartial(4096, buf)
           rescue *READ_EXCEPTIONS => e
