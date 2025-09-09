@@ -26,8 +26,8 @@ jobs:
           - "3.2"
           - "3.3"
         include:
-          - { ruby: jruby, allow-failure: true, sudo: false }
-          - { ruby: truffleruby, allow-failure: true, sudo: false }
+          - { ruby: jruby, allow-failure: false, sudo: false }
+          - { ruby: truffleruby, allow-failure: false, sudo: false }
     steps:
     - name: Install RabbitMQ
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
@@ -86,7 +86,15 @@ jobs:
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
+    - name: Run TLS tests (JRuby)
+      if: ${{ matrix.ruby == 'jruby' }}
+      run: bundle exec rake
+      env:
+        JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+        TEST_AMQP_HOST: "localhost"
+        TESTOPTS: --name=/_tls$/
     - name: Run TLS tests
+      if: ${{ matrix.ruby != 'jruby' }}
       run: bundle exec rake
       env:
         TESTOPTS: --name=/_tls$/

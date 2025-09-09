@@ -9,6 +9,10 @@ require "minitest/autorun"
 
 Thread.abort_on_exception = true
 
+TEST_AMQP_HOST = ENV.fetch("TEST_AMQP_HOST") do
+  RUBY_ENGINE == "jruby" ? "127.0.0.1" : "localhost"
+end
+
 require "timeout"
 module TimeoutEveryTestCase
   # our own subclass so we never confused different timeouts
