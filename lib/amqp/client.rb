@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "set"
 require_relative "client/version"
 require_relative "client/connection"
 require_relative "client/exchange"
