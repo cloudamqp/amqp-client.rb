@@ -121,3 +121,15 @@ jobs:
       run: while true; do rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
     - name: Run tests (excluding TLS tests)
       run: bundle exec rake
+
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby-version: ruby
+    - name: Run RuboCop
+      run: bundle exec rake rubocop

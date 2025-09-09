@@ -24,4 +24,4 @@ require "yard"
 
 YARD::Rake::YardocTask.new
 
-task default: [:test, *(:rubocop if RUBY_ENGINE == "ruby" && RUBY_VERSION >= "2.7.0")]
+task default: [:test, *(:rubocop if ENV["CI"] != "true")]
