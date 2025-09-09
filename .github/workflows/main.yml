@@ -29,6 +29,10 @@ jobs:
           - { ruby: jruby, allow-failure: false, sudo: false }
           - { ruby: truffleruby, allow-failure: false, sudo: false }
     steps:
+    - name: Configure dpkg to skip building man pages
+      run: |
+        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
     - name: Install RabbitMQ
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
     - name: Verify RabbitMQ started correctly
@@ -55,6 +59,10 @@ jobs:
           - "jruby"
           - "truffleruby"
     steps:
+    - name: Configure dpkg to skip building man pages
+      run: |
+        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
     - name: Install RabbitMQ
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
     - name: Stop RabbitMQ
