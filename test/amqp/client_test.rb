@@ -11,14 +11,14 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_connect
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     assert connection
   end
 
   def test_it_raises_on_connecting_to_unrelated_service
     with_fake_server do |port|
-      client = AMQP::Client.new("amqp://guest1:guest2@localhost:#{port}")
+      client = AMQP::Client.new("amqp://guest1:guest2@#{TEST_AMQP_HOST}:#{port}")
       assert_raises(AMQP::Client::Error) do
         client.connect
       end
@@ -26,28 +26,28 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_raises_on_bad_credentials
-    client = AMQP::Client.new("amqp://guest1:guest2@localhost")
+    client = AMQP::Client.new("amqp://guest1:guest2@#{TEST_AMQP_HOST}")
     assert_raises(AMQP::Client::Error) do
       client.connect
     end
   end
 
   def test_it_can_disconnect
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     connection.close
     assert connection
   end
 
   def test_it_can_open_channel
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     assert channel
   end
 
   def test_it_can_close_channel
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.close
@@ -55,14 +55,14 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_publish
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.basic_publish "", "foo", "bar"
   end
 
   def test_it_can_declare_exchange
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.exchange_declare "foo", "fanout"
@@ -74,7 +74,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_delete_exchange
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.exchange_declare "foo", "fanout"
@@ -88,7 +88,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_bind_exchanges
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.exchange_declare "foo", "fanout"
@@ -103,7 +103,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_unbind_exchanges
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.exchange_declare "foo", "fanout"
@@ -118,7 +118,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_declare_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     resp = channel.queue_declare "foo", exclusive: true
@@ -127,7 +127,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_delete_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.queue_declare "foo"
@@ -139,7 +139,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_get_from_empty_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -149,7 +149,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_get_from_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.queue_declare "foo", exclusive: true
@@ -160,7 +160,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_get_from_transiet_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -170,7 +170,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_consume
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -182,7 +182,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_bind_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -194,7 +194,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_unbind_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -206,7 +206,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_purge_queue
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -218,7 +218,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_qos
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -234,7 +234,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_ack
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -251,7 +251,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_nack
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -271,7 +271,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_reject
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -291,7 +291,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_recover
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -308,7 +308,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_return
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     msgs = Queue.new
@@ -321,7 +321,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_select_confirm
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     channel.confirm_select
@@ -330,7 +330,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_commit_tx
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare "foo", exclusive: true
@@ -343,7 +343,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_rollback_tx
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare "foo", exclusive: true
@@ -360,7 +360,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_generate_tables
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
@@ -373,12 +373,12 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
   def test_set_connection_name
     skip "slow, polls HTTP mgmt API"
-    client = AMQP::Client.new("amqp://localhost", connection_name: "foobar")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", connection_name: "foobar")
     client.connect
 
     req = Net::HTTP::Get.new("/api/connections?columns=client_properties")
     req.basic_auth "guest", "guest"
-    http = Net::HTTP.new("localhost", 15_672)
+    http = Net::HTTP.new(TEST_AMQP_HOST, 15_672)
     connection_names = []
     100.times do
       sleep 0.1
@@ -391,7 +391,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_handle_connection_closed_by_server
-    conn = AMQP::Client.new("amqp://localhost").connect
+    conn = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     conn.with_channel do |ch|
       assert_raises(AMQP::Client::Error::ConnectionClosed, AMQP::Client::Error::ChannelClosed, /unknown exchange type/) do
         ch.exchange_declare("foobar", "faulty.exchange.type")
@@ -402,7 +402,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   def test_it_can_consume_multiple_queues_on_one_channel
     msgs1 = Queue.new
     msgs2 = Queue.new
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     channel = connection.channel
     q1 = channel.queue_declare ""
     q2 = channel.queue_declare ""
@@ -423,7 +423,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   def test_it_can_consume_multiple_queues_on_multiple_channel
     msgs1 = Queue.new
     msgs2 = Queue.new
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     ch1 = connection.channel
     ch2 = connection.channel
     q1 = ch1.queue_declare ""
@@ -444,7 +444,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
   def test_it_can_ack_a_lot_of_msgs
     msgs1 = Queue.new
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     ch1 = connection.channel
     q = ch1.queue_declare ""
     ch1.basic_qos(200)
@@ -468,7 +468,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_set_channel_max
-    connection = AMQP::Client.new("amqp://localhost", channel_max: 1).connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", channel_max: 1).connect
     assert connection.channel
     assert_raises(AMQP::Client::Error) do
       connection.channel
@@ -480,7 +480,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   def test_it_can_be_blocked
     skip_if_no_sudo
     begin
-      connection = AMQP::Client.new("amqp://localhost").connect
+      connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
       ch = connection.channel
       system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
       ch.basic_publish("body", "", "q")
@@ -521,7 +521,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
       }
     )
 
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_publish_confirm "", "", q.queue_name, **props
@@ -535,7 +535,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     skip_if_no_sudo
     begin
       q = Queue.new
-      client = AMQP::Client.new("amqp://localhost")
+      client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
       connection = client.connect
       connection.on_blocked do |reason|
         q << reason
@@ -557,7 +557,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_queue_pruge_returns_msg_count
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     channel = connection.channel
     q = channel.queue_declare ""
     3.times do
@@ -570,7 +570,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_publish_with_confirm
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     channel = connection.channel
     q = channel.queue_declare ""
     10.times do
@@ -581,14 +581,14 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_it_can_update_secret
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     connection.update_secret "secret", "testing"
   end
 
   def test_open_closing_channels_is_thread_safe
     abort_on_exception_prev = Thread.abort_on_exception
     Thread.abort_on_exception = false
-    connection = AMQP::Client.new("amqp://localhost").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     Array.new(50) do
       Thread.new do
         ch = nil

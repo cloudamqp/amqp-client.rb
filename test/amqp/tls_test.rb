@@ -4,7 +4,7 @@ require_relative "../test_helper"
 
 class AMQPSClientTest < Minitest::Test
   def test_it_can_connect_to_tls
-    connection = AMQP::Client.new("amqps://localhost", verify_peer: false).connect
+    connection = AMQP::Client.new("amqps://#{TEST_AMQP_HOST}", verify_peer: false).connect
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_publish "foobar", "", q[:queue_name]
@@ -16,7 +16,7 @@ class AMQPSClientTest < Minitest::Test
 
   def test_it_can_ack_a_lot_of_msgs_on_tls
     msgs1 = Queue.new
-    connection = AMQP::Client.new("amqps://localhost", verify_peer: false).connect
+    connection = AMQP::Client.new("amqps://#{TEST_AMQP_HOST}", verify_peer: false).connect
     ch1 = connection.channel
     q = ch1.queue_declare ""
     ch1.basic_qos(200)

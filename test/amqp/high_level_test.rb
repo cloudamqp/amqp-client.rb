@@ -6,7 +6,7 @@ require "zlib"
 class HighLevelTest < Minitest::Test
   def test_it_can_connect_pub_sub
     msgs = Queue.new
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     client.start
     q = client.queue("test.conn")
     begin
@@ -25,7 +25,7 @@ class HighLevelTest < Minitest::Test
 
   def test_it_can_bind_unbind
     msgs = Queue.new
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     client.start
     begin
       q = client.queue("test.bind")
@@ -48,7 +48,7 @@ class HighLevelTest < Minitest::Test
 
   def test_it_can_publish_with_properties
     msgs = Queue.new
-    client = AMQP::Client.new("amqp://localhost")
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     client.start
     begin
       q = client.queue("test.bind")
@@ -72,7 +72,7 @@ class HighLevelTest < Minitest::Test
   end
 
   def test_it_can_reopen_channel_1_after_failed_publish
-    client = AMQP::Client.new("amqp://localhost").start
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       assert_raises(AMQP::Client::Error::ChannelClosed) do
         client.publish("", "non-existing-exchange", "foo.bar")
@@ -85,7 +85,7 @@ class HighLevelTest < Minitest::Test
 
   def test_it_can_bind_unbind_exchanges
     msgs = Queue.new
-    client = AMQP::Client.new("amqp://localhost").start
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       e = client.exchange("test.exchange", "fanout", auto_delete: true)
       q = client.queue("test.bind")
@@ -116,7 +116,7 @@ class HighLevelTest < Minitest::Test
 
   def test_it_can_resubscribe_on_reconnect
     msgs = Queue.new
-    client = AMQP::Client.new("amqp://localhost").start
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       q = client.queue("foo#{rand}")
       q.subscribe do |msg|
