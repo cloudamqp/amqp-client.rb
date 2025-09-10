@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.2.0] - 2025-09-10
+
 - Fixed: `Connection#channel` wasn't thread-safe
 - Added: Support for heartbeats
 
