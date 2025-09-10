@@ -113,17 +113,76 @@ gem 'amqp-client'
 
 And then execute:
 
-    $ bundle install
+    bundle install
 
 Or install it yourself as:
 
-    $ gem install amqp-client
+    gem install amqp-client
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the changelog and version number in `version.rb`, make a commit, and then run `bundle exec rake release:source_control_push`, which will create a git tag for the version, push git commits and the created tag. GitHub Actions will then push the `.gem` file to [rubygems.org](https://rubygems.org/gems/amqp-client).
+To install this gem onto your local machine, run `bundle exec rake install`.
+
+### Release Process
+
+The gem uses rake tasks to automate the release process. Make sure your working directory is clean before starting a release.
+
+#### Quick Release (Patch Version)
+
+```bash
+rake release:full
+```
+
+This will:
+
+1. Run tests and RuboCop to ensure code quality
+2. Bump the patch version (e.g., 1.2.0 → 1.2.1)
+3. Update the CHANGELOG.md with the new version and current date
+4. Create a git commit and tag for the release
+5. Build and push the gem to RubyGems
+6. Push commits and tags to the remote repository
+
+#### Custom Version Bump
+
+For minor or major version bumps:
+
+```bash
+# Minor version bump (e.g., 1.2.0 → 1.3.0)
+rake release:full[minor]
+
+# Major version bump (e.g., 1.2.0 → 2.0.0)
+rake release:full[major]
+```
+
+#### Individual Release Steps
+
+You can also run individual steps if needed:
+
+```bash
+# Bump version only
+rake release:bump[patch]  # or [minor] or [major]
+
+# Update changelog with current version
+rake release:changelog
+
+# Create git tag
+rake release:tag
+
+# Build and push to RubyGems
+rake release:push
+```
+
+#### Manual Release Steps
+
+If you prefer manual control:
+
+1. Update the version number in `lib/amqp/client/version.rb`
+2. Update the CHANGELOG.md with the new version and release notes
+3. Commit your changes: `git add . && git commit -m "Release X.Y.Z"`
+4. Create and push a tag: `git tag vX.Y.Z && git push origin vX.Y.Z`
+5. Build and push: `rake build && gem push amqp-client-X.Y.Z.gem`
 
 ## Contributing
 
