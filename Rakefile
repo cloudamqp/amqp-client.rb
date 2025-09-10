@@ -33,16 +33,16 @@ end
 
 def extract_changelog_for_version(version)
   changelog = File.read("CHANGELOG.md")
-  
+
   # Find the section for this version
   version_pattern = /^## \[#{Regexp.escape(version)}\][^\n]*\n(.*?)(?=^## \[|\z)/m
   match = changelog.match(version_pattern)
-  
+
   if match
     # Clean up the changelog entries
     entries = match[1].strip
     # Remove empty lines at the start and end
-    entries.gsub(/\A\s*\n+/, '').gsub(/\n+\s*\z/, '')
+    entries.gsub(/\A\s*\n+/, "").gsub(/\n+\s*\z/, "")
   else
     "No changelog entries found for version #{version}"
   end
@@ -112,10 +112,10 @@ def create_git_tag
 
   # Extract changelog entries for this version
   changelog_entries = extract_changelog_for_version(version)
-  
+
   # Create tag message with version and changelog
   tag_message = "Release #{version}\n\n#{changelog_entries}"
-  
+
   # Create annotated tag with the changelog
   system("git", "tag", "-a", "v#{version}", "-m", tag_message)
 
