@@ -5,8 +5,8 @@ require_relative "lib/amqp/client/version"
 Gem::Specification.new do |spec|
   spec.name          = "amqp-client"
   spec.version       = AMQP::Client::VERSION
-  spec.authors       = ["Carl Hörberg"]
-  spec.email         = ["carl@cloudamqp.com"]
+  spec.authors       = ["CloudAMQP"]
+  spec.email         = ["team@cloudamqp.com"]
 
   spec.summary       = "AMQP 0-9-1 client"
   spec.description   = "Modern AMQP 0-9-1 Ruby client"
