@@ -48,6 +48,19 @@ def extract_changelog_for_version(version)
   end
 end
 
+def push_tag_to_remote(version)
+  # Check if tag exists on remote
+  remote_tag_exists = system("git ls-remote --tags origin | grep -q refs/tags/v#{version}")
+
+  if remote_tag_exists
+    puts "Tag v#{version} already exists on remote. Force pushing updated tag..."
+    system("git push origin v#{version} --force")
+  else
+    puts "Pushing new tag v#{version} to remote..."
+    system("git push origin v#{version}")
+  end
+end
+
 def bump_version(version_type)
   unless %w[major minor patch].include?(version_type)
     puts "Invalid version type. Use: major, minor, or patch"
@@ -104,9 +117,9 @@ def create_git_tag
   system("git add .")
   system("git commit -m 'Release #{version}'")
 
-  # Check if tag already exists and remove it if it does
+  # Check if tag already exists locally and remove it if it does
   if system("git tag -l v#{version} | grep -q v#{version}")
-    puts "Tag v#{version} already exists, removing it..."
+    puts "Tag v#{version} already exists locally, removing it..."
     system("git tag -d v#{version}")
   end
 
@@ -168,9 +181,11 @@ def full_release_process(version_type)
 
   # Push to git
   system("git push origin")
-  system("git push origin --tags")
 
+  # Handle tag push with potential conflicts
   version = current_version
+  push_tag_to_remote(version)
+
   puts "Successfully released version #{version}!"
 end
 
@@ -188,6 +203,12 @@ namespace :release do
   desc "Create git tag for current version"
   task :tag do
     create_git_tag
+  end
+
+  desc "Push tag to remote (handles conflicts)"
+  task :push_tag do
+    version = current_version
+    push_tag_to_remote(version)
   end
 
   desc "Build and push gem to RubyGems"
