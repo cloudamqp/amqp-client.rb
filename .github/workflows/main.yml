@@ -39,7 +39,14 @@ jobs:
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
+    - name: Run tests (excluding TLS tests) (JRuby)
+      if: ${{ matrix.ruby == 'jruby' }}
+      continue-on-error: ${{ matrix.allow-failure || false }}
+      run: bundle exec rake
+      env:
+        JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
     - name: Run tests (excluding TLS tests)
+      if: ${{ matrix.ruby != 'jruby' }}
       continue-on-error: ${{ matrix.allow-failure || false }}
       run: bundle exec rake
       env:
