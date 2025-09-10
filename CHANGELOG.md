@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 - Fixed: `Connection#channel` wasn't thread-safe
+- Added: Support for heartbeats
 
 ## [1.1.7] - 2024-05-12
 
@@ -50,7 +51,7 @@
 
 ## [1.0.1] - 2021-09-06
 
-- The API is fully documented! https://cloudamqp.github.io/amqp-client.rb/
+- The API is fully documented! <https://cloudamqp.github.io/amqp-client.rb/>
 - Fixed: Socket writing is now thread-safe
 - Change: Block while waiting for basic_cancel by default
 - Added: Can specify channel_max, heartbeat and frame_max as options to the Client/Connection
