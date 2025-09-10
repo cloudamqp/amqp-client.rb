@@ -52,6 +52,9 @@ module AMQP
         @on_blocked = ->(reason) { warn "AMQP-Client blocked by broker: #{reason}" }
         @on_unblocked = -> { warn "AMQP-Client unblocked by broker" }
 
+        # Only used with heartbeats
+        @last_activity_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
         Thread.new { read_loop } if read_loop_thread
       end
 
@@ -178,6 +181,7 @@ module AMQP
       def write_bytes(*bytes)
         @write_lock.synchronize do
           @socket.write(*bytes)
+          update_last_activity
         end
       rescue *READ_EXCEPTIONS => e
         raise Error::ConnectionClosed.new(*@closed) if @closed
@@ -209,6 +213,7 @@ module AMQP
 
           # parse the frame, will return false if a close frame was received
           parse_frame(type, channel_id, frame_buffer) || return
+          update_last_activity
         end
         nil
       rescue *READ_EXCEPTIONS => e
@@ -416,10 +421,44 @@ module AMQP
         true
       end
 
+      def update_last_activity
+        return unless @heartbeat&.positive?
+
+        @last_activity_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      end
+
       def handle_server_heartbeat(channel_id)
         return if channel_id.zero?
 
         raise Error::ConnectionClosed.new(501, "Heartbeat frame received on non-zero channel #{channel_id}")
+      end
+
+      # Start the heartbeat background thread (called from connection#tune)
+      def start_heartbeats(period)
+        Thread.new do
+          Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
+          interval = period / 2.0
+          loop do
+            sleep interval
+            break if @closed
+            next if @socket.nil?
+
+            now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+            # If we haven't sent anything recently, send a heartbeat
+            next unless now - @last_activity_time >= interval
+
+            begin
+              send_heartbeat
+            rescue Error => e
+              warn "AMQP-Client heartbeat send failed: #{e.inspect}"
+              break
+            end
+          end
+        end
+      end
+
+      def send_heartbeat
+        write_bytes FrameBytes.heartbeat
       end
 
       def expect(expected_frame_type)
@@ -467,7 +506,7 @@ module AMQP
         channel_max, frame_max, heartbeat = nil
         socket.write "AMQP\x00\x00\x09\x01"
         buf = String.new(capacity: 4096)
-        loop do
+        loop do # rubocop:disable Metrics/BlockLength
           begin
             socket.readpartial(4096, buf)
           rescue *READ_EXCEPTIONS => e
@@ -496,6 +535,7 @@ module AMQP
                 channel_max = [channel_max, options.fetch(:channel_max, 2048).to_i].min
                 frame_max = [frame_max, options.fetch(:frame_max, 131_072).to_i].min
                 heartbeat = [heartbeat, options.fetch(:heartbeat, 0).to_i].min
+                start_heartbeats(heartbeat) if heartbeat.positive?
                 socket.write FrameBytes.connection_tune_ok(channel_max, frame_max, heartbeat)
                 socket.write FrameBytes.connection_open(vhost)
               when 41 # connection#open-ok
