@@ -53,8 +53,7 @@ module AMQP
         @on_unblocked = -> { warn "AMQP-Client unblocked by broker" }
 
         # Only used with heartbeats
-        @last_sent = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        @last_recv = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        @last_activity_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
         Thread.new { read_loop } if read_loop_thread
       end
@@ -182,7 +181,7 @@ module AMQP
       def write_bytes(*bytes)
         @write_lock.synchronize do
           @socket.write(*bytes)
-          update_last_sent
+          update_last_activity
         end
       rescue *READ_EXCEPTIONS => e
         raise Error::ConnectionClosed.new(*@closed) if @closed
@@ -214,7 +213,7 @@ module AMQP
 
           # parse the frame, will return false if a close frame was received
           parse_frame(type, channel_id, frame_buffer) || return
-          update_last_recv
+          update_last_activity
         end
         nil
       rescue *READ_EXCEPTIONS => e
@@ -422,16 +421,10 @@ module AMQP
         true
       end
 
-      def update_last_recv
+      def update_last_activity
         return unless @heartbeat&.positive?
 
-        @last_recv = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      end
-
-      def update_last_sent
-        return unless @heartbeat&.positive?
-
-        @last_sent = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        @last_activity_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       end
 
       def handle_server_heartbeat(channel_id)
@@ -440,40 +433,26 @@ module AMQP
         raise Error::ConnectionClosed.new(501, "Heartbeat frame received on non-zero channel #{channel_id}")
       end
 
-      MAX_MISSED_HEARTBEATS = 2
-
       # Start the heartbeat background thread (called from connection#tune)
-      def start_heartbeats(interval)
+      def start_heartbeats(period)
         Thread.new do
+          Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
+          interval = period / 2.0
           loop do
-            sleep interval / 2.0
+            sleep interval
             break if @closed
             next if @socket.nil?
 
             now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
             # If we haven't sent anything recently, send a heartbeat
-            if now - @last_sent >= interval
-              begin
-                send_heartbeat
-              rescue Error => e
-                warn "AMQP-Client heartbeat send failed: #{e.inspect}"
-                break
-              end
-            end
-            # If we haven't received anything from the server after MAX_MISSED_HEARTBEATS, close connection
-            next unless now - @last_recv > interval * MAX_MISSED_HEARTBEATS
+            next unless now - @last_activity_time >= interval
 
-            break if @closed
-
-            warn "AMQP-Client: closing connection due to missed server heartbeats"\
-                 " (last_recv=#{@last_recv.inspect}, now=#{now.inspect}, interval=#{interval})"
-            @closed = [501, "Missed server heartbeats"]
             begin
-              @socket.close
-            rescue StandardError => e
-              warn "AMQP-Client heartbeat close failed: #{e.inspect}"
+              send_heartbeat
+            rescue Error => e
+              warn "AMQP-Client heartbeat send failed: #{e.inspect}"
+              break
             end
-            break
           end
         end
       end
