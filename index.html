@@ -207,19 +207,86 @@
 
 <p>And then execute:</p>
 
-<pre class="code ruby"><code class="ruby">$ bundle install
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_bundle'>bundle</span> <span class='id identifier rubyid_install'>install</span>
 </code></pre>
 
 <p>Or install it yourself as:</p>
 
-<pre class="code ruby"><code class="ruby">$ gem install amqp-client
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_gem'>gem</span> <span class='id identifier rubyid_install'>install</span> <span class='id identifier rubyid_amqp'>amqp</span><span class='op'>-</span><span class='id identifier rubyid_client'>client</span>
 </code></pre>
 
 <h2 id="label-Development">Development</h2>
 
 <p>After checking out the repo, run <code>bin/setup</code> to install dependencies. Then, run <code>rake test</code> to run the tests. You can also run <code>bin/console</code> for an interactive prompt that will allow you to experiment.</p>
 
-<p>To install this gem onto your local machine, run <code>bundle exec rake install</code>. To release a new version, update the changelog and version number in <code>version.rb</code>, make a commit, and then run <code>bundle exec rake release:source_control_push</code>, which will create a git tag for the version, push git commits and the created tag. GitHub Actions will then push the <code>.gem</code> file to <a href="https://rubygems.org/gems/amqp-client">rubygems.org</a>.</p>
+<p>To install this gem onto your local machine, run <code>bundle exec rake install</code>.</p>
+
+<h3 id="label-Release+Process">Release Process</h3>
+
+<p>The gem uses rake tasks to automate the release process. Make sure your working directory is clean before starting a release.</p>
+
+<h4 id="label-Quick+Release+-28Patch+Version-29">Quick Release (Patch Version)</h4>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_rake'>rake</span> <span class='label'>release:</span><span class='id identifier rubyid_full'>full</span>
+</code></pre>
+
+<p>This will:</p>
+<ol><li>
+<p>Run tests and RuboCop to ensure code quality</p>
+</li><li>
+<p>Bump the patch version (e.g., 1.2.0 → 1.2.1)</p>
+</li><li>
+<p>Update the CHANGELOG.md with the new version and current date</p>
+</li><li>
+<p>Create a git commit and tag for the release</p>
+</li><li>
+<p>Build and push the gem to RubyGems</p>
+</li><li>
+<p>Push commits and tags to the remote repository</p>
+</li></ol>
+
+<h4 id="label-Custom+Version+Bump">Custom Version Bump</h4>
+
+<p>For minor or major version bumps:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='comment'># Minor version bump (e.g., 1.2.0 → 1.3.0)
+</span><span class='id identifier rubyid_rake'>rake</span> <span class='label'>release:</span><span class='id identifier rubyid_full'>full</span><span class='lbracket'>[</span><span class='id identifier rubyid_minor'>minor</span><span class='rbracket'>]</span>
+
+<span class='comment'># Major version bump (e.g., 1.2.0 → 2.0.0)
+</span><span class='id identifier rubyid_rake'>rake</span> <span class='label'>release:</span><span class='id identifier rubyid_full'>full</span><span class='lbracket'>[</span><span class='id identifier rubyid_major'>major</span><span class='rbracket'>]</span>
+</code></pre>
+
+<h4 id="label-Individual+Release+Steps">Individual Release Steps</h4>
+
+<p>You can also run individual steps if needed:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='comment'># Bump version only
+</span><span class='id identifier rubyid_rake'>rake</span> <span class='label'>release:</span><span class='id identifier rubyid_bump'>bump</span><span class='lbracket'>[</span><span class='id identifier rubyid_patch'>patch</span><span class='rbracket'>]</span>  <span class='comment'># or [minor] or [major]
+</span>
+<span class='comment'># Update changelog with current version
+</span><span class='id identifier rubyid_rake'>rake</span> <span class='label'>release:</span><span class='id identifier rubyid_changelog'>changelog</span>
+
+<span class='comment'># Create git tag
+</span><span class='id identifier rubyid_rake'>rake</span> <span class='label'>release:</span><span class='id identifier rubyid_tag'>tag</span>
+
+<span class='comment'># Build and push to RubyGems
+</span><span class='id identifier rubyid_rake'>rake</span> <span class='label'>release:</span><span class='id identifier rubyid_push'>push</span>
+</code></pre>
+
+<h4 id="label-Manual+Release+Steps">Manual Release Steps</h4>
+
+<p>If you prefer manual control:</p>
+<ol><li>
+<p>Update the version number in <code>lib/amqp/client/version.rb</code></p>
+</li><li>
+<p>Update the CHANGELOG.md with the new version and release notes</p>
+</li><li>
+<p>Commit your changes: <code>git add . &amp;&amp; git commit -m &quot;Release X.Y.Z&quot;</code></p>
+</li><li>
+<p>Create and push a tag: <code>git tag vX.Y.Z &amp;&amp; git push origin vX.Y.Z</code></p>
+</li><li>
+<p>Build and push: <code>rake build &amp;&amp; gem push amqp-client-X.Y.Z.gem</code></p>
+</li></ol>
 
 <h2 id="label-Contributing">Contributing</h2>
 
@@ -231,9 +298,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Thu Feb 20 10:16:54 2025 by
+  Generated on Wed Sep 10 18:08:52 2025 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.2).
+  0.9.37 (ruby-3.4.5).
 </div>
 
     </div>
