@@ -273,6 +273,81 @@ module AMQP
       end
     end
 
+    # Create a RPC server for a single method/function/procedure
+    # @param queue [String] name of the queue that RPC calls will be sent to
+    # @param worker_threads [Integer] number of threads that process requests
+    # @yield [String] The body of the request message, return a response String
+    # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
+    def rpc_server(queue, worker_threads: 1, &_)
+      queue(queue)
+      subscribe(queue, prefetch: worker_threads, worker_threads: worker_threads) do |msg|
+        result = yield msg.body
+        msg.channel.basic_publish(result, "", msg.properties.reply_to, correlation_id: msg.properties.correlation_id)
+        msg.ack
+      rescue StandardError => e
+        msg.reject
+        raise e
+      end
+    end
+
+    # Do a RPC call, sends a messages, waits for a response
+    # @param queue [String] name of the queue that RPC calls will be sent to
+    # @param arguments [String] arguments/body to the call
+    # @return [String] Returns the result from the call
+    def rpc_call(queue, arguments)
+      ch = with_connection(&:channel)
+      begin
+        msg = ch.basic_consume_once("amq.rabbitmq.reply-to") do
+          ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to")
+        end
+        msg.body
+      ensure
+        ch.close
+      end
+    end
+
+    # Create a reusable RPC client
+    # @return [RPCClient]
+    def rpc_client
+      ch = with_connection(&:channel)
+      RPCClient.new(ch)
+    end
+
+    # Reusable RPC client, when RPC performance is important
+    class RPCClient
+      # @param channel [AMQP::Client::Connection::Channel] the channel to use for the RPC calls
+      def initialize(channel)
+        @ch = channel
+        @correlation_id = 0
+        @lock = Mutex.new
+        @messages = ::Queue.new
+        @ch.basic_consume("amq.rabbitmq.reply-to") do |msg|
+          @messages.push msg
+        end
+      end
+
+      # Do a RPC call, sends a messages, waits for a response
+      # @param queue [String] name of the queue that RPC call will be sent to
+      # @param arguments [String] arguments/body to the call
+      # @return [String] Returns the result from the call
+      def call(queue, arguments)
+        correlation_id = (@lock.synchronize { @correlation_id += 1 }).to_s(36)
+        @ch.basic_publish(arguments, "", queue, reply_to: "amq.rabbitmq.reply-to", correlation_id: correlation_id)
+        loop do
+          msg = @messages.pop
+          return msg.body if msg.properties.correlation_id == correlation_id
+
+          @messages.push msg
+        end
+      end
+
+      # Closes the channel used by the RPCClient
+      def close
+        @ch.close
+        @messages.close
+      end
+    end
+
     # @!endgroup
 
     private

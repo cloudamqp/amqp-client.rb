@@ -18,6 +18,12 @@ Style/StringLiteralsInInterpolation:
 Layout/LineLength:
   Max: 130
 
+Metrics/ClassLength:
+  Max: 500
+
+Metrics/MethodLength:
+  Max: 90
+
 Naming/FileName:
   Exclude:
     - "lib/amqp-client.rb"

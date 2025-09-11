@@ -240,7 +240,7 @@ module AMQP
       READ_EXCEPTIONS = [IOError, OpenSSL::OpenSSLError, SystemCallError,
                          RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
 
-      def parse_frame(type, channel_id, buf) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
+      def parse_frame(type, channel_id, buf) # rubocop:disable Metrics/MethodLength
         channel = @channels[channel_id]
         case type
         when 1 # method frame
@@ -480,6 +480,7 @@ module AMQP
       def open_socket(host, port, tls, options)
         connect_timeout = options.fetch(:connect_timeout, 30).to_f
         socket = Socket.tcp host, port, connect_timeout: connect_timeout
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         keepalive = options.fetch(:keepalive, "").split(":", 3).map!(&:to_i)
         enable_tcp_keepalive(socket, *keepalive)
         if tls
