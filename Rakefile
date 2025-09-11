@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "bundler/gem_tasks"
 require "rake/testtask"
 
 Rake::TestTask.new(:test) do |t|
@@ -135,27 +134,8 @@ def create_git_tag
   puts "Created git tag v#{version} with changelog entries"
 end
 
-def push_gem_to_rubygems
-  version = current_version
-
-  # Look for gem file in both current directory and pkg directory
-  gem_file = "amqp-client-#{version}.gem"
-  pkg_gem_file = "pkg/amqp-client-#{version}.gem"
-
-  if File.exist?(pkg_gem_file)
-    system("gem push #{pkg_gem_file}")
-    puts "Pushed #{pkg_gem_file} to RubyGems"
-  elsif File.exist?(gem_file)
-    system("gem push #{gem_file}")
-    puts "Pushed #{gem_file} to RubyGems"
-  else
-    puts "Gem file #{gem_file} not found in current directory or pkg/. Make sure to build first."
-    exit 1
-  end
-end
-
-def full_release_process(version_type)
-  puts "Starting release process..."
+def prepare_release_process(version_type)
+  puts "Preparing release process..."
 
   # Ensure working directory is clean
   unless system("git diff --quiet && git diff --cached --quiet")
@@ -175,10 +155,6 @@ def full_release_process(version_type)
   Rake::Task["release:tag"].invoke
   Rake::Task["release:tag"].reenable
 
-  # Build and push gem
-  Rake::Task["release:push"].invoke
-  Rake::Task["release:push"].reenable
-
   # Push to git
   system("git push origin")
 
@@ -186,7 +162,8 @@ def full_release_process(version_type)
   version = current_version
   push_tag_to_remote(version)
 
-  puts "Successfully released version #{version}!"
+  puts "Successfully prepared release #{version}!"
+  puts "The CI will automatically build and publish the gem when the tag is pushed."
 end
 
 namespace :release do
@@ -211,14 +188,9 @@ namespace :release do
     push_tag_to_remote(version)
   end
 
-  desc "Build and push gem to RubyGems"
-  task push: :build do
-    push_gem_to_rubygems
-  end
-
-  desc "Full release process (bump version, update changelog, tag, build and push)"
-  task :full, [:type] => %i[test rubocop] do |_t, args|
-    full_release_process(args[:type] || "patch")
+  desc "Prepare release (bump version, update changelog, create tag, push to git)"
+  task :prepare, [:type] => %i[test rubocop] do |_t, args|
+    prepare_release_process(args[:type] || "patch")
   end
 end
 

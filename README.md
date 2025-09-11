@@ -127,12 +127,12 @@ To install this gem onto your local machine, run `bundle exec rake install`.
 
 ### Release Process
 
-The gem uses rake tasks to automate the release process. Make sure your working directory is clean before starting a release.
+The gem uses rake tasks to automate the release preparation process. The actual gem building and publishing is handled automatically by GitHub Actions when a tag is pushed.
 
 #### Quick Release (Patch Version)
 
 ```bash
-rake release:full
+rake release:prepare
 ```
 
 This will:
@@ -141,8 +141,8 @@ This will:
 2. Bump the patch version (e.g., 1.2.0 → 1.2.1)
 3. Update the CHANGELOG.md with the new version and current date
 4. Create a git commit and tag for the release
-5. Build and push the gem to RubyGems
-6. Push commits and tags to the remote repository
+5. Push commits and tags to the remote repository
+6. GitHub Actions will automatically build and publish the gem to RubyGems
 
 #### Custom Version Bump
 
@@ -150,10 +150,10 @@ For minor or major version bumps:
 
 ```bash
 # Minor version bump (e.g., 1.2.0 → 1.3.0)
-rake release:full[minor]
+rake release:prepare[minor]
 
 # Major version bump (e.g., 1.2.0 → 2.0.0)
-rake release:full[major]
+rake release:prepare[major]
 ```
 
 #### Individual Release Steps
@@ -167,11 +167,11 @@ rake release:bump[patch]  # or [minor] or [major]
 # Update changelog with current version
 rake release:changelog
 
-# Create git tag
+# Create git tag with changelog entries
 rake release:tag
 
-# Build and push to RubyGems
-rake release:push
+# Push tag to remote (handles conflicts)
+rake release:push_tag
 ```
 
 #### Manual Release Steps
@@ -182,7 +182,7 @@ If you prefer manual control:
 2. Update the CHANGELOG.md with the new version and release notes
 3. Commit your changes: `git add . && git commit -m "Release X.Y.Z"`
 4. Create and push a tag: `git tag vX.Y.Z && git push origin vX.Y.Z`
-5. Build and push: `rake build && gem push amqp-client-X.Y.Z.gem`
+5. GitHub Actions will automatically build and publish the gem when the tag is pushed
 
 ## Contributing
 
