@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # for trusted publishing
+      contents: write # for creating releases
     steps:
       - uses: actions/checkout@v5
       - uses: ruby/setup-ruby@v1
@@ -24,3 +25,25 @@ jobs:
       - run: gem build *.gemspec
       - run: gem install *.gem
       - run: gem push *.gem
+
+      # create GitHub release
+      - name: Extract release notes
+        id: extract_release_notes
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Extract changelog section for this version
+          awk "/^## \[$VERSION\]/ {flag=1; next} /^## \[/ && flag {exit} flag" CHANGELOG.md > release_notes.md
+          echo "Release notes extracted:"
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ steps.extract_release_notes.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: '*.gem'
