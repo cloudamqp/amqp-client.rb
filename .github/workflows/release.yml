@@ -34,10 +34,15 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-          # Extract changelog section for this version
-          awk "/^## \[$VERSION\]/ {flag=1; next} /^## \[/ && flag {exit} flag" CHANGELOG.md > release_notes.md
-          echo "Release notes extracted:"
-          cat release_notes.md
+          # Extract changelog section for this version with better handling
+          if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            awk "/^## \[$VERSION\]/ {flag=1; next} /^## \[/ && flag {exit} flag && /\S/ {print}" CHANGELOG.md > release_notes.md
+            echo "Release notes extracted for version $VERSION:"
+            cat release_notes.md
+          else
+            echo "No changelog entry found for version $VERSION" > release_notes.md
+            echo "Warning: No changelog entry found for version $VERSION"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
