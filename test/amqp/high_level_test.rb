@@ -352,76 +352,230 @@ class HighLevelTest < Minitest::Test
     end
   end
 
-  def test_exchange_bind_with_default_binding_key
+  def test_queue_bind_with_exchange_object
+    msgs = Queue.new
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      # Create exchanges that we know exist - use built-in amq exchanges
-      # to avoid declaration issues
-      dest_exchange = client.fanout("test.dest.fanout.simple", auto_delete: true)
+      exchange = client.fanout("test.fanout.objbind")
+      queue = client.queue("test.fanout.objbind.queue")
 
-      # Test bind with default binding_key (nil -> converted to "")
-      # This should work without errors
-      dest_exchange.bind("amq.fanout") # No binding_key specified
+      # Test queue.bind with Exchange object (not just string)
+      queue.bind(exchange, "") # Pass Exchange object directly
 
-      # Test unbind with default binding_key (nil -> converted to "")
-      dest_exchange.unbind("amq.fanout") # No binding_key specified
+      queue.subscribe do |msg|
+        msgs.push msg
+      end
 
-      # If we got here without errors, the API works as expected
-      assert true, "Exchange bind/unbind with default binding_key works"
+      # Publish to exchange and verify message routing
+      exchange.publish("message via exchange object bind", "")
+
+      msg = msgs.pop
+      assert_equal "message via exchange object bind", msg.body
+      assert_equal "test.fanout.objbind", msg.exchange_name
+
+      # Test unbind with Exchange object
+      queue.unbind(exchange, "")
+
+      # Publish again - should not reach queue after unbind
+      exchange.publish("message after unbind", "")
+
+      sleep 0.01
+      assert_raises(ThreadError) do
+        msgs.pop(true)
+      end
 
       # Clean up
-      dest_exchange.delete
+      exchange.delete
+      queue.delete
     ensure
       client.stop
     end
   end
 
-  def test_exchange_bind_nil_vs_explicit_empty_string
+  def test_queue_bind_with_string_vs_exchange_object
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      # Use built-in exchange to avoid declaration issues
-      dest_exchange = client.fanout("test.dest.simple.api", auto_delete: true)
+      exchange = client.fanout("test.queue.bind.string.vs.obj")
+      queue1 = client.queue("test.queue.bind.string")
+      queue2 = client.queue("test.queue.bind.object")
 
-      # Test that bind works with no argument (nil default)
-      dest_exchange.bind("amq.fanout") # Uses default nil
+      # Test queue.bind with string name
+      queue1.bind("test.queue.bind.string.vs.obj", "")
 
-      # Test that unbind works with explicit empty string
-      dest_exchange.unbind("amq.fanout", "") # Explicit empty string
+      # Test queue.bind with Exchange object
+      queue2.bind(exchange, "")
 
-      # Test that bind works with explicit empty string
-      dest_exchange.bind("amq.fanout", "") # Explicit empty string
+      # Both should work the same way
+      assert true, "Queue can bind to both string names and Exchange objects"
 
-      # Test that unbind works with no argument (nil default)
-      dest_exchange.unbind("amq.fanout") # Uses default nil
-
-      # If we got here without errors, the API works as expected
-      assert true, "Exchange bind/unbind with nil and empty string binding_key works"
+      # Test unbinding
+      queue1.unbind("test.queue.bind.string.vs.obj", "")
+      queue2.unbind(exchange, "")
 
       # Clean up
-      dest_exchange.delete
+      exchange.delete
+      queue1.delete
+      queue2.delete
     ensure
       client.stop
     end
   end
 
-  def test_exchange_bind_with_arguments_and_default_binding_key
+  def test_exchange_bind_to_queue_object
+    msgs = Queue.new
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      # Create a simple headers exchange for testing
-      dest_exchange = client.headers("test.dest.headers.simple", auto_delete: true)
+      exchange = client.fanout("test.exchange.bind.to.queue")
+      queue = client.queue("test.exchange.bind.queue.obj")
 
-      # Test bind with default binding_key (nil) but with arguments
-      # This tests that the arguments parameter still works when binding_key is defaulted
-      dest_exchange.bind("amq.headers", arguments: { "type" => "user", "x-match" => "all" })
+      # Test exchange.bind with Queue object
+      exchange.bind(queue, "") # Bind exchange to queue directly
 
-      # Test unbind with default binding_key (nil) but with arguments
-      dest_exchange.unbind("amq.headers", arguments: { "type" => "user", "x-match" => "all" })
+      queue.subscribe do |msg|
+        msgs.push msg
+      end
 
-      # If we got here without errors, the API works as expected
-      assert true, "Exchange bind/unbind with default binding_key and arguments works"
+      # Publish to exchange and verify message routing
+      exchange.publish("message via queue object bind", "")
+
+      msg = msgs.pop
+      assert_equal "message via queue object bind", msg.body
+      assert_equal "test.exchange.bind.to.queue", msg.exchange_name
+
+      # Test unbind with Queue object
+      exchange.unbind(queue, "")
+
+      # Publish again - should not reach queue
+      exchange.publish("message after unbind", "")
+
+      sleep 0.01
+      assert_raises(ThreadError) do
+        msgs.pop(true)
+      end
 
       # Clean up
+      exchange.delete
+      queue.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_exchange_bind_to_exchange_object
+    msgs = Queue.new
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      source_exchange = client.fanout("test.source.exchange.obj.unique")
+      dest_exchange = client.fanout("test.dest.exchange.obj.unique")
+
+      # Create queue bound to destination
+      queue = client.queue("test.exchange.exchange.bind.unique")
+      queue.bind(dest_exchange, "")
+
+      queue.subscribe do |msg|
+        msgs.push msg
+      end
+
+      # Test exchange.bind with Exchange object
+      dest_exchange.bind(source_exchange, "") # Bind to Exchange object
+
+      # Publish to source exchange
+      source_exchange.publish("message via exchange-exchange bind", "")
+
+      msg = msgs.pop
+      assert_equal "message via exchange-exchange bind", msg.body
+      assert_equal "test.source.exchange.obj.unique", msg.exchange_name
+
+      # Test unbind with Exchange object
+      dest_exchange.unbind(source_exchange, "")
+
+      # Publish again - should not reach queue
+      source_exchange.publish("message after exchange unbind", "")
+
+      sleep 0.01
+      assert_raises(ThreadError) do
+        msgs.pop(true)
+      end
+
+      # Clean up
+      source_exchange.delete
       dest_exchange.delete
+      queue.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_exchange_bind_default_binding_key
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      # Create exchanges with unique names to avoid conflicts
+      dest_exchange = client.fanout("test.exchange.default.binding.unique")
+      source_exchange = client.fanout("test.source.default.binding.unique")
+
+      # Test that default binding_key is now "" (empty string, not nil)
+      dest_exchange.bind(source_exchange) # No binding_key specified, should default to ""
+      dest_exchange.unbind(source_exchange) # No binding_key specified, should default to ""
+
+      # Test explicit empty string works the same
+      dest_exchange.bind(source_exchange, "")
+      dest_exchange.unbind(source_exchange, "")
+
+      # If we got here without errors, the default works
+      assert true, "Exchange bind/unbind default binding_key works"
+    ensure
+      client.stop
+    end
+  end
+
+  def test_queue_bind_requires_binding_key
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      queue = client.queue("test.queue.requires.binding.key")
+      exchange = client.fanout("test.exchange.requires.binding")
+
+      # Queue bind/unbind still require explicit binding_key (no default)
+      queue.bind(exchange, "")
+      queue.unbind(exchange, "")
+
+      # Test with string
+      queue.bind("test.exchange.requires.binding", "")
+      queue.unbind("test.exchange.requires.binding", "")
+
+      # If we got here without errors, the API works
+      assert true, "Queue bind/unbind with explicit binding_key works"
+
+      # Clean up
+      exchange.delete
+      queue.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_queue_and_exchange_bind_with_arguments
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      # Create headers exchange and queue for argument testing with unique names
+      exchange = client.headers("test.bind.args.exchange.unique")
+      queue = client.queue("test.bind.args.queue.unique")
+
+      # Test queue.bind with arguments
+      queue.bind(exchange, "", arguments: { "type" => "test", "x-match" => "all" })
+      queue.unbind(exchange, "", arguments: { "type" => "test", "x-match" => "all" })
+
+      # Test exchange.bind with arguments (to another exchange)
+      dest_exchange = client.headers("test.dest.args.exchange.unique")
+      dest_exchange.bind(exchange, "", arguments: { "format" => "json", "x-match" => "any" })
+      dest_exchange.unbind(exchange, "", arguments: { "format" => "json", "x-match" => "any" })
+
+      # If we got here without errors, arguments work with both APIs
+      assert true, "Queue and Exchange bind/unbind with arguments works"
+
+      # Clean up
+      exchange.delete
+      dest_exchange.delete
+      queue.delete
     ensure
       client.stop
     end

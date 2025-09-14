@@ -4,6 +4,8 @@ module AMQP
   class Client
     # Queue abstraction
     class Queue
+      attr_reader :name
+
       # Should only be initialized from the Client
       # @api private
       def initialize(client, name)
@@ -35,21 +37,23 @@ module AMQP
       end
 
       # Bind the queue to an exchange
-      # @param exchange [String] Name of the exchange to bind to
+      # @param exchange [String | Exchange] Name of the exchange to bind to, or the exchange object itself
       # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [self]
       def bind(exchange, binding_key, arguments: {})
+        exchange = exchange.is_a?(String) ? exchange : exchange.name
         @client.bind(@name, exchange, binding_key, arguments: arguments)
         self
       end
 
       # Unbind the queue from an exchange
-      # @param exchange [String] Name of the exchange to unbind from
+      # @param exchange [String | Exchange] Name of the exchange to unbind from, or the exchange object itself
       # @param binding_key [String] Binding key which the queue is bound to the exchange with
       # @param arguments [Hash] Arguments matching the binding that's being removed
       # @return [self]
       def unbind(exchange, binding_key, arguments: {})
+        exchange = exchange.is_a?(String) ? exchange : exchange.name
         @client.unbind(@name, exchange, binding_key, arguments: arguments)
         self
       end

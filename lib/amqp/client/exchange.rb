@@ -4,6 +4,8 @@ module AMQP
   class Client
     # High level representation of an exchange
     class Exchange
+      attr_reader :name
+
       # Should only be initialized from the Client
       # @api private
       def initialize(client, name)
@@ -35,25 +37,41 @@ module AMQP
         self
       end
 
-      # Bind to another exchange
-      # @param exchange [String] Name of the exchange to bind to
+      # Bind to an exchange or a queue
+      # @param target [String | Exchange | Queue] Name of the target to bind to, or the target object itself
       # @param binding_key [String] Binding key on which messages that match might be routed (defaults to empty string)
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [Exchange] self
-      def bind(exchange, binding_key = nil, arguments: {})
-        binding_key = binding_key.to_s if binding_key.nil?
-        @client.exchange_bind(@name, exchange, binding_key, arguments: arguments)
+      def bind(target, binding_key = "", arguments: {})
+        case target
+        when String
+          @client.exchange_bind(@name, target, binding_key, arguments: arguments)
+        when Exchange
+          @client.exchange_bind(@name, target.name, binding_key, arguments: arguments)
+        when Queue
+          @client.bind(target.name, @name, binding_key, arguments: arguments)
+        else
+          raise ArgumentError, "target must be a String, Exchange or Queue"
+        end
         self
       end
 
-      # Unbind from another exchange
-      # @param exchange [String] Name of the exchange to unbind from
+      # Unbind from an exchange or a queue
+      # @param target [String | Exchange | Queue] Name of the target to unbind from, or the target object itself
       # @param binding_key [String] Binding key which the queue is bound to the exchange with (defaults to empty string)
       # @param arguments [Hash] Arguments matching the binding that's being removed
       # @return [Exchange] self
-      def unbind(exchange, binding_key = nil, arguments: {})
-        binding_key = binding_key.to_s if binding_key.nil?
-        @client.exchange_unbind(@name, exchange, binding_key, arguments: arguments)
+      def unbind(target, binding_key = "", arguments: {})
+        case target
+        when String
+          @client.exchange_unbind(@name, target, binding_key, arguments: arguments)
+        when Exchange
+          @client.exchange_unbind(@name, target.name, binding_key, arguments: arguments)
+        when Queue
+          @client.unbind(target.name, @name, binding_key, arguments: arguments)
+        else
+          raise ArgumentError, "target must be a String, Exchange or Queue"
+        end
         self
       end
 
