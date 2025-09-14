@@ -236,16 +236,16 @@ class HighLevelTest < Minitest::Test
       # Test that convenience methods are equivalent to exchange method calls
       fanout_conv = client.fanout("test.fanout.equiv", auto_delete: true)
       fanout_orig = client.exchange("test.fanout.equiv.orig", "fanout", auto_delete: true)
-      
+
       direct_conv = client.direct("test.direct.equiv", auto_delete: true)
       direct_orig = client.exchange("test.direct.equiv.orig", "direct", auto_delete: true)
-      
+
       topic_conv = client.topic("test.topic.equiv", auto_delete: true)
       topic_orig = client.exchange("test.topic.equiv.orig", "topic", auto_delete: true)
-      
+
       headers_conv = client.headers("test.headers.equiv", auto_delete: true)
       headers_orig = client.exchange("test.headers.equiv.orig", "headers", auto_delete: true)
-      
+
       # Check that all return Exchange objects
       assert_instance_of AMQP::Client::Exchange, fanout_conv
       assert_instance_of AMQP::Client::Exchange, fanout_orig
@@ -255,9 +255,9 @@ class HighLevelTest < Minitest::Test
       assert_instance_of AMQP::Client::Exchange, topic_orig
       assert_instance_of AMQP::Client::Exchange, headers_conv
       assert_instance_of AMQP::Client::Exchange, headers_orig
-      
+
       # Clean up
-      [fanout_conv, fanout_orig, direct_conv, direct_orig, 
+      [fanout_conv, fanout_orig, direct_conv, direct_orig,
        topic_conv, topic_orig, headers_conv, headers_orig].each(&:delete)
     ensure
       client.stop
@@ -273,40 +273,40 @@ class HighLevelTest < Minitest::Test
       default_fanout = client.fanout  # Should use "amq.fanout"
       default_topic = client.topic    # Should use "amq.topic"
       default_headers = client.headers # Should use "amq.headers"
-      
+
       # Verify we can use the default direct exchange
       q_direct = client.queue("test.default.direct")
       q_direct.subscribe do |msg|
         msgs.push msg
       end
-      
+
       # Publish to default direct exchange (should route to queue with same name as routing key)
       default_direct.publish("direct default message", "test.default.direct")
-      
+
       msg = msgs.pop
       assert_equal "direct default message", msg.body
-      assert_equal "", msg.exchange_name  # Default direct exchange name is empty string
+      assert_equal "", msg.exchange_name # Default direct exchange name is empty string
       assert_equal "test.default.direct", msg.routing_key
-      
+
       # Test that we can get references to built-in exchanges without errors
       assert_instance_of AMQP::Client::Exchange, default_fanout
       assert_instance_of AMQP::Client::Exchange, default_topic
       assert_instance_of AMQP::Client::Exchange, default_headers
-      
+
       # Test that we can publish to default topic exchange
       q_topic = client.queue("test.default.topic")
       q_topic.bind("amq.topic", "test.*")
       q_topic.subscribe do |msg|
         msgs.push msg
       end
-      
+
       default_topic.publish("topic default message", "test.message")
-      
+
       msg = msgs.pop
       assert_equal "topic default message", msg.body
       assert_equal "amq.topic", msg.exchange_name
       assert_equal "test.message", msg.routing_key
-      
+
       # Clean up (note: we don't delete built-in exchanges as they can't be deleted)
       q_direct.delete
       q_topic.delete
@@ -321,32 +321,107 @@ class HighLevelTest < Minitest::Test
       # Test that default and explicit names work the same
       default_direct = client.direct
       explicit_direct = client.direct("")
-      
+
       default_fanout = client.fanout
       explicit_fanout = client.fanout("amq.fanout")
-      
+
       default_topic = client.topic
       explicit_topic = client.topic("amq.topic")
-      
+
       default_headers = client.headers
       explicit_headers = client.headers("amq.headers")
-      
+
       # All should return Exchange objects
       [default_direct, explicit_direct, default_fanout, explicit_fanout,
        default_topic, explicit_topic, default_headers, explicit_headers].each do |exchange|
         assert_instance_of AMQP::Client::Exchange, exchange
       end
-      
+
       # Test that we can publish using both default and explicit references
       q = client.queue("test.equivalence")
       q.subscribe { |msg| } # Just consume, don't store
-      
+
       # These should work the same
       default_direct.publish("test1", "test.equivalence")
       explicit_direct.publish("test2", "test.equivalence")
-      
+
       sleep 0.01 # Allow messages to be consumed
       q.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_exchange_bind_with_default_binding_key
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      # Create exchanges that we know exist - use built-in amq exchanges
+      # to avoid declaration issues
+      dest_exchange = client.fanout("test.dest.fanout.simple", auto_delete: true)
+
+      # Test bind with default binding_key (nil -> converted to "")
+      # This should work without errors
+      dest_exchange.bind("amq.fanout") # No binding_key specified
+
+      # Test unbind with default binding_key (nil -> converted to "")
+      dest_exchange.unbind("amq.fanout") # No binding_key specified
+
+      # If we got here without errors, the API works as expected
+      assert true, "Exchange bind/unbind with default binding_key works"
+
+      # Clean up
+      dest_exchange.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_exchange_bind_nil_vs_explicit_empty_string
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      # Use built-in exchange to avoid declaration issues
+      dest_exchange = client.fanout("test.dest.simple.api", auto_delete: true)
+
+      # Test that bind works with no argument (nil default)
+      dest_exchange.bind("amq.fanout") # Uses default nil
+
+      # Test that unbind works with explicit empty string
+      dest_exchange.unbind("amq.fanout", "") # Explicit empty string
+
+      # Test that bind works with explicit empty string
+      dest_exchange.bind("amq.fanout", "") # Explicit empty string
+
+      # Test that unbind works with no argument (nil default)
+      dest_exchange.unbind("amq.fanout") # Uses default nil
+
+      # If we got here without errors, the API works as expected
+      assert true, "Exchange bind/unbind with nil and empty string binding_key works"
+
+      # Clean up
+      dest_exchange.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_exchange_bind_with_arguments_and_default_binding_key
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      # Create a simple headers exchange for testing
+      dest_exchange = client.headers("test.dest.headers.simple", auto_delete: true)
+
+      # Test bind with default binding_key (nil) but with arguments
+      # This tests that the arguments parameter still works when binding_key is defaulted
+      dest_exchange.bind("amq.headers", arguments: { "type" => "user", "x-match" => "all" })
+
+      # Test unbind with default binding_key (nil) but with arguments
+      dest_exchange.unbind("amq.headers", arguments: { "type" => "user", "x-match" => "all" })
+
+      # If we got here without errors, the API works as expected
+      assert true, "Exchange bind/unbind with default binding_key and arguments works"
+
+      # Clean up
+      dest_exchange.delete
     ensure
       client.stop
     end

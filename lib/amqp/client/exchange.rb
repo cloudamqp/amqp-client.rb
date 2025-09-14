@@ -37,20 +37,22 @@ module AMQP
 
       # Bind to another exchange
       # @param exchange [String] Name of the exchange to bind to
-      # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
+      # @param binding_key [String] Binding key on which messages that match might be routed (defaults to empty string)
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [Exchange] self
-      def bind(exchange, binding_key, arguments: {})
+      def bind(exchange, binding_key = nil, arguments: {})
+        binding_key = binding_key.to_s if binding_key.nil?
         @client.exchange_bind(@name, exchange, binding_key, arguments: arguments)
         self
       end
 
       # Unbind from another exchange
       # @param exchange [String] Name of the exchange to unbind from
-      # @param binding_key [String] Binding key which the queue is bound to the exchange with
+      # @param binding_key [String] Binding key which the queue is bound to the exchange with (defaults to empty string)
       # @param arguments [Hash] Arguments matching the binding that's being removed
       # @return [Exchange] self
-      def unbind(exchange, binding_key, arguments: {})
+      def unbind(exchange, binding_key = nil, arguments: {})
+        binding_key = binding_key.to_s if binding_key.nil?
         @client.exchange_unbind(@name, exchange, binding_key, arguments: arguments)
         self
       end
