@@ -16,7 +16,7 @@ module AMQP
       # Publish to the exchange
       # @param body [String] The message body
       # @param routing_key [String] The routing key of the message,
-      #   the exchange may use this when routing the message to bound queues
+      #   the exchange may use this when routing the message to bound queues (defaults to empty string)
       # @param properties [Properties]
       # @option properties [String] content_type Content type of the message body
       # @option properties [String] content_encoding Content encoding of the body
@@ -32,7 +32,7 @@ module AMQP
       # @option properties [String] user_id Can be used to verify that this is the user that published the message
       # @option properties [String] app_id Can be used to indicates which app that generated the message
       # @return [Exchange] self
-      def publish(body, routing_key, **properties)
+      def publish(body, routing_key = "", **properties)
         @client.publish(body, @name, routing_key, **properties)
         self
       end
