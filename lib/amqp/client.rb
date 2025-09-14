@@ -130,6 +130,66 @@ module AMQP
       end
     end
 
+    # Declare a fanout exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange
+    # @param durable [Boolean] If true the exchange will survive broker restarts
+    # @param auto_delete [Boolean] If true the exchange will be deleted when the last queue is unbound
+    # @param internal [Boolean] If true the exchange will not accept directly published messages
+    # @param arguments [Hash] Custom arguments such as alternate-exchange etc.
+    # @return [Exchange]
+    # @example
+    #   amqp = AMQP::Client.new.start
+    #   x = amqp.fanout("notifications")
+    #   x.publish("body", "routing-key")
+    def fanout(name, durable: true, auto_delete: false, internal: false, arguments: {})
+      exchange(name, "fanout", durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
+    end
+
+    # Declare a direct exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange
+    # @param durable [Boolean] If true the exchange will survive broker restarts
+    # @param auto_delete [Boolean] If true the exchange will be deleted when the last queue is unbound
+    # @param internal [Boolean] If true the exchange will not accept directly published messages
+    # @param arguments [Hash] Custom arguments such as alternate-exchange etc.
+    # @return [Exchange]
+    # @example
+    #   amqp = AMQP::Client.new.start
+    #   x = amqp.direct("logs")
+    #   x.publish("body", "routing-key")
+    def direct(name, durable: true, auto_delete: false, internal: false, arguments: {})
+      exchange(name, "direct", durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
+    end
+
+    # Declare a topic exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange
+    # @param durable [Boolean] If true the exchange will survive broker restarts
+    # @param auto_delete [Boolean] If true the exchange will be deleted when the last queue is unbound
+    # @param internal [Boolean] If true the exchange will not accept directly published messages
+    # @param arguments [Hash] Custom arguments such as alternate-exchange etc.
+    # @return [Exchange]
+    # @example
+    #   amqp = AMQP::Client.new.start
+    #   x = amqp.topic("events")
+    #   x.publish("body", "user.created")
+    def topic(name, durable: true, auto_delete: false, internal: false, arguments: {})
+      exchange(name, "topic", durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
+    end
+
+    # Declare a headers exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange
+    # @param durable [Boolean] If true the exchange will survive broker restarts
+    # @param auto_delete [Boolean] If true the exchange will be deleted when the last queue is unbound
+    # @param internal [Boolean] If true the exchange will not accept directly published messages
+    # @param arguments [Hash] Custom arguments such as alternate-exchange etc.
+    # @return [Exchange]
+    # @example
+    #   amqp = AMQP::Client.new.start
+    #   x = amqp.headers("metadata")
+    #   x.publish("body", "routing-key")
+    def headers(name, durable: true, auto_delete: false, internal: false, arguments: {})
+      exchange(name, "headers", durable: durable, auto_delete: auto_delete, internal: internal, arguments: arguments)
+    end
+
     # @!endgroup
     # @!group Publish
 

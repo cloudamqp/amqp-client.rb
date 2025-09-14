@@ -134,4 +134,133 @@ class HighLevelTest < Minitest::Test
       client.stop
     end
   end
+
+  def test_fanout_convenience_method
+    msgs = Queue.new
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      e = client.fanout("test.fanout", auto_delete: true)
+      q = client.queue("test.fanout.queue")
+      q.bind("test.fanout", "")
+      q.subscribe do |msg|
+        msgs.push msg
+      end
+      e.publish("fanout message", "")
+
+      msg = msgs.pop
+      assert_equal "fanout message", msg.body
+      assert_equal "test.fanout", msg.exchange_name
+
+      e.delete
+      q.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_direct_convenience_method
+    msgs = Queue.new
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      e = client.direct("test.direct", auto_delete: true)
+      q = client.queue("test.direct.queue")
+      q.bind("test.direct", "direct.key")
+      q.subscribe do |msg|
+        msgs.push msg
+      end
+      e.publish("direct message", "direct.key")
+
+      msg = msgs.pop
+      assert_equal "direct message", msg.body
+      assert_equal "test.direct", msg.exchange_name
+      assert_equal "direct.key", msg.routing_key
+
+      e.delete
+      q.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_topic_convenience_method
+    msgs = Queue.new
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      e = client.topic("test.topic", auto_delete: true)
+      q = client.queue("test.topic.queue")
+      q.bind("test.topic", "user.*")
+      q.subscribe do |msg|
+        msgs.push msg
+      end
+      e.publish("topic message", "user.created")
+
+      msg = msgs.pop
+      assert_equal "topic message", msg.body
+      assert_equal "test.topic", msg.exchange_name
+      assert_equal "user.created", msg.routing_key
+
+      e.delete
+      q.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_headers_convenience_method
+    msgs = Queue.new
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      e = client.headers("test.headers", auto_delete: true)
+      q = client.queue("test.headers.queue")
+      q.bind("test.headers", "", arguments: { type: "order", "x-match": "all" })
+      q.subscribe do |msg|
+        msgs.push msg
+      end
+      e.publish("headers message", "", headers: { type: "order", priority: "high" })
+
+      msg = msgs.pop
+      assert_equal "headers message", msg.body
+      assert_equal "test.headers", msg.exchange_name
+      assert_equal({ "type" => "order", "priority" => "high" }, msg.properties.headers)
+
+      e.delete
+      q.delete
+    ensure
+      client.stop
+    end
+  end
+
+  def test_convenience_methods_equivalent_to_exchange_method
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      # Test that convenience methods are equivalent to exchange method calls
+      fanout_conv = client.fanout("test.fanout.equiv", auto_delete: true)
+      fanout_orig = client.exchange("test.fanout.equiv.orig", "fanout", auto_delete: true)
+
+      direct_conv = client.direct("test.direct.equiv", auto_delete: true)
+      direct_orig = client.exchange("test.direct.equiv.orig", "direct", auto_delete: true)
+
+      topic_conv = client.topic("test.topic.equiv", auto_delete: true)
+      topic_orig = client.exchange("test.topic.equiv.orig", "topic", auto_delete: true)
+
+      headers_conv = client.headers("test.headers.equiv", auto_delete: true)
+      headers_orig = client.exchange("test.headers.equiv.orig", "headers", auto_delete: true)
+
+      # Check that all return Exchange objects
+      assert_instance_of AMQP::Client::Exchange, fanout_conv
+      assert_instance_of AMQP::Client::Exchange, fanout_orig
+      assert_instance_of AMQP::Client::Exchange, direct_conv
+      assert_instance_of AMQP::Client::Exchange, direct_orig
+      assert_instance_of AMQP::Client::Exchange, topic_conv
+      assert_instance_of AMQP::Client::Exchange, topic_orig
+      assert_instance_of AMQP::Client::Exchange, headers_conv
+      assert_instance_of AMQP::Client::Exchange, headers_orig
+
+      # Clean up
+      [fanout_conv, fanout_orig, direct_conv, direct_orig,
+       topic_conv, topic_orig, headers_conv, headers_orig].each(&:delete)
+    ensure
+      client.stop
+    end
+  end
 end
