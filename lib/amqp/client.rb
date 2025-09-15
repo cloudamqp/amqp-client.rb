@@ -138,6 +138,42 @@ module AMQP
       end
     end
 
+    # Declare a fanout exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange (defaults to "amq.fanout")
+    # @see {#exchange} for other parameters
+    # @return [Exchange]
+    def fanout(name = "amq.fanout", **kwargs)
+      exchange(name, "fanout", **kwargs)
+    end
+
+    # Declare a direct exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange (defaults to "" for the default direct exchange)
+    # @see {#exchange} for other parameters
+    # @return [Exchange]
+    def direct(name = "", **kwargs)
+      return exchange(name, "direct", **kwargs) unless name.empty?
+
+      @exchanges.fetch(name) do
+        @exchanges[name] = Exchange.new(self, name)
+      end
+    end
+
+    # Declare a topic exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange (defaults to "amq.topic")
+    # @see {#exchange} for other parameters
+    # @return [Exchange]
+    def topic(name = "amq.topic", **kwargs)
+      exchange(name, "topic", **kwargs)
+    end
+
+    # Declare a headers exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange (defaults to "amq.headers")
+    # @see {#exchange} for other parameters
+    # @return [Exchange]
+    def headers(name = "amq.headers", **kwargs)
+      exchange(name, "headers", **kwargs)
+    end
+
     # @!endgroup
     # @!group Publish
 
