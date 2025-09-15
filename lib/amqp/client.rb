@@ -117,6 +117,12 @@ module AMQP
     end
 
     # Declare an exchange and return a high level Exchange object
+    # @param name [String] Name of the exchange
+    # @param type [String] Type of the exchange, one of "direct", "fanout", "topic", "headers" or custom exchange type
+    # @param durable [Boolean] If true the exchange will survive broker restarts
+    # @param auto_delete [Boolean] If true the exchange will be deleted when the last queue is unbound
+    # @param internal [Boolean] If true the exchange will not accept directly published messages
+    # @param arguments [Hash] Custom arguments such as alternate-exchange etc.
     # @return [Exchange]
     # @example
     #   amqp = AMQP::Client.new.start
