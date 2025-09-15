@@ -3,6 +3,6 @@
 module AMQP
   class Client
     # Version of the client library
-    VERSION = "1.2.0"
+    VERSION = "1.2.1"
   end
 end

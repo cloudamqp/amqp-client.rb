@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.2.1] - 2025-09-15
+
 - Added: Convenience methods for creating exchange types: `fanout()`, `direct()`, `topic()`, and `headers()`
 - Added: Support for binding with high level objects (Exchange and Queue objects can now be passed as binding sources)
 - Fixed: Bug where a client without any connection could not be closed properly
