@@ -83,6 +83,8 @@ module AMQP
       return if @stopped
 
       @stopped = true
+      return unless @connq.size.positive?
+
       conn = @connq.pop
       conn.close
       nil
