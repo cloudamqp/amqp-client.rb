@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "./message"
+require_relative "message"
 require "stringio"
 
 module AMQP
@@ -31,8 +31,8 @@ module AMQP
         # Override #inspect
         # @api private
         def inspect
-          "#<#{self.class} @id=#{@id} @open=#{@open} @closed=#{@closed} confirm_selected=#{!@confirm.nil?}"\
-            " consumer_count=#{@consumers.size} replies_count=#{@replies.size} unconfirmed_count=#{@unconfirmed.size}>"
+          "#<#{self.class} @id=#{@id} @open=#{@open} @closed=#{@closed} confirm_selected=#{!@confirm.nil?} " \
+            "consumer_count=#{@consumers.size} replies_count=#{@replies.size} unconfirmed_count=#{@unconfirmed.size}>"
         end
 
         # Channel ID
@@ -387,7 +387,7 @@ module AMQP
         #   if true to any consumer
         # @return [nil]
         def basic_recover(requeue: false)
-          write_bytes FrameBytes.basic_recover(@id, requeue: requeue)
+          write_bytes FrameBytes.basic_recover(@id, requeue:)
           expect :basic_recover_ok
           nil
         end

@@ -59,7 +59,7 @@ module AMQP
       # @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
       # @return [nil]
       def reject(requeue: false)
-        @channel.basic_reject(@delivery_tag, requeue: requeue)
+        @channel.basic_reject(@delivery_tag, requeue:)
       end
 
       # @see #exchange

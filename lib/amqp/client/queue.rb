@@ -31,8 +31,8 @@ module AMQP
       # @param arguments [Hash] Custom arguments to the consumer
       # @yield [Message] Delivered message from the queue
       # @return [self]
-      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
-        @client.subscribe(@name, no_ack: no_ack, prefetch: prefetch, worker_threads: worker_threads, arguments: arguments, &blk)
+      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &)
+        @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:, &)
         self
       end
 
@@ -42,8 +42,8 @@ module AMQP
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [self]
       def bind(exchange, binding_key, arguments: {})
-        exchange = exchange.is_a?(String) ? exchange : exchange.name
-        @client.bind(@name, exchange, binding_key, arguments: arguments)
+        exchange = exchange.name unless exchange.is_a?(String)
+        @client.bind(@name, exchange, binding_key, arguments:)
         self
       end
 
@@ -53,8 +53,8 @@ module AMQP
       # @param arguments [Hash] Arguments matching the binding that's being removed
       # @return [self]
       def unbind(exchange, binding_key, arguments: {})
-        exchange = exchange.is_a?(String) ? exchange : exchange.name
-        @client.unbind(@name, exchange, binding_key, arguments: arguments)
+        exchange = exchange.name unless exchange.is_a?(String)
+        @client.unbind(@name, exchange, binding_key, arguments:)
         self
       end
 
