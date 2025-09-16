@@ -43,8 +43,8 @@ module AMQP
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [Exchange] self
       def bind(source, binding_key = "", arguments: {})
-        source = source.is_a?(String) ? source : source.name
-        @client.exchange_bind(@name, source, binding_key, arguments: arguments)
+        source = source.name unless source.is_a?(String)
+        @client.exchange_bind(@name, source, binding_key, arguments:)
         self
       end
 
@@ -54,8 +54,8 @@ module AMQP
       # @param arguments [Hash] Arguments matching the binding that's being removed
       # @return [Exchange] self
       def unbind(source, binding_key = "", arguments: {})
-        source = source.is_a?(String) ? source : source.name
-        @client.exchange_unbind(@name, source, binding_key, arguments: arguments)
+        source = source.name unless source.is_a?(String)
+        @client.exchange_unbind(@name, source, binding_key, arguments:)
         self
       end
 

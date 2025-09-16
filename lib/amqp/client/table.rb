@@ -136,7 +136,7 @@ module AMQP
           scale = bytes.getbyte(pos)
           pos += 1
           value = bytes.byteslice(pos, 4).unpack1("L>")
-          d = value / 10**scale
+          d = value / (10**scale)
           [5, d]
         when "x"
           len = bytes.byteslice(pos, 4).unpack1("L>")

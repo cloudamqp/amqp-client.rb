@@ -6,12 +6,14 @@ class AMQPPropertiesTest < Minitest::Test
   def test_integer_expiration_encode
     expect = "\x01\x00\x041000"
     encoded = AMQP::Client::Properties.encode({ expiration: 1000 })
+
     assert_equal expect, encoded
   end
 
   def test_string_expiration_encode
     expect = "\x01\x00\x041000"
     encoded = AMQP::Client::Properties.encode({ expiration: "1000" })
+
     assert_equal expect, encoded
   end
 
@@ -42,6 +44,7 @@ class AMQPPropertiesTest < Minitest::Test
     }
     encoded = AMQP::Client::Properties.encode(props)
     decoded = AMQP::Client::Properties.decode(encoded)
+
     assert_equal props, decoded.to_h
   end
 end

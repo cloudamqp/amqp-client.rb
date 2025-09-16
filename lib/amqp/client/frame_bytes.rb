@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "./properties"
-require_relative "./table"
+require_relative "properties"
+require_relative "table"
 
 module AMQP
   class Client

@@ -3,9 +3,9 @@
 require "socket"
 require "uri"
 require "openssl"
-require_relative "./frame_bytes"
-require_relative "./channel"
-require_relative "./errors"
+require_relative "frame_bytes"
+require_relative "channel"
+require_relative "errors"
 
 module AMQP
   class Client
@@ -71,8 +71,8 @@ module AMQP
       # Alias for {#initialize}
       # @see #initialize
       # @deprecated
-      def self.connect(uri, read_loop_thread: true, **options)
-        new(uri, read_loop_thread: read_loop_thread, **options)
+      def self.connect(uri, read_loop_thread: true, **)
+        new(uri, read_loop_thread:, **)
       end
 
       # The max frame size negotiated between the client and the broker
@@ -91,6 +91,7 @@ module AMQP
       # @return [Channel]
       def channel(id = nil)
         raise ArgumentError, "Channel ID cannot be 0" if id&.zero?
+
         raise ArgumentError, "Channel ID higher than connection's channel max #{@channel_max}" if id && id > @channel_max
 
         ch = @channels_lock.synchronize do
@@ -202,7 +203,8 @@ module AMQP
         loop do
           socket.read(7, frame_start) || raise(IOError)
           type, channel_id, frame_size = frame_start.unpack("C S> L>")
-          frame_max >= frame_size || raise(Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}")
+          frame_max >= frame_size ||
+            raise(Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}")
 
           # read the frame content
           socket.read(frame_size, frame_buffer) || raise(IOError)
@@ -479,7 +481,7 @@ module AMQP
       # @return [OpenSSL::SSL::SSLSocket]
       def open_socket(host, port, tls, options)
         connect_timeout = options.fetch(:connect_timeout, 30).to_f
-        socket = Socket.tcp host, port, connect_timeout: connect_timeout
+        socket = Socket.tcp(host, port, connect_timeout:)
         keepalive = options.fetch(:keepalive, "").split(":", 3).map!(&:to_i)
         enable_tcp_keepalive(socket, *keepalive)
         if tls
@@ -583,7 +585,7 @@ module AMQP
       # @return [Integer] A port number
       # @return [nil] When the environment variable AMQP_PORT isn't set
       def port_from_env
-        return unless (port = ENV["AMQP_PORT"])
+        return unless (port = ENV.fetch("AMQP_PORT", nil))
 
         port.to_i
       end

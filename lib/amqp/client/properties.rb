@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "./table"
+require_relative "table"
 
 module AMQP
   class Client
@@ -30,19 +30,19 @@ module AMQP
       # @return [Hash] Properties
       def to_h
         {
-          content_type: content_type,
-          content_encoding: content_encoding,
-          headers: headers,
-          delivery_mode: delivery_mode,
-          priority: priority,
-          correlation_id: correlation_id,
-          reply_to: reply_to,
-          expiration: expiration,
-          message_id: message_id,
-          timestamp: timestamp,
-          type: type,
-          user_id: user_id,
-          app_id: app_id
+          content_type:,
+          content_encoding:,
+          headers:,
+          delivery_mode:,
+          priority:,
+          correlation_id:,
+          reply_to:,
+          expiration:,
+          message_id:,
+          timestamp:,
+          type:,
+          user_id:,
+          app_id:
         }
       end
 
@@ -184,7 +184,8 @@ module AMQP
         end
 
         if (timestamp = properties[:timestamp])
-          timestamp.is_a?(Integer) || timestamp.is_a?(Time) || raise(ArgumentError, "timestamp must be an Integer or a Time")
+          timestamp.is_a?(Integer) || timestamp.is_a?(Time) ||
+            raise(ArgumentError, "timestamp must be an Integer or a Time")
 
           flags |= (1 << 6)
           arr << timestamp.to_i

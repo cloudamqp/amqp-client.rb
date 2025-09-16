@@ -15,6 +15,7 @@ class HighLevelTest < Minitest::Test
       end
       q.publish("foobar")
       msg = msgs.pop
+
       assert_equal "test.conn", msg.routing_key
       assert_equal "foobar", msg.body
     ensure
@@ -38,6 +39,7 @@ class HighLevelTest < Minitest::Test
       client.publish("foo", "amq.topic", "foo.bar")
 
       msg = msgs.pop
+
       assert_equal "foo.bar", msg.routing_key
       assert_equal "foo", msg.body
     ensure
@@ -58,12 +60,14 @@ class HighLevelTest < Minitest::Test
       end
       q.publish Zlib.gzip("hej"), content_encoding: "gzip"
       msg1 = msgs.pop
+
       assert_equal "gzip", msg1.properties.content_encoding
 
       q.bind("amq.topic", "foo.*")
       client.publish("foo", "amq.topic", "foo.bar", headers: { foo: "bar" })
 
       msg2 = msgs.pop
+
       assert_equal({ "foo" => "bar" }, msg2.properties.headers)
     ensure
       q&.delete
@@ -100,6 +104,7 @@ class HighLevelTest < Minitest::Test
       client.publish("foo", "amq.topic", "foo.bar")
 
       msg = msgs.pop
+
       assert_equal "foo.bar", msg.routing_key
       assert_equal "bar", msg.body
 
@@ -130,6 +135,7 @@ class HighLevelTest < Minitest::Test
 
       q.publish("bar")
       msg = msgs.pop
+
       assert msg.body, "bar"
     ensure
       q&.delete
@@ -141,6 +147,7 @@ class HighLevelTest < Minitest::Test
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       direct = client.direct
+
       assert_instance_of AMQP::Client::Exchange, direct
       assert_equal "", direct.name
     ensure
@@ -152,6 +159,7 @@ class HighLevelTest < Minitest::Test
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       fanout = client.fanout
+
       assert_instance_of AMQP::Client::Exchange, fanout
       assert_equal "amq.fanout", fanout.name
     ensure
@@ -163,6 +171,7 @@ class HighLevelTest < Minitest::Test
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       topic = client.topic
+
       assert_instance_of AMQP::Client::Exchange, topic
       assert_equal "amq.topic", topic.name
     ensure
@@ -174,6 +183,7 @@ class HighLevelTest < Minitest::Test
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       headers = client.headers
+
       assert_instance_of AMQP::Client::Exchange, headers
       assert_equal "amq.headers", headers.name
     ensure
@@ -199,6 +209,7 @@ class HighLevelTest < Minitest::Test
       exchange.publish("message via exchange object bind", "")
 
       msg = msgs.pop
+
       assert_equal "message via exchange object bind", msg.body
       assert_equal "test.fanout.objbind", msg.exchange_name
 
@@ -268,6 +279,7 @@ class HighLevelTest < Minitest::Test
       source_exchange.publish("message via exchange-exchange bind", "")
 
       msg = msgs.pop
+
       assert_equal "message via exchange-exchange bind", msg.body
       assert_equal "test.source.exchange.obj.unique", msg.exchange_name
 

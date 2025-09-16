@@ -39,7 +39,7 @@ module AMQP
     # @example
     #   connection = AMQP::Client.new("amqps://server.rmq.cloudamqp.com", connection_name: "My connection").connect
     def connect(read_loop_thread: true)
-      Connection.new(@uri, read_loop_thread: read_loop_thread, **@options)
+      Connection.new(@uri, read_loop_thread:, **@options)
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first
@@ -62,7 +62,7 @@ module AMQP
             @subscriptions.each do |queue_name, no_ack, prefetch, wt, args, blk|
               ch = conn.channel
               ch.basic_qos(prefetch)
-              ch.basic_consume(queue_name, no_ack: no_ack, worker_threads: wt, arguments: args, &blk)
+              ch.basic_consume(queue_name, no_ack:, worker_threads: wt, arguments: args, &blk)
             end
             @connq << conn
           end
@@ -110,7 +110,7 @@ module AMQP
 
       @queues.fetch(name) do
         with_connection do |conn|
-          conn.channel(1).queue_declare(name, durable: durable, auto_delete: auto_delete, arguments: arguments)
+          conn.channel(1).queue_declare(name, durable:, auto_delete:, arguments:)
         end
         @queues[name] = Queue.new(self, name)
       end
@@ -131,8 +131,7 @@ module AMQP
     def exchange(name, type, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
-          conn.channel(1).exchange_declare(name, type, durable: durable, auto_delete: auto_delete,
-                                                       internal: internal, arguments: arguments)
+          conn.channel(1).exchange_declare(name, type, durable:, auto_delete:, internal:, arguments:)
         end
         @exchanges[name] = Exchange.new(self, name)
       end
@@ -142,16 +141,16 @@ module AMQP
     # @param name [String] Name of the exchange (defaults to "amq.fanout")
     # @see {#exchange} for other parameters
     # @return [Exchange]
-    def fanout(name = "amq.fanout", **kwargs)
-      exchange(name, "fanout", **kwargs)
+    def fanout(name = "amq.fanout", **)
+      exchange(name, "fanout", **)
     end
 
     # Declare a direct exchange and return a high level Exchange object
     # @param name [String] Name of the exchange (defaults to "" for the default direct exchange)
     # @see {#exchange} for other parameters
     # @return [Exchange]
-    def direct(name = "", **kwargs)
-      return exchange(name, "direct", **kwargs) unless name.empty?
+    def direct(name = "", **)
+      return exchange(name, "direct", **) unless name.empty?
 
       @exchanges.fetch(name) do
         @exchanges[name] = Exchange.new(self, name)
@@ -162,16 +161,16 @@ module AMQP
     # @param name [String] Name of the exchange (defaults to "amq.topic")
     # @see {#exchange} for other parameters
     # @return [Exchange]
-    def topic(name = "amq.topic", **kwargs)
-      exchange(name, "topic", **kwargs)
+    def topic(name = "amq.topic", **)
+      exchange(name, "topic", **)
     end
 
     # Declare a headers exchange and return a high level Exchange object
     # @param name [String] Name of the exchange (defaults to "amq.headers")
     # @see {#exchange} for other parameters
     # @return [Exchange]
-    def headers(name = "amq.headers", **kwargs)
-      exchange(name, "headers", **kwargs)
+    def headers(name = "amq.headers", **)
+      exchange(name, "headers", **)
     end
 
     # @!endgroup
@@ -229,7 +228,7 @@ module AMQP
       with_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
-        ch.basic_consume(queue, no_ack: no_ack, worker_threads: worker_threads, arguments: arguments, &blk)
+        ch.basic_consume(queue, no_ack:, worker_threads:, arguments:, &blk)
       end
     end
 
@@ -241,7 +240,7 @@ module AMQP
     # @return [nil]
     def bind(queue, exchange, binding_key, arguments: {})
       with_connection do |conn|
-        conn.channel(1).queue_bind(queue, exchange, binding_key, arguments: arguments)
+        conn.channel(1).queue_bind(queue, exchange, binding_key, arguments:)
       end
     end
 
@@ -253,7 +252,7 @@ module AMQP
     # @return [nil]
     def unbind(queue, exchange, binding_key, arguments: {})
       with_connection do |conn|
-        conn.channel(1).queue_unbind(queue, exchange, binding_key, arguments: arguments)
+        conn.channel(1).queue_unbind(queue, exchange, binding_key, arguments:)
       end
     end
 
@@ -273,7 +272,7 @@ module AMQP
     # @return [Integer] Number of messages in the queue when deleted
     def delete_queue(name, if_unused: false, if_empty: false)
       with_connection do |conn|
-        msgs = conn.channel(1).queue_delete(name, if_unused: if_unused, if_empty: if_empty)
+        msgs = conn.channel(1).queue_delete(name, if_unused:, if_empty:)
         @queues.delete(name)
         msgs
       end
@@ -290,7 +289,7 @@ module AMQP
     # @return [nil]
     def exchange_bind(destination, source, binding_key, arguments: {})
       with_connection do |conn|
-        conn.channel(1).exchange_bind(destination, source, binding_key, arguments: arguments)
+        conn.channel(1).exchange_bind(destination, source, binding_key, arguments:)
       end
     end
 
@@ -302,7 +301,7 @@ module AMQP
     # @return [nil]
     def exchange_unbind(destination, source, binding_key, arguments: {})
       with_connection do |conn|
-        conn.channel(1).exchange_unbind(destination, source, binding_key, arguments: arguments)
+        conn.channel(1).exchange_unbind(destination, source, binding_key, arguments:)
       end
     end
 
