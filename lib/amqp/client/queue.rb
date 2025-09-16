@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
+require_relative "message_coding"
+
 module AMQP
   class Client
     # Queue abstraction
     class Queue
+      include MessageCoding
+
       attr_reader :name
 
       # Should only be initialized from the Client
@@ -14,12 +18,16 @@ module AMQP
       end
 
       # Publish to the queue, wait for confirm
-      # @param (see Client#publish)
+      # @param body [Object] The message body, will be encoded according to properties.content_type
+      #   and properties.content_encoding if specified (see Client#publish).
       # @option (see Client#publish)
+      # @raise (see MessageCoding#encode_body)
       # @raise (see Client#publish)
-      # @return [self]
+      # @return [Queue] self
       def publish(body, **properties)
-        @client.publish(body, "", @name, **properties)
+        encoded_body = encode_body(body, properties)
+
+        @client.publish(encoded_body, "", @name, **properties)
         self
       end
 
