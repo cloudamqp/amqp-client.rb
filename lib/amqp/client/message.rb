@@ -14,6 +14,7 @@ module AMQP
         @redelivered = redelivered
         @properties = nil
         @body = ""
+        @ack_or_reject_sent = false
       end
 
       # The channel the message was deliviered to
@@ -52,14 +53,22 @@ module AMQP
       # Acknowledge the message
       # @return [nil]
       def ack
+        return if @ack_or_reject_sent
+
         @channel.basic_ack(@delivery_tag)
+        @ack_or_reject_sent = true
+        nil
       end
 
       # Reject the message
       # @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
       # @return [nil]
       def reject(requeue: false)
+        return if @ack_or_reject_sent
+
         @channel.basic_reject(@delivery_tag, requeue:)
+        @ack_or_reject_sent = true
+        nil
       end
 
       # @see #exchange

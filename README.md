@@ -67,10 +67,8 @@ myqueue.bind("amq.topic", "my.events.*")
 # between message arrival and when the message was supposed to be ack'ed.
 myqueue.subscribe(prefetch: 20) do |msg|
   puts JSON.parse(msg.body)
-  msg.ack
 rescue => e
   puts e.full_message
-  msg.reject(requeue: false)
 end
 
 # Publish directly to the queue
