@@ -78,6 +78,67 @@ module AMQP
       def exchange_name
         @exchange
       end
+
+      # Parse the message body based on content_type and content_encoding
+      # @return [Object] The parsed message body
+      # @raise [Error::UnsupportedContentType] If the content type is not supported
+      def parse
+        decoded_data = decode
+        case @properties.content_type
+        when "application/json" then parse_json
+        when "text/plain", "", nil then decoded_data
+        else raise Error::UnsupportedContentType, @properties.content_type
+        end
+      end
+
+      # Decode the message body based on content_encoding
+      # @return [String] The decoded message body
+      # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
+      def decode
+        case @properties.content_encoding
+        when "gzip"
+          decode_gzip
+        when "deflate"
+          deflate
+        when "", nil
+          body
+        else raise Error::UnsupportedContentEncoding, @properties.content_encoding
+        end
+      end
+
+      private
+
+      def parse_json
+        decoded_data = decode
+        if defined?(Oj)
+          Oj.load(decoded_data, symbol_keys: true)
+        else
+          JSON.parse(decoded_data, symbolize_names: true)
+        end
+      end
+
+      def decode_gzip
+        StringIO.open(body) do |io|
+          gz = Zlib::GzipReader.new(io)
+          begin
+            return gz.read
+          ensure
+            gz.close
+          end
+        end
+      end
+
+      def deflate
+        # Try raw deflate first (no headers)
+        inflater = Thread.current[:inflater_raw] ||= Zlib::Inflate.new(-15)
+        inflater.inflate(body)
+      rescue Zlib::DataError
+        # Fallback to zlib header (default)
+        inflater = Thread.current[:inflater_zlib] ||= Zlib::Inflate.new
+        inflater.inflate(body)
+      ensure
+        inflater&.reset
+      end
     end
 
     # A published message returned by the broker due to some error
