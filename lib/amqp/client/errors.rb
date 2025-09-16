@@ -59,14 +59,14 @@ module AMQP
         end
       end
 
-      # Raised is trying to parse a message with a unsupported content type
+      # Raised if trying to parse a message with a unsupported content type
       class UnsupportedContentType < Error
         def initialize(content_type)
           super("Unsupported content type #{content_type}")
         end
       end
 
-      # Raised is trying to parse a message with a unsupported content encoding
+      # Raised if trying to parse a message with a unsupported content encoding
       class UnsupportedContentEncoding < Error
         def initialize(content_encoding)
           super("Unsupported content encoding #{content_encoding}")
