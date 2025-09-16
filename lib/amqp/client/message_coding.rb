@@ -60,11 +60,7 @@ module AMQP
       end
 
       def parse_json(data)
-        if defined?(Oj)
-          Oj.load(data, symbol_keys: true)
-        else
-          JSON.parse(data, symbolize_names: true)
-        end
+        JSON.parse(data, symbolize_names: true)
       end
 
       def encode_gzip(data)
