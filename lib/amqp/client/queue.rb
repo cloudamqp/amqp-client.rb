@@ -24,15 +24,25 @@ module AMQP
       end
 
       # Subscribe/consume from the queue
-      # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected)
+      # @param no_ack [Boolean] If true, messages are automatically acknowledged by the server upon delivery.
+      #   If false, messages are acknowledged only after the block completes successfully; if the block raises
+      #   an exception, the message is rejected and can be optionally requeued. (Default: false)
       # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
       # @param worker_threads [Integer] Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked
+      # @param requeue_on_reject [Boolean] If true, messages that are rejected due to an exception in the block
+      #   will be requeued. Only relevant if no_ack is false. (Default: true)
       # @param arguments [Hash] Custom arguments to the consumer
       # @yield [Message] Delivered message from the queue
       # @return [self]
-      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &)
-        @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:, &)
+      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, arguments: {})
+        @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:) do |message|
+          yield message
+          message.ack unless no_ack
+        rescue StandardError => e
+          message.reject(requeue: requeue_on_reject) unless no_ack
+          raise e
+        end
         self
       end
 
