@@ -1509,7 +1509,6 @@
       <pre class="lines">
 
 
-224
 225
 226
 227
@@ -1585,10 +1584,11 @@
 297
 298
 299
-300</pre>
+300
+301</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/properties.rb', line 224</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/properties.rb', line 225</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_decode'>decode</span><span class='lparen'>(</span><span class='id identifier rubyid_bytes'>bytes</span><span class='comma'>,</span> <span class='id identifier rubyid_pos'>pos</span> <span class='op'>=</span> <span class='int'>0</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_p'>p</span> <span class='op'>=</span> <span class='id identifier rubyid_new'>new</span>
@@ -1846,7 +1846,8 @@
 217
 218
 219
-220</pre>
+220
+221</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/amqp/client/properties.rb', line 105</span>
@@ -1933,7 +1934,8 @@
   <span class='kw'>end</span>
 
   <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_timestamp'>timestamp</span> <span class='op'>=</span> <span class='id identifier rubyid_properties'>properties</span><span class='lbracket'>[</span><span class='symbol'>:timestamp</span><span class='rbracket'>]</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_timestamp'>timestamp</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_timestamp'>timestamp</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Time</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>timestamp must be an Integer or a Time</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_timestamp'>timestamp</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_timestamp'>timestamp</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Time</span><span class='rparen'>)</span> <span class='op'>||</span>
+      <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>timestamp must be an Integer or a Time</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_flags'>flags</span> <span class='op'>|=</span> <span class='lparen'>(</span><span class='int'>1</span> <span class='op'>&lt;&lt;</span> <span class='int'>6</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_arr'>arr</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_timestamp'>timestamp</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
@@ -2107,19 +2109,19 @@
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_h'>to_h</span>
   <span class='lbrace'>{</span>
-    <span class='label'>content_type:</span> <span class='id identifier rubyid_content_type'>content_type</span><span class='comma'>,</span>
-    <span class='label'>content_encoding:</span> <span class='id identifier rubyid_content_encoding'>content_encoding</span><span class='comma'>,</span>
-    <span class='label'>headers:</span> <span class='id identifier rubyid_headers'>headers</span><span class='comma'>,</span>
-    <span class='label'>delivery_mode:</span> <span class='id identifier rubyid_delivery_mode'>delivery_mode</span><span class='comma'>,</span>
-    <span class='label'>priority:</span> <span class='id identifier rubyid_priority'>priority</span><span class='comma'>,</span>
-    <span class='label'>correlation_id:</span> <span class='id identifier rubyid_correlation_id'>correlation_id</span><span class='comma'>,</span>
-    <span class='label'>reply_to:</span> <span class='id identifier rubyid_reply_to'>reply_to</span><span class='comma'>,</span>
-    <span class='label'>expiration:</span> <span class='id identifier rubyid_expiration'>expiration</span><span class='comma'>,</span>
-    <span class='label'>message_id:</span> <span class='id identifier rubyid_message_id'>message_id</span><span class='comma'>,</span>
-    <span class='label'>timestamp:</span> <span class='id identifier rubyid_timestamp'>timestamp</span><span class='comma'>,</span>
-    <span class='label'>type:</span> <span class='id identifier rubyid_type'>type</span><span class='comma'>,</span>
-    <span class='label'>user_id:</span> <span class='id identifier rubyid_user_id'>user_id</span><span class='comma'>,</span>
-    <span class='label'>app_id:</span> <span class='id identifier rubyid_app_id'>app_id</span>
+    <span class='label'>content_type:</span><span class='comma'>,</span>
+    <span class='label'>content_encoding:</span><span class='comma'>,</span>
+    <span class='label'>headers:</span><span class='comma'>,</span>
+    <span class='label'>delivery_mode:</span><span class='comma'>,</span>
+    <span class='label'>priority:</span><span class='comma'>,</span>
+    <span class='label'>correlation_id:</span><span class='comma'>,</span>
+    <span class='label'>reply_to:</span><span class='comma'>,</span>
+    <span class='label'>expiration:</span><span class='comma'>,</span>
+    <span class='label'>message_id:</span><span class='comma'>,</span>
+    <span class='label'>timestamp:</span><span class='comma'>,</span>
+    <span class='label'>type:</span><span class='comma'>,</span>
+    <span class='label'>user_id:</span><span class='comma'>,</span>
+    <span class='label'>app_id:</span>
   <span class='rbrace'>}</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -2132,9 +2134,9 @@
 </div>
 
       <div id="footer">
-  Generated on Thu Sep 11 06:22:22 2025 by
+  Generated on Wed Sep 17 08:07:47 2025 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.5).
+  0.9.37 (ruby-3.4.6).
 </div>
 
     </div>

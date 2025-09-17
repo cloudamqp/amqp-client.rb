@@ -114,6 +114,40 @@
 
 
 
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#name-instance_method" title="#name (instance method)">#<strong>name</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute name.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
 
 
 
@@ -128,7 +162,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#bind-instance_method" title="#bind (instance method)">#<strong>bind</strong>(exchange, binding_key, arguments: {})  &#x21d2; Exchange </a>
+      <a href="#bind-instance_method" title="#bind (instance method)">#<strong>bind</strong>(source, binding_key = &quot;&quot;, arguments: {})  &#x21d2; Exchange </a>
     
 
     
@@ -176,7 +210,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#publish-instance_method" title="#publish (instance method)">#<strong>publish</strong>(body, routing_key, **properties)  &#x21d2; Exchange </a>
+      <a href="#publish-instance_method" title="#publish (instance method)">#<strong>publish</strong>(body, routing_key = &quot;&quot;, **properties)  &#x21d2; Exchange </a>
     
 
     
@@ -200,7 +234,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#unbind-instance_method" title="#unbind (instance method)">#<strong>unbind</strong>(exchange, binding_key, arguments: {})  &#x21d2; Exchange </a>
+      <a href="#unbind-instance_method" title="#unbind (instance method)">#<strong>unbind</strong>(source, binding_key = &quot;&quot;, arguments: {})  &#x21d2; Exchange </a>
     
 
     
@@ -225,6 +259,54 @@
   
 
 
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="name-instance_method">
+  
+    #<strong>name</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute name.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+7
+8
+9</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 7</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
 
   <div id="instance_method_details" class="method_details_list">
     <h2>Instance Method Details</h2>
@@ -233,7 +315,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="bind-instance_method">
   
-    #<strong>bind</strong>(exchange, binding_key, arguments: {})  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt> 
+    #<strong>bind</strong>(source, binding_key = &quot;&quot;, arguments: {})  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt> 
   
 
   
@@ -253,16 +335,16 @@
   
     <li>
       
-        <span class='name'>exchange</span>
+        <span class='name'>source</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String</tt>, <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>Name of the exchange to bind to</p>
+<p>Name of the exchange to bind to, or the exchange object itself</p>
 </div>
       
     </li>
@@ -275,10 +357,12 @@
         <span class='type'>(<tt>String</tt>)</span>
       
       
+        <em class="default">(defaults to: <tt>&quot;&quot;</tt>)</em>
+      
       
         &mdash;
         <div class='inline'>
-<p>Binding key on which messages that match might be routed (depending on exchange type)</p>
+<p>Binding key on which messages that match might be routed (defaults to empty string)</p>
 </div>
       
     </li>
@@ -328,16 +412,18 @@
       <pre class="lines">
 
 
-43
-44
 45
-46</pre>
+46
+47
+48
+49</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 43</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 45</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
-  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_exchange_bind'>exchange_bind</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_source'>source</span> <span class='op'>=</span> <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='kw'>unless</span> <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_exchange_bind'>exchange_bind</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -384,13 +470,13 @@
       <pre class="lines">
 
 
-60
-61
-62
-63</pre>
+64
+65
+66
+67</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 60</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 64</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete'>delete</span>
   <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_delete_exchange'>delete_exchange</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='rparen'>)</span>
@@ -404,7 +490,7 @@
       <div class="method_details ">
   <h3 class="signature " id="publish-instance_method">
   
-    #<strong>publish</strong>(body, routing_key, **properties)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt> 
+    #<strong>publish</strong>(body, routing_key = &quot;&quot;, **properties)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt> 
   
 
   
@@ -446,10 +532,12 @@
         <span class='type'>(<tt>String</tt>)</span>
       
       
+        <em class="default">(defaults to: <tt>&quot;&quot;</tt>)</em>
+      
       
         &mdash;
         <div class='inline'>
-<p>The routing key of the message, the exchange may use this when routing the message to bound queues</p>
+<p>The routing key of the message, the exchange may use this when routing the message to bound queues (defaults to empty string)</p>
 </div>
       
     </li>
@@ -674,15 +762,15 @@
       <pre class="lines">
 
 
-33
-34
 35
-36</pre>
+36
+37
+38</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 35</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='ivar'>@name</span><span class='comma'>,</span> <span class='id identifier rubyid_routing_key'>routing_key</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
@@ -694,7 +782,7 @@
       <div class="method_details ">
   <h3 class="signature " id="unbind-instance_method">
   
-    #<strong>unbind</strong>(exchange, binding_key, arguments: {})  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt> 
+    #<strong>unbind</strong>(source, binding_key = &quot;&quot;, arguments: {})  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt> 
   
 
   
@@ -714,16 +802,16 @@
   
     <li>
       
-        <span class='name'>exchange</span>
+        <span class='name'>source</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String</tt>, <tt><span class='object_link'><a href="" title="AMQP::Client::Exchange (class)">Exchange</a></span></tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>Name of the exchange to unbind from</p>
+<p>Name of the exchange to unbind from, or the exchange object itself</p>
 </div>
       
     </li>
@@ -736,10 +824,12 @@
         <span class='type'>(<tt>String</tt>)</span>
       
       
+        <em class="default">(defaults to: <tt>&quot;&quot;</tt>)</em>
+      
       
         &mdash;
         <div class='inline'>
-<p>Binding key which the queue is bound to the exchange with</p>
+<p>Binding key which the queue is bound to the exchange with (defaults to empty string)</p>
 </div>
       
     </li>
@@ -789,16 +879,18 @@
       <pre class="lines">
 
 
-53
-54
-55
-56</pre>
+56
+57
+58
+59
+60</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 53</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/exchange.rb', line 56</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
-  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_exchange_unbind'>exchange_unbind</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_source'>source</span> <span class='op'>=</span> <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='kw'>unless</span> <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_exchange_unbind'>exchange_unbind</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -811,9 +903,9 @@
 </div>
 
       <div id="footer">
-  Generated on Thu Sep 11 06:22:22 2025 by
+  Generated on Wed Sep 17 08:07:47 2025 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.5).
+  0.9.37 (ruby-3.4.6).
 </div>
 
     </div>
