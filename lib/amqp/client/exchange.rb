@@ -18,9 +18,12 @@ module AMQP
       end
 
       # Publish to the exchange, wait for confirm
-      # @param body [Object] (see Queue#publish)
+      # @param body [Object] The message body, will be encoded according to properties.content_type
+      #   and properties.content_encoding if specified (see Client#publish).
+      # @param routing_key [String] Routing key for the message
       # @option (see Client#publish)
-      # @raise (see MessageCoding#encode_body)
+      # @raise [Error::UnsupportedContentType] If content type is unsupported
+      # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
       # @raise (see Client#publish)
       # @return [Exchange] self
       def publish(body, routing_key = "", **properties)

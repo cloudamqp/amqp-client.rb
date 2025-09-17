@@ -21,7 +21,8 @@ module AMQP
       # @param body [Object] The message body, will be encoded according to properties.content_type
       #   and properties.content_encoding if specified (see Client#publish).
       # @option (see Client#publish)
-      # @raise (see MessageCoding#encode_body)
+      # @raise [Error::UnsupportedContentType] If content type is unsupported
+      # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
       # @raise (see Client#publish)
       # @return [Queue] self
       def publish(body, **properties)
@@ -34,7 +35,8 @@ module AMQP
       # Subscribe/consume from the queue
       # @param no_ack [Boolean] If true, messages are automatically acknowledged by the server upon delivery.
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
-      #   an exception, the message is rejected and can be optionally requeued. (Default: false)
+      #   an exception, the message is rejected and can be optionally requeued.
+      #   You can of course handle the ack/reject in the block yourself. (Default: false)
       # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
       # @param worker_threads [Integer] Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked

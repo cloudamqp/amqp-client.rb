@@ -6,7 +6,7 @@ require "json"
 
 module AMQP
   class Client
-    # Methods for encoding/decoding message bodies
+    # @api private
     module MessageCoding
       private
 
