@@ -66,7 +66,7 @@ myqueue.bind("amq.topic", "my.events.*")
 # The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack'ed.
 myqueue.subscribe(prefetch: 20) do |msg|
-  puts msg.parse # Parses msg.body based on content_type
+  puts msg.parse # Parses msg.body based on content_type and content_encdoing
 rescue => e
   puts e.full_message
 end
