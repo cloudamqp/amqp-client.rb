@@ -2,6 +2,7 @@
 
 require "minitest/autorun"
 require "json"
+require "zlib"
 require_relative "../../lib/amqp/client/queue"
 require_relative "../../lib/amqp/client/exchange"
 require_relative "../../lib/amqp/client/properties"
@@ -71,5 +72,35 @@ class HighLevelEncodingTest < Minitest::Test
     inflated = Zlib::Inflate.inflate(published[:body])
 
     assert_equal "deflate me", inflated
+  end
+
+  def test_handles_already_deflated_body
+    message = "deflate me"
+    body = Zlib::Deflate.deflate(message)
+    @exchange.publish(body, "rk2", content_encoding: "deflate")
+    published = @client.published.last
+    inflated = Zlib::Inflate.inflate(published[:body])
+
+    assert_equal "deflate me", inflated
+  end
+
+  def test_handles_already_gzipped_body
+    message = "deflate me"
+    body = Zlib.gzip(message)
+    @exchange.publish(body, "rk2", content_encoding: "gzip")
+    published = @client.published.last
+    inflated = Zlib.gunzip(published[:body])
+
+    assert_equal "deflate me", inflated
+  end
+
+  def test_handles_unsupported_encoded_body
+    message = "custom encoding"
+    body = message.encode(Encoding::BINARY)
+    @exchange.publish(body, "rk2", content_encoding: "custom_binary")
+    published = @client.published.last
+    inflated = published[:body].encode(Encoding::UTF_8)
+
+    assert_equal "custom encoding", inflated
   end
 end

@@ -34,6 +34,10 @@ module AMQP
 
       def encode_body(body, properties)
         body = serialize_body(body, properties)
+
+        # Return if data is already encoded
+        return body if body.encoding == Encoding::BINARY
+
         case properties[:content_encoding]
         when "gzip"
           encode_gzip(body)
@@ -64,36 +68,19 @@ module AMQP
       end
 
       def encode_gzip(data)
-        sio = StringIO.new
-        gz = Zlib::GzipWriter.new(sio)
-        gz.write(data)
-        gz.close
-        sio.string
+        Zlib.gzip(data)
       end
 
       def decode_gzip(data)
-        StringIO.open(data) do |io|
-          gz = Zlib::GzipReader.new(io)
-          begin
-            return gz.read
-          ensure
-            gz.close
-          end
-        end
+        Zlib.gunzip(data)
       end
 
       def encode_deflate(data)
-        Zlib::Deflate.deflate(data)
+        Zlib.deflate(data)
       end
 
       def decode_deflate(data)
-        inflater = Thread.current[:inflater_raw] ||= Zlib::Inflate.new(-15)
-        inflater.inflate(data)
-      rescue Zlib::DataError
-        inflater = Thread.current[:inflater_zlib] ||= Zlib::Inflate.new
-        inflater.inflate(data)
-      ensure
-        inflater&.reset
+        Zlib.inflate(data)
       end
     end
   end

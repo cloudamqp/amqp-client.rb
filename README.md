@@ -88,6 +88,14 @@ amqp.publish("my message", "amq.topic", "topic.foo", headers: { foo: 'bar' })
 amqp.publish("an event", "amq.topic", "my.event", content_encoding: 'gzip')
 ```
 
+#### Supported Content Types and Encodings
+
+`Queue#publish`, `Exchange#publish` and `Message.parse` will automatically handle:
+
+* application/json
+* gzip
+* deflate
+
 ## Benchmark
 
 1 byte messages:
