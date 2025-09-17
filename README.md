@@ -46,7 +46,7 @@ puts msg.body
 
 ### High level API
 
-The library provides a high-level API that is a bit easier to get started with, and also handles reconnection automatically.
+The library provides a high-level API that manages channels, content-types, encodings, reconnection automatically.
 
 ```ruby
 require "amqp-client"
@@ -69,6 +69,14 @@ myqueue.subscribe(prefetch: 20) do |msg|
   puts JSON.parse(msg.body)
 rescue => e
   puts e.full_message
+end
+# The message is automatically ack'd by Queue#subscribe if the block returns successfully
+# If the block raises the message is rejected and requeued.
+# You still can control the acking and rejecting in the block if you want to, e.g:
+myqueue.subscribe do |msg|
+  msg.ack
+rescue => e
+  msg.reject
 end
 
 # Publish directly to the queue
