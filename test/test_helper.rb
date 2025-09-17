@@ -22,18 +22,10 @@ module TimeoutEveryTestCase
     end
   end
 
-  def run
-    capture_exceptions do
-      ::Timeout.timeout(TestTimeout.limit,
-                        TestTimeout,
-                        "timed out after #{TestTimeout.limit} seconds") do
-        before_setup
-        setup
-        after_setup
-        send(name)
-      end
+  def capture_exceptions(&block)
+    super do
+      ::Timeout.timeout(TestTimeout.limit, TestTimeout, "timed out after #{TestTimeout.limit} seconds", &block)
     end
-    Minitest::Result.from(self)
   end
 end
 
