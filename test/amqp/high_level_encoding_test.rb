@@ -48,8 +48,6 @@ class HighLevelEncodingTest < Minitest::Test
   def test_queue_publish_gzip_encoding
     @queue.publish("hello gzip", content_encoding: "gzip")
     published = @client.published.last
-    require "zlib"
-    require "stringio"
     sio = StringIO.new(published[:body])
     gz = Zlib::GzipReader.new(sio)
     decoded = gz.read
@@ -69,7 +67,6 @@ class HighLevelEncodingTest < Minitest::Test
   def test_exchange_publish_deflate_encoding
     @exchange.publish("deflate me", "rk2", content_encoding: "deflate")
     published = @client.published.last
-    require "zlib"
     inflated = Zlib::Inflate.inflate(published[:body])
 
     assert_equal "deflate me", inflated

@@ -56,7 +56,7 @@ module AMQP
       # @return [MessageCodingStrategy, nil]
       # @api private
       def coding_strategy=(strategy)
-        raise "coding_strategy can only be set once" if @coding_strategy
+        raise ArgumentError, "coding_strategy can only be set once" if @coding_strategy
 
         # Validation happens in Client setter methods
         # This api is internal

@@ -49,7 +49,6 @@ class MessageTest < Minitest::Test
   end
 
   def test_parse_with_json
-    require "json"
     json_body = { foo: "bar" }.to_json
     message = build_message(body: json_body, content_type: "application/json")
     parsed = message.parse
