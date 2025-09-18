@@ -139,7 +139,7 @@ module AMQP
 
     # Declare a direct exchange and return a high level Exchange object
     # @param name [String] Name of the exchange (defaults to "amq.direct")
-    # @see {#exchange} for other parameters
+    # @see #exchange for other parameters
     # @return [Exchange]
     def direct_exchange(name = "amq.direct", **)
       return exchange(name, "direct", **) unless name.empty?
@@ -151,54 +151,54 @@ module AMQP
     end
 
     # @deprecated
-    # @see {#direct_exchange}
+    # @see #direct_exchange
     alias direct direct_exchange
 
     # Return a high level Exchange object for the default direct exchange
-    # @see {#direct} for parameters
+    # @see #direct for parameters
     # @return [Exchange]
     def default_exchange(**)
       direct("", **)
     end
 
     # @deprecated
-    # @see default_exchange
+    # @see #default_exchange
     alias default default_exchange
 
     # Declare a fanout exchange and return a high level Exchange object
     # @param name [String] Name of the exchange (defaults to "amq.fanout")
-    # @see {#exchange} for other parameters
+    # @see #exchange for other parameters
     # @return [Exchange]
     def fanout_exchange(name = "amq.fanout", **)
       exchange(name, "fanout", **)
     end
 
     # @deprecated
-    # @see {#fanout_exchange}
+    # @see #fanout_exchange
     alias fanout fanout_exchange
 
     # Declare a topic exchange and return a high level Exchange object
     # @param name [String] Name of the exchange (defaults to "amq.topic")
-    # @see {#exchange} for other parameters
+    # @see #exchange for other parameters
     # @return [Exchange]
     def topic_exchange(name = "amq.topic", **)
       exchange(name, "topic", **)
     end
 
     # @deprecated
-    # @see {#topic_exchange}
+    # @see #topic_exchange
     alias topic topic_exchange
 
     # Declare a headers exchange and return a high level Exchange object
     # @param name [String] Name of the exchange (defaults to "amq.headers")
-    # @see {#exchange} for other parameters
+    # @see #exchange for other parameters
     # @return [Exchange]
     def headers_exchange(name = "amq.headers", **)
       exchange(name, "headers", **)
     end
 
     # @deprecated
-    # @see {#headers_exchange}
+    # @see #headers_exchange
     alias headers headers_exchange
 
     # @!endgroup
