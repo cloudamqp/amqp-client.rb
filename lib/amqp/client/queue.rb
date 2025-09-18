@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "message_coding"
-
 module AMQP
   class Client
     # Queue abstraction
     class Queue
-      include MessageCoding
-
       attr_reader :name
 
       # Should only be initialized from the Client
@@ -26,7 +22,7 @@ module AMQP
       # @raise (see Client#publish)
       # @return [Queue] self
       def publish(body, **properties)
-        encoded_body = encode_body(body, properties)
+        encoded_body = message_coding_strategy.encode_body(body, properties)
 
         @client.publish(encoded_body, "", @name, **properties)
         self
@@ -47,6 +43,7 @@ module AMQP
       # @return [self]
       def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, arguments: {})
         @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:) do |message|
+          message.coding_strategy = message_coding_strategy
           yield message
           message.ack unless no_ack
         rescue StandardError => e
@@ -90,6 +87,12 @@ module AMQP
       def delete
         @client.delete_queue(@name)
         nil
+      end
+
+      private
+
+      def message_coding_strategy
+        @client.message_coding_strategy
       end
     end
   end

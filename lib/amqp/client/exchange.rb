@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "message_coding"
-
 module AMQP
   class Client
     # High level representation of an exchange
     class Exchange
-      include MessageCoding
-
       attr_reader :name
 
       # Should only be initialized from the Client
@@ -27,7 +23,7 @@ module AMQP
       # @raise (see Client#publish)
       # @return [Exchange] self
       def publish(body, routing_key = "", **properties)
-        encoded_body = encode_body(body, properties)
+        encoded_body = @client.message_coding_strategy.encode_body(body, properties)
 
         @client.publish(encoded_body, @name, routing_key, **properties)
         self

@@ -7,13 +7,14 @@ require_relative "../../lib/amqp/client/queue"
 require_relative "../../lib/amqp/client/exchange"
 require_relative "../../lib/amqp/client/properties"
 require_relative "../../lib/amqp/client/message"
-require_relative "../../lib/amqp/client/message_coding"
+require_relative "../../lib/amqp/client/message_coding_strategy"
 
 class DummyClient
-  attr_reader :published
+  attr_reader :published, :message_coding_strategy
 
   def initialize
     @published = []
+    @message_coding_strategy = AMQP::Client::MessageCodingStrategy.new
   end
 
   def publish(body, exchange, routing_key, **properties)
