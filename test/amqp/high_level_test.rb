@@ -146,7 +146,7 @@ class HighLevelTest < Minitest::Test
   def test_default_direct_exchange
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      direct = client.direct("amq.direct")
+      direct = client.direct_exchange("amq.direct")
 
       assert_instance_of AMQP::Client::Exchange, direct
       assert_equal "amq.direct", direct.name
@@ -158,7 +158,7 @@ class HighLevelTest < Minitest::Test
   def test_default_exchange
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      default = client.default
+      default = client.default_exchange
 
       assert_instance_of AMQP::Client::Exchange, default
       assert_equal "", default.name
@@ -170,7 +170,7 @@ class HighLevelTest < Minitest::Test
   def test_default_fanout_exchange
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      fanout = client.fanout
+      fanout = client.fanout_exchange
 
       assert_instance_of AMQP::Client::Exchange, fanout
       assert_equal "amq.fanout", fanout.name
@@ -182,7 +182,7 @@ class HighLevelTest < Minitest::Test
   def test_default_topic_exchange
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      topic = client.topic
+      topic = client.topic_exchange
 
       assert_instance_of AMQP::Client::Exchange, topic
       assert_equal "amq.topic", topic.name
@@ -194,7 +194,7 @@ class HighLevelTest < Minitest::Test
   def test_default_headers_exchange
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      headers = client.headers
+      headers = client.headers_exchange
 
       assert_instance_of AMQP::Client::Exchange, headers
       assert_equal "amq.headers", headers.name
