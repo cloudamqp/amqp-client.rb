@@ -146,10 +146,22 @@ class HighLevelTest < Minitest::Test
   def test_default_direct_exchange
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      direct = client.direct
+      direct = client.direct("amq.direct")
 
       assert_instance_of AMQP::Client::Exchange, direct
-      assert_equal "", direct.name
+      assert_equal "amq.direct", direct.name
+    ensure
+      client.stop
+    end
+  end
+
+  def test_default_exchange
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    begin
+      default = client.default
+
+      assert_instance_of AMQP::Client::Exchange, default
+      assert_equal "", default.name
     ensure
       client.stop
     end
