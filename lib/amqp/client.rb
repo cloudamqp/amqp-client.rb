@@ -30,10 +30,10 @@ module AMQP
       @exchanges = {}
       @subscriptions = Set.new
       @connq = SizedQueue.new(1)
-      @message_coding_strategy = @@default_message_coding_strategy
+      @message_coding_strategy = self.class.default_message_coding_strategy
     end
 
-    @@default_message_coding_strategy = MessageCodingStrategy.new
+    @default_message_coding_strategy = MessageCodingStrategy.new
 
     # Set the default message coding strategy for all new clients
     # @param strategy [MessageCodingStrategy] The message coding strategy to use
@@ -42,13 +42,13 @@ module AMQP
     def self.default_message_coding_strategy=(strategy)
       MessageCodingStrategy.validate_strategy!(strategy)
 
-      @@default_message_coding_strategy = strategy
+      @default_message_coding_strategy = strategy
     end
 
     # Get the default message coding strategy for all new clients
     # @return [MessageCodingStrategy] The default message coding strategy
-    def self.default_message_coding_strategy
-      @@default_message_coding_strategy
+    class << self
+      attr_reader :default_message_coding_strategy
     end
 
     # Get the current message coding strategy
