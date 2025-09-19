@@ -246,18 +246,22 @@ module AMQP
     # @param worker_threads [Integer] Number of threads processing messages (default: 1)
     # @param arguments [Hash] Custom arguments to the consumer
     # @yield [Message] Delivered message from the queue
-    # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
-    # @return [nil]
+    # @return [Array<(String, Channel)>] Returns consumer_tag and the channel
     def subscribe(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 
       @subscriptions.add? [queue, no_ack, prefetch, worker_threads, arguments, blk]
 
+      ch = nil
+      tag = nil
+
       with_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
-        ch.basic_consume(queue, no_ack:, worker_threads:, arguments:, &blk)
+        tag, _threads = ch.basic_consume(queue, no_ack:, worker_threads:, arguments:, &blk)
       end
+
+      [tag, ch]
     end
 
     # Bind a queue to an exchange
