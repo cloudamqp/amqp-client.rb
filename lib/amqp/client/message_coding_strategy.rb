@@ -75,6 +75,8 @@ module AMQP
       end
 
       # Encode the message body based on content_type and content_encoding
+      # This strategy will not encode any data that is already binary.
+      # If that is not your desired behavior you should set your own encoding strategy
       # @param body [Object] The message body to encode
       # @param properties [Hash] Message properties hash containing content_type and content_encoding
       # @raise [Error::UnsupportedContentType] If the content type is not supported
@@ -84,6 +86,8 @@ module AMQP
         body = serialize_body(body, properties)
 
         # Return if data is already encoded
+        # Actually checking if the data is already in the desired format
+        # add too much overhead.
         return body if body.encoding == Encoding::BINARY
 
         case properties[:content_encoding]
