@@ -25,6 +25,15 @@ module AMQP
         self
       end
 
+      # Publish to the exchange, without waiting for confirm
+      # @param (see Client#publish_and_forget)
+      # @option (see Client#publish_and_forget)
+      # @return [self]
+      def publish_and_forget(body, routing_key = "", **properties)
+        @client.publish_and_forget(body, @name, routing_key, **properties)
+        self
+      end
+
       # Bind to another exchange
       # @param source [String, Exchange] Name of the exchange to bind to, or the exchange object itself
       # @param binding_key [String] Binding key on which messages that match might be routed (defaults to empty string)
