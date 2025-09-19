@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "consumer"
+
 module AMQP
   class Client
     # Queue abstraction
@@ -34,16 +36,16 @@ module AMQP
       #   will be requeued. Only relevant if no_ack is false. (Default: true)
       # @param arguments [Hash] Custom arguments to the consumer
       # @yield [Message] Delivered message from the queue
-      # @return [self]
+      # @return [Consumer] The consumer object, which can be used to cancel the consumer
       def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, arguments: {})
-        @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:) do |message|
+        tag, ch = @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:) do |message|
           yield message
           message.ack unless no_ack
         rescue StandardError => e
           message.reject(requeue: requeue_on_reject) unless no_ack
           raise e
         end
-        self
+        Consumer.new(ch, self, tag)
       end
 
       # Bind the queue to an exchange
