@@ -25,6 +25,15 @@ module AMQP
         self
       end
 
+      # Publish to the queue, without waiting for confirm
+      # @param (see Client#publish_and_forget)
+      # @option (see Client#publish_and_forget)
+      # @return [self]
+      def publish_and_forget(body, **properties)
+        @client.publish_and_forget(body, "", @name, **properties)
+        self
+      end
+
       # Subscribe/consume from the queue
       # @param no_ack [Boolean] If true, messages are automatically acknowledged by the server upon delivery.
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
