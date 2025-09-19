@@ -4,6 +4,7 @@ require_relative "client/version"
 require_relative "client/connection"
 require_relative "client/exchange"
 require_relative "client/queue"
+require_relative "client/consumer"
 
 # AMQP 0-9-1 Protocol, this library only implements the Client
 # @see Client
@@ -27,7 +28,8 @@ module AMQP
       @options = options
       @queues = {}
       @exchanges = {}
-      @subscriptions = Set.new
+      @consumers = {}
+      @next_consumer_id = 0
       @connq = SizedQueue.new(1)
     end
 
@@ -59,10 +61,16 @@ module AMQP
           Thread.new do
             # restore connection in another thread, read_loop have to run
             conn.channel(1) # reserve channel 1 for publishes
-            @subscriptions.each do |queue_name, no_ack, prefetch, wt, args, blk|
+            @consumers.each_value do |consumer|
               ch = conn.channel
-              ch.basic_qos(prefetch)
-              ch.basic_consume(queue_name, no_ack:, worker_threads: wt, arguments: args, &blk)
+              ch.basic_qos(consumer.prefetch)
+              consume_ok = ch.basic_consume(consumer.queue,
+                                            no_ack: consumer.no_ack,
+                                            worker_threads: consumer.worker_threads,
+                                            arguments: consumer.arguments,
+                                            &consumer.block)
+              # Update the consumer with new channel and consumer_tag
+              consumer.update_channel_id_and_tag(ch.id, consume_ok.consumer_tag)
             end
             @connq << conn
           end
@@ -236,8 +244,10 @@ module AMQP
       end
     end
 
-    # @!endgroup
     # @!group Queue actions
+
+    # @api private
+    ConsumeArgs = Data.define(:queue, :no_ack, :prefetch, :worker_threads, :arguments, :block)
 
     # Consume messages from a queue
     # @param queue [String] Name of the queue to subscribe to
@@ -246,16 +256,19 @@ module AMQP
     # @param worker_threads [Integer] Number of threads processing messages (default: 1)
     # @param arguments [Hash] Custom arguments to the consumer
     # @yield [Message] Delivered message from the queue
-    # @return [Connection::Channel::ConsumeOk]
+    # @return [Consumer] The consumer object, which can be used to cancel the consumer
     def subscribe(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
-
-      @subscriptions.add? [queue, no_ack, prefetch, worker_threads, arguments, blk]
 
       with_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
-        ch.basic_consume(queue, no_ack:, worker_threads:, arguments:, &blk)
+        consume_ok = ch.basic_consume(queue, no_ack:, worker_threads:, arguments:, &blk)
+        consume_args = ConsumeArgs.new(queue:, no_ack:, prefetch:, worker_threads:, arguments:, block: blk)
+        consumer_id = @next_consumer_id += 1
+        consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, consume_args:, consume_ok:)
+        @consumers[consumer_id] = consumer
+        consumer
       end
     end
 
@@ -345,7 +358,13 @@ module AMQP
 
     # @!endgroup
 
-    private
+    # @api private
+    def cancel_consumer(consumer)
+      @consumers.delete(consumer.id)
+      with_connection do |conn|
+        conn.channel(consumer.channel_id).basic_cancel(consumer.tag)
+      end
+    end
 
     def with_connection
       conn = nil

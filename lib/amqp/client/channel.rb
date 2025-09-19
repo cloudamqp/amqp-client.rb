@@ -306,11 +306,13 @@ module AMQP
         end
 
         # Response when subscribing (starting a consumer)
+        # @!attribute channel_id
+        #   @return [Integer] The channel ID
         # @!attribute consumer_tag
         #   @return [String] The consumer tag
         # @!attribute worker_threads
         #   @return [Array<Thread>] Array of worker threads
-        ConsumeOk = Data.define(:consumer_tag, :worker_threads)
+        ConsumeOk = Data.define(:channel_id, :consumer_tag, :worker_threads)
 
         # Consume messages from a queue
         # @param queue [String] Name of the queue to subscribe to
@@ -335,7 +337,7 @@ module AMQP
             threads = Array.new(worker_threads) do
               Thread.new { consume_loop(q, tag, &blk) }
             end
-            ConsumeOk.new(consumer_tag: tag, worker_threads: threads)
+            ConsumeOk.new(channel_id: @id, consumer_tag: tag, worker_threads: threads)
           end
         end
 
