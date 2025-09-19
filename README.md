@@ -18,32 +18,6 @@ The library is fully supported by [CloudAMQP](https://www.cloudamqp.com), the la
 
 The client has two APIs.
 
-### Low level API
-
-This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn't handle reconnects.
-
-```ruby
-require "amqp-client"
-
-# Opens and establishes a connection
-conn = AMQP::Client.new("amqp://guest:guest@localhost").connect
-
-# Open a channel
-ch = conn.channel
-
-# Create a temporary queue
-q = ch.queue_declare
-
-# Publish a message to said queue
-ch.basic_publish_confirm "Hello World!", "", q.queue_name, persistent: true
-
-# Poll the queue for a message
-msg = ch.basic_get(q.queue_name)
-
-# Print the message's body to STDOUT
-puts msg.body
-```
-
 ### High level API
 
 The library provides a high-level API that manages channels, content-types, encodings, reconnection automatically.
@@ -88,6 +62,32 @@ myqueue.publish({ foo: "bar" }.to_json, content_type: "application/json")
 # Publish to any exchange
 ex.publish("my message", "topic.foo", headers: { foo: "bar" })
 amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
+```
+
+### Low level API
+
+This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn't handle reconnects.
+
+```ruby
+require "amqp-client"
+
+# Opens and establishes a connection
+conn = AMQP::Client.new("amqp://guest:guest@localhost").connect
+
+# Open a channel
+ch = conn.channel
+
+# Create a temporary queue
+q = ch.queue_declare
+
+# Publish a message to said queue
+ch.basic_publish_confirm "Hello World!", "", q.queue_name, persistent: true
+
+# Poll the queue for a message
+msg = ch.basic_get(q.queue_name)
+
+# Print the message's body to STDOUT
+puts msg.body
 ```
 
 ## Benchmark
