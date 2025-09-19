@@ -14,19 +14,25 @@ module AMQP
       end
 
       # Publish to the queue, wait for confirm
-      # @param (see Client#publish)
+      # @param body [Object] The message body, will be encoded according to properties.content_type
+      #   and properties.content_encoding if specified (see Client#publish).
       # @option (see Client#publish)
+      # @raise [Error::UnsupportedContentType] If content type is unsupported
+      # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
       # @raise (see Client#publish)
-      # @return [self]
+      # @return [Queue] self
       def publish(body, **properties)
-        @client.publish(body, "", @name, **properties)
+        encoded_body = message_coding_strategy.encode_body(body, properties)
+
+        @client.publish(encoded_body, "", @name, **properties)
         self
       end
 
       # Subscribe/consume from the queue
       # @param no_ack [Boolean] If true, messages are automatically acknowledged by the server upon delivery.
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
-      #   an exception, the message is rejected and can be optionally requeued. (Default: false)
+      #   an exception, the message is rejected and can be optionally requeued.
+      #   You can of course handle the ack/reject in the block yourself. (Default: false)
       # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
       # @param worker_threads [Integer] Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked
@@ -37,6 +43,7 @@ module AMQP
       # @return [self]
       def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, arguments: {})
         @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:) do |message|
+          message.coding_strategy = message_coding_strategy
           yield message
           message.ack unless no_ack
         rescue StandardError => e
@@ -51,7 +58,7 @@ module AMQP
       # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [self]
-      def bind(exchange, binding_key, arguments: {})
+      def bind(exchange, binding_key = "", arguments: {})
         exchange = exchange.name unless exchange.is_a?(String)
         @client.bind(@name, exchange, binding_key, arguments:)
         self
@@ -80,6 +87,12 @@ module AMQP
       def delete
         @client.delete_queue(@name)
         nil
+      end
+
+      private
+
+      def message_coding_strategy
+        @client.message_coding_strategy
       end
     end
   end

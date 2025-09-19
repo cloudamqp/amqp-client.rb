@@ -4,6 +4,7 @@ require_relative "client/version"
 require_relative "client/connection"
 require_relative "client/exchange"
 require_relative "client/queue"
+require_relative "client/message_coding_strategy"
 
 # AMQP 0-9-1 Protocol, this library only implements the Client
 # @see Client
@@ -29,6 +30,39 @@ module AMQP
       @exchanges = {}
       @subscriptions = Set.new
       @connq = SizedQueue.new(1)
+      @message_coding_strategy = self.class.default_message_coding_strategy
+    end
+
+    @default_message_coding_strategy = MessageCodingStrategy.new
+
+    # Set the default message coding strategy for all new clients
+    # @param strategy [MessageCodingStrategy] The message coding strategy to use
+    # @raise [ArgumentError] If the strategy is invalid
+    # @return [MessageCodingStrategy] The new default message coding strategy
+    def self.default_message_coding_strategy=(strategy)
+      MessageCodingStrategy.validate_strategy!(strategy)
+
+      @default_message_coding_strategy = strategy
+    end
+
+    # Get the default message coding strategy for all new clients
+    # @return [MessageCodingStrategy] The default message coding strategy
+    class << self
+      attr_reader :default_message_coding_strategy
+    end
+
+    # Get the current message coding strategy
+    # @return [MessageCodingStrategy] The message coding strategy
+    attr_reader :message_coding_strategy
+
+    # Set a custom message coding strategy
+    # @param strategy [MessageCodingStrategy] The message coding strategy to use
+    # @example Using a custom Base64 strategy
+    #   client.message_coding_strategy = MyBase64Strategy.new
+    def message_coding_strategy=(strategy)
+      MessageCodingStrategy.validate_strategy!(strategy)
+
+      @message_coding_strategy = strategy
     end
 
     # @!group Connect and disconnect

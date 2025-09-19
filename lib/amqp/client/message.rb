@@ -15,6 +15,7 @@ module AMQP
         @properties = nil
         @body = ""
         @ack_or_reject_sent = false
+        @coding_strategy = nil
       end
 
       # The channel the message was deliviered to
@@ -50,6 +51,26 @@ module AMQP
       # @return [String]
       attr_accessor :body
 
+      # The message coding strategy used to encode/decode the message body
+      # If not set, the client's default strategy will be used
+      # @return [MessageCodingStrategy, nil]
+      # @api private
+      def coding_strategy=(strategy)
+        raise ArgumentError, "coding_strategy can only be set once" if @coding_strategy
+
+        # Validation happens in Client setter methods
+        # This api is internal
+        @coding_strategy = strategy
+      end
+
+      # Get the message coding strategy used to encode/decode the message body
+      # If not set, the client's default strategy will be used
+      # @return [MessageCodingStrategy]
+      # @api private
+      def coding_strategy
+        @coding_strategy ||= Client.default_message_coding_strategy
+      end
+
       # Acknowledge the message
       # @return [nil]
       def ack
@@ -77,6 +98,21 @@ module AMQP
       # @return [String]
       def exchange_name
         @exchange
+      end
+
+      # Parse the message body based on content_type and content_encoding
+      # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
+      # @raise [Error::UnsupportedContentType] If the content type is not supported
+      # @return [Object] The parsed message body
+      def parse
+        coding_strategy.parse_body(body, @properties)
+      end
+
+      # Decode the message body based on content_encoding
+      # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
+      # @return [String] The decoded message body
+      def decode
+        coding_strategy.decode_body(body, @properties)
       end
     end
 

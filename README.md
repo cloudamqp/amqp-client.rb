@@ -66,7 +66,7 @@ myqueue.bind("amq.topic", "my.events.*")
 # The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack'ed.
 myqueue.subscribe(prefetch: 20) do |msg|
-  puts JSON.parse(msg.body)
+  puts msg.parse # Parses msg.body based on content_type and content_encdoing
 rescue => e
   puts e.full_message
 end
@@ -79,13 +79,22 @@ rescue => e
   msg.reject
 end
 
-# Publish directly to the queue
-myqueue.publish({ foo: "bar" }.to_json, content_type: "application/json")
+# Publish directly to the queue, message will be serialized to json automatically
+myqueue.publish({ foo: "bar" }, content_type: "application/json")
 
 # Publish to any exchange
 amqp.publish("my message", "amq.topic", "topic.foo", headers: { foo: 'bar' })
-amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
+# Message will be gzip encoded automatically
+amqp.publish("an event", "amq.topic", "my.event", content_encoding: 'gzip')
 ```
+
+#### Supported Content Types and Encodings
+
+`Queue#publish`, `Exchange#publish` and `Message.parse` will automatically handle:
+
+* application/json
+* gzip
+* deflate
 
 ## Benchmark
 
