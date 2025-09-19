@@ -60,8 +60,11 @@ amqp = AMQP::Client.new("amqp://localhost").start
 # Declares a durable queue
 myqueue = amqp.queue("myqueue")
 
+# Declares a topic exchange
+ex = amqp.topic_exchange("myexchange")
+
 # Bind the queue to any exchange, with any binding key
-myqueue.bind("amq.topic", "my.events.*")
+myqueue.bind(ex, "my.events.*")
 
 # The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack'ed.
@@ -83,7 +86,7 @@ end
 myqueue.publish({ foo: "bar" }.to_json, content_type: "application/json")
 
 # Publish to any exchange
-amqp.publish("my message", "amq.topic", "topic.foo", headers: { foo: 'bar' })
+ex.publish("my message", "topic.foo", headers: { foo: "bar" })
 amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
 ```
 
@@ -119,11 +122,15 @@ gem 'amqp-client'
 
 And then execute:
 
+```bash
     bundle install
+```
 
 Or install it yourself as:
 
+```bash
     gem install amqp-client
+```
 
 ## Development
 
