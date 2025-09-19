@@ -72,7 +72,7 @@ class ThroughputBenchmark
     puts "  Publishing #{@message_count} messages..."
     publish_time = Benchmark.realtime do
       @message_count.times do
-        queue.publish(@test_data)
+        queue.publish_and_forget(@test_data)
       end
     end
 
