@@ -4,6 +4,7 @@
 require_relative "../lib/amqp-client"
 require "benchmark"
 require "bunny"
+require "ostruct"
 
 # Throughput benchmark for AMQP client
 class ThroughputBenchmark
@@ -72,19 +73,12 @@ class ThroughputBenchmark
     @bunny&.stop
   end
 
-  def test_highlevel_api
-    queue_name = "benchmark_highlevel_#{Time.now.to_i}"
-    queue = @client.queue(queue_name, durable: false, auto_delete: true)
-    queue.purge
-
-    results = {}
-
-    # Test publishing
+  # Generic method to benchmark publishing operations
+  def benchmark_publishing(&block)
     puts "  Publishing #{@message_count} messages..."
+
     publish_time = Benchmark.realtime do
-      @message_count.times do
-        queue.publish_and_forget(@test_data)
-      end
+      @message_count.times(&block)
     end
 
     publish_rate = @message_count / publish_time
@@ -94,29 +88,34 @@ class ThroughputBenchmark
     puts "    Rate: #{publish_rate.round(1)} msg/s"
     puts "    Throughput: #{publish_throughput.round(1)} MB/s"
 
-    results[:publish] = {
+    {
       duration: publish_time,
       rate: publish_rate,
       throughput_mbps: publish_throughput
     }
+  end
 
-    # Test consuming
+  # Generic method to benchmark consuming operations
+  def benchmark_consuming
     puts "  Consuming #{@message_count} messages..."
 
     consumed_count = 0
-
     done_q = ::Queue.new
+
+    # Callback that tracks consumed messages
+    consume_callback = proc do |_msg|
+      consumed_count += 1
+      done_q.push(nil) if consumed_count == @message_count
+    end
+
     consumer = nil
     consume_time = Benchmark.realtime do
-      consumer = queue.subscribe(no_ack: true) do |_msg|
-        consumed_count += 1
-        done_q.push(nil) if consumed_count == @message_count
-      end
-
+      consumer = yield(consume_callback)
       done_q.pop # Wait until all messages are consumed
     end
 
-    consumer&.cancel
+    # Cancel the consumer if it supports cancel
+    consumer&.cancel if consumer.respond_to?(:cancel)
 
     consume_rate = consumed_count.positive? ? consumed_count / consume_time : 0
     consume_throughput = (consumed_count * @message_size) / consume_time / 1024 / 1024 # MB/s
@@ -126,12 +125,30 @@ class ThroughputBenchmark
     puts "    Throughput: #{consume_throughput.round(1)} MB/s"
     puts "    Messages consumed: #{consumed_count}/#{@message_count}"
 
-    results[:consume] = {
+    {
       duration: consume_time,
       rate: consume_rate,
       throughput_mbps: consume_throughput,
       messages_consumed: consumed_count
     }
+  end
+
+  def test_highlevel_api
+    queue_name = "benchmark_highlevel_#{Time.now.to_i}"
+    queue = @client.queue(queue_name, durable: false, auto_delete: true)
+    queue.purge
+
+    results = {}
+
+    # Test publishing
+    results[:publish] = benchmark_publishing do
+      queue.publish_and_forget(@test_data)
+    end
+
+    # Test consuming
+    results[:consume] = benchmark_consuming do |consume_callback|
+      queue.subscribe(no_ack: true, &consume_callback)
+    end
 
     results
   end
@@ -143,57 +160,16 @@ class ThroughputBenchmark
     results = {}
 
     # Test publishing
-    puts "  Publishing #{@message_count} messages..."
-    publish_time = Benchmark.realtime do
-      @message_count.times do
-        @channel.basic_publish(@test_data, "", queue_name)
-      end
+    results[:publish] = benchmark_publishing do
+      @channel.basic_publish(@test_data, "", queue_name)
     end
-
-    publish_rate = @message_count / publish_time
-    publish_throughput = (@message_count * @message_size) / publish_time / 1024 / 1024 # MB/s
-
-    puts "    Duration: #{publish_time.round(3)}s"
-    puts "    Rate: #{publish_rate.round(1)} msg/s"
-    puts "    Throughput: #{publish_throughput.round(1)} MB/s"
-
-    results[:publish] = {
-      duration: publish_time,
-      rate: publish_rate,
-      throughput_mbps: publish_throughput
-    }
 
     # Test consuming
-    puts "  Consuming #{@message_count} messages..."
-
-    consumed_count = 0
-
-    done_q = ::Queue.new
-    tag = nil
-    consume_time = Benchmark.realtime do
-      tag, = @channel.basic_consume(queue_name, no_ack: true) do |_msg|
-        consumed_count += 1
-        done_q.push(nil) if consumed_count == @message_count
-      end
-      done_q.pop # Wait until all messages are consumed
+    results[:consume] = benchmark_consuming do |consume_callback|
+      tag, = @channel.basic_consume(queue_name, no_ack: true, &consume_callback)
+      # Return an object that can be canceled
+      OpenStruct.new(cancel: -> { @channel.basic_cancel(tag) })
     end
-
-    @channel.basic_cancel(tag) # Cancel the consumer
-
-    consume_rate = consumed_count.positive? ? consumed_count / consume_time : 0
-    consume_throughput = (consumed_count * @message_size) / consume_time / 1024 / 1024 # MB/s
-
-    puts "    Duration: #{consume_time.round(3)}s"
-    puts "    Rate: #{consume_rate.round(1)} msg/s"
-    puts "    Throughput: #{consume_throughput.round(1)} MB/s"
-    puts "    Messages consumed: #{consumed_count}/#{@message_count}"
-
-    results[:consume] = {
-      duration: consume_time,
-      rate: consume_rate,
-      throughput_mbps: consume_throughput,
-      messages_consumed: consumed_count
-    }
 
     results
   end
@@ -206,57 +182,14 @@ class ThroughputBenchmark
     results = {}
 
     # Test publishing
-    puts "  Publishing #{@message_count} messages..."
-    publish_time = Benchmark.realtime do
-      @message_count.times do
-        queue.publish(@test_data)
-      end
+    results[:publish] = benchmark_publishing do
+      queue.publish(@test_data)
     end
-
-    publish_rate = @message_count / publish_time
-    publish_throughput = (@message_count * @message_size) / publish_time / 1024 / 1024 # MB/s
-
-    puts "    Duration: #{publish_time.round(3)}s"
-    puts "    Rate: #{publish_rate.round(1)} msg/s"
-    puts "    Throughput: #{publish_throughput.round(1)} MB/s"
-
-    results[:publish] = {
-      duration: publish_time,
-      rate: publish_rate,
-      throughput_mbps: publish_throughput
-    }
 
     # Test consuming
-    puts "  Consuming #{@message_count} messages..."
-
-    consumed_count = 0
-
-    done_q = ::Queue.new
-    consumer = nil
-    consume_time = Benchmark.realtime do
-      consumer = queue.subscribe(manual_ack: false) do |_msg|
-        consumed_count += 1
-        done_q.push(nil) if consumed_count == @message_count
-      end
-      done_q.pop # Wait until all messages are consumed
+    results[:consume] = benchmark_consuming do |consume_callback|
+      queue.subscribe(manual_ack: false, &consume_callback)
     end
-
-    consumer.cancel # Cancel the consumer
-
-    consume_rate = consumed_count.positive? ? consumed_count / consume_time : 0
-    consume_throughput = (consumed_count * @message_size) / consume_time / 1024 / 1024 # MB/s
-
-    puts "    Duration: #{consume_time.round(3)}s"
-    puts "    Rate: #{consume_rate.round(1)} msg/s"
-    puts "    Throughput: #{consume_throughput.round(1)} MB/s"
-    puts "    Messages consumed: #{consumed_count}/#{@message_count}"
-
-    results[:consume] = {
-      duration: consume_time,
-      rate: consume_rate,
-      throughput_mbps: consume_throughput,
-      messages_consumed: consumed_count
-    }
 
     results
   ensure
