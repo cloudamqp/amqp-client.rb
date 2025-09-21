@@ -127,7 +127,7 @@ module AMQP
     # @example
     #   amqp = AMQP::Client.new.start
     #   x = amqp.exchange("my.hash.exchange", type: "x-consistent-hash")
-    #   x.publish("body", "routing-key")
+    #   x.publish("body", routing_key: "routing-key")
     def exchange(name, type:, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
@@ -246,8 +246,7 @@ module AMQP
     # @param worker_threads [Integer] Number of threads processing messages (default: 1)
     # @param arguments [Hash] Custom arguments to the consumer
     # @yield [Message] Delivered message from the queue
-    # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
-    # @return [nil]
+    # @return [Connection::Channel::ConsumeOk]
     def subscribe(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 

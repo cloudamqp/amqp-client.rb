@@ -14,7 +14,7 @@ module AMQP
       end
 
       # Publish to the queue, wait for confirm
-      # @param (see Client#publish)
+      # @param body [String] The body
       # @option (see Client#publish)
       # @raise (see Client#publish)
       # @return [self]
