@@ -6,8 +6,11 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "amqp/client"
 
 require "minitest/autorun"
+require "minitest/reporters"
 
 Thread.abort_on_exception = true
+
+Minitest::Reporters.use!([Minitest::Reporters::DefaultReporter.new(slow_count: 5)])
 
 TEST_AMQP_HOST = ENV.fetch("TEST_AMQP_HOST") do
   RUBY_ENGINE == "jruby" ? "127.0.0.1" : "localhost"

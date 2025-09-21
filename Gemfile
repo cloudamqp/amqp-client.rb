@@ -20,3 +20,5 @@ gem "yard", require: false
 gem "redcarpet", require: false, platforms: :ruby
 
 gem "bunny"
+
+gem "minitest-reporters", "~> 1.7"
