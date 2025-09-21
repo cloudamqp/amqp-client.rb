@@ -38,7 +38,7 @@ myqueue = amqp.queue("myqueue")
 ex = amqp.topic_exchange("myexchange")
 
 # Bind the queue to any exchange, with any binding key
-myqueue.bind(ex, "my.events.*")
+myqueue.bind(ex, binding_key: "my.events.*")
 
 # The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack'ed.
@@ -60,8 +60,8 @@ end
 myqueue.publish({ foo: "bar" }.to_json, content_type: "application/json")
 
 # Publish to any exchange
-ex.publish("my message", "topic.foo", headers: { foo: "bar" })
-amqp.publish(Zlib.gzip("an event"), "amq.topic", "my.event", content_encoding: 'gzip')
+ex.publish("my message", routing_key: "topic.foo", headers: { foo: "bar" })
+amqp.publish(Zlib.gzip("an event"), exchange: "amq.topic", routing_key: "my.event", content_encoding: "gzip")
 ```
 
 ### Low level API
@@ -81,7 +81,7 @@ ch = conn.channel
 q = ch.queue_declare
 
 # Publish a message to said queue
-ch.basic_publish_confirm "Hello World!", "", q.queue_name, persistent: true
+ch.basic_publish_confirm "Hello World!", exchange: "", routing_key: q.queue_name, persistent: true
 
 # Poll the queue for a message
 msg = ch.basic_get(q.queue_name)

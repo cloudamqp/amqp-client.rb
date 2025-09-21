@@ -19,7 +19,7 @@ module AMQP
       # @raise (see Client#publish)
       # @return [self]
       def publish(body, **properties)
-        @client.publish(body, "", @name, **properties)
+        @client.publish(body, exchange: "", routing_key: @name, **properties)
         self
       end
 
@@ -51,9 +51,9 @@ module AMQP
       # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [self]
-      def bind(exchange, binding_key, arguments: {})
+      def bind(exchange, binding_key: "", arguments: {})
         exchange = exchange.name unless exchange.is_a?(String)
-        @client.bind(@name, exchange, binding_key, arguments:)
+        @client.bind(queue: @name, exchange:, binding_key:, arguments:)
         self
       end
 
@@ -62,9 +62,9 @@ module AMQP
       # @param binding_key [String] Binding key which the queue is bound to the exchange with
       # @param arguments [Hash] Arguments matching the binding that's being removed
       # @return [self]
-      def unbind(exchange, binding_key, arguments: {})
+      def unbind(exchange, binding_key: "", arguments: {})
         exchange = exchange.name unless exchange.is_a?(String)
-        @client.unbind(@name, exchange, binding_key, arguments:)
+        @client.unbind(queue: @name, exchange:, binding_key:, arguments:)
         self
       end
 

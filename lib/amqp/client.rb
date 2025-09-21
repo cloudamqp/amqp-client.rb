@@ -126,12 +126,12 @@ module AMQP
     # @return [Exchange]
     # @example
     #   amqp = AMQP::Client.new.start
-    #   x = amqp.exchange("my.hash.exchange", "x-consistent-hash")
+    #   x = amqp.exchange("my.hash.exchange", type: "x-consistent-hash")
     #   x.publish("body", "routing-key")
-    def exchange(name, type, durable: true, auto_delete: false, internal: false, arguments: {})
+    def exchange(name, type:, durable: true, auto_delete: false, internal: false, arguments: {})
       @exchanges.fetch(name) do
         with_connection do |conn|
-          conn.channel(1).exchange_declare(name, type, durable:, auto_delete:, internal:, arguments:)
+          conn.channel(1).exchange_declare(name, type:, durable:, auto_delete:, internal:, arguments:)
         end
         @exchanges[name] = Exchange.new(self, name)
       end
@@ -142,7 +142,7 @@ module AMQP
     # @see #exchange for other parameters
     # @return [Exchange]
     def direct_exchange(name = "amq.direct", **)
-      return exchange(name, "direct", **) unless name.empty?
+      return exchange(name, type: "direct", **) unless name.empty?
 
       # Return the default exchange
       @exchanges.fetch(name) do
@@ -170,7 +170,7 @@ module AMQP
     # @see #exchange for other parameters
     # @return [Exchange]
     def fanout_exchange(name = "amq.fanout", **)
-      exchange(name, "fanout", **)
+      exchange(name, type: "fanout", **)
     end
 
     # @deprecated
@@ -182,7 +182,7 @@ module AMQP
     # @see #exchange for other parameters
     # @return [Exchange]
     def topic_exchange(name = "amq.topic", **)
-      exchange(name, "topic", **)
+      exchange(name, type: "topic", **)
     end
 
     # @deprecated
@@ -194,7 +194,7 @@ module AMQP
     # @see #exchange for other parameters
     # @return [Exchange]
     def headers_exchange(name = "amq.headers", **)
-      exchange(name, "headers", **)
+      exchange(name, type: "headers", **)
     end
 
     # @deprecated
@@ -209,10 +209,10 @@ module AMQP
     # @option (see Connection::Channel#basic_publish_confirm)
     # @return (see Connection::Channel#basic_publish_confirm)
     # @raise (see Connection::Channel#basic_publish_confirm)
-    def publish(body, exchange, routing_key, **properties)
+    def publish(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
-        conn.channel(1).basic_publish_confirm(body, exchange, routing_key, **properties)
+        conn.channel(1).basic_publish_confirm(body, exchange:, routing_key:, **properties)
       end
     end
 
@@ -221,10 +221,10 @@ module AMQP
     # @option (see Connection::Channel#basic_publish)
     # @return (see Connection::Channel#basic_publish)
     # @raise (see Connection::Channel#basic_publish)
-    def publish_and_forget(body, exchange, routing_key, **properties)
+    def publish_and_forget(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
-        conn.channel(1).basic_publish(body, exchange, routing_key, **properties)
+        conn.channel(1).basic_publish(body, exchange:, routing_key:, **properties)
       end
     end
 
@@ -266,9 +266,9 @@ module AMQP
     # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
     # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
     # @return [nil]
-    def bind(queue, exchange, binding_key, arguments: {})
+    def bind(queue:, exchange:, binding_key: "", arguments: {})
       with_connection do |conn|
-        conn.channel(1).queue_bind(queue, exchange, binding_key, arguments:)
+        conn.channel(1).queue_bind(queue, exchange:, binding_key:, arguments:)
       end
     end
 
@@ -278,9 +278,9 @@ module AMQP
     # @param binding_key [String] Binding key which the queue is bound to the exchange with
     # @param arguments [Hash] Arguments matching the binding that's being removed
     # @return [nil]
-    def unbind(queue, exchange, binding_key, arguments: {})
+    def unbind(queue:, exchange:, binding_key: "", arguments: {})
       with_connection do |conn|
-        conn.channel(1).queue_unbind(queue, exchange, binding_key, arguments:)
+        conn.channel(1).queue_unbind(queue, exchange:, binding_key:, arguments:)
       end
     end
 
@@ -310,26 +310,26 @@ module AMQP
     # @!group Exchange actions
 
     # Bind an exchange to an exchange
-    # @param destination [String] Name of the exchange to bind
     # @param source [String] Name of the exchange to bind to
+    # @param destination [String] Name of the exchange to bind
     # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
     # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
     # @return [nil]
-    def exchange_bind(destination, source, binding_key, arguments: {})
+    def exchange_bind(source:, destination:, binding_key: "", arguments: {})
       with_connection do |conn|
-        conn.channel(1).exchange_bind(destination, source, binding_key, arguments:)
+        conn.channel(1).exchange_bind(destination:, source:, binding_key:, arguments:)
       end
     end
 
     # Unbind an exchange from an exchange
-    # @param destination [String] Name of the exchange to unbind
     # @param source [String] Name of the exchange to unbind from
+    # @param destination [String] Name of the exchange to unbind
     # @param binding_key [String] Binding key which the exchange is bound to the exchange with
     # @param arguments [Hash] Arguments matching the binding that's being removed
     # @return [nil]
-    def exchange_unbind(destination, source, binding_key, arguments: {})
+    def exchange_unbind(source:, destination:, binding_key: "", arguments: {})
       with_connection do |conn|
-        conn.channel(1).exchange_unbind(destination, source, binding_key, arguments:)
+        conn.channel(1).exchange_unbind(destination:, source:, binding_key:, arguments:)
       end
     end
 

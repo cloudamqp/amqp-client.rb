@@ -33,10 +33,10 @@ class HighLevelTest < Minitest::Test
       q.subscribe do |msg|
         msgs.push msg
       end
-      q.bind("amq.topic", "foo.*")
-      client.publish("foo", "amq.topic", "foo.bar")
-      q.unbind("amq.topic", "foo.*")
-      client.publish("foo", "amq.topic", "foo.bar")
+      q.bind("amq.topic", binding_key: "foo.*")
+      client.publish("foo", exchange: "amq.topic", routing_key: "foo.bar")
+      q.unbind("amq.topic", binding_key: "foo.*")
+      client.publish("foo", exchange: "amq.topic", routing_key: "foo.bar")
 
       msg = msgs.pop
 
@@ -63,8 +63,8 @@ class HighLevelTest < Minitest::Test
 
       assert_equal "gzip", msg1.properties.content_encoding
 
-      q.bind("amq.topic", "foo.*")
-      client.publish("foo", "amq.topic", "foo.bar", headers: { foo: "bar" })
+      q.bind("amq.topic", binding_key: "foo.*")
+      client.publish("foo", exchange: "amq.topic", routing_key: "foo.bar", headers: { foo: "bar" })
 
       msg2 = msgs.pop
 
@@ -79,9 +79,9 @@ class HighLevelTest < Minitest::Test
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
       assert_raises(AMQP::Client::Error::ChannelClosed) do
-        client.publish("", "non-existing-exchange", "foo.bar")
+        client.publish("", exchange: "non-existing-exchange", routing_key: "foo.bar")
       end
-      client.publish("", "amq.topic", "foo.bar")
+      client.publish("", exchange: "amq.topic", routing_key: "foo.bar")
     ensure
       client.stop
     end
@@ -91,17 +91,17 @@ class HighLevelTest < Minitest::Test
     msgs = Queue.new
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
-      e = client.exchange("test.exchange", "fanout", auto_delete: true)
+      e = client.exchange("test.exchange", type: "fanout", auto_delete: true)
       q = client.queue("test.bind")
-      q.bind("test.exchange", "")
+      q.bind("test.exchange", binding_key: "")
       q.subscribe do |msg|
         msgs.push msg
       end
-      client.publish("foo", "amq.topic", "foo.bar")
-      e.bind("amq.topic", "foo.bar")
-      client.publish("bar", "amq.topic", "foo.bar")
-      e.unbind("amq.topic", "foo.bar")
-      client.publish("foo", "amq.topic", "foo.bar")
+      client.publish("foo", exchange: "amq.topic", routing_key: "foo.bar")
+      e.bind("amq.topic", binding_key: "foo.bar")
+      client.publish("bar", exchange: "amq.topic", routing_key: "foo.bar")
+      e.unbind("amq.topic", binding_key: "foo.bar")
+      client.publish("foo", exchange: "amq.topic", routing_key: "foo.bar")
 
       msg = msgs.pop
 
@@ -130,7 +130,7 @@ class HighLevelTest < Minitest::Test
         msgs << msg
       end
       assert_raises(AMQP::Client::Error::ConnectionClosed, AMQP::Client::Error::ChannelClosed) do
-        client.exchange("test.exchange", "non.existing.exchange.type")
+        client.exchange("test.exchange", type: "non.existing.exchange.type")
       end
 
       q.publish("bar")
@@ -211,14 +211,14 @@ class HighLevelTest < Minitest::Test
       queue = client.queue("test.fanout.objbind.queue")
 
       # Test queue.bind with Exchange object (not just string)
-      queue.bind(exchange, "") # Pass Exchange object directly
+      queue.bind(exchange, binding_key: "") # Pass Exchange object directly
 
       queue.subscribe do |msg|
         msgs.push msg
       end
 
       # Publish to exchange and verify message routing
-      exchange.publish("message via exchange object bind", "")
+      exchange.publish("message via exchange object bind", routing_key: "")
 
       msg = msgs.pop
 
@@ -226,10 +226,10 @@ class HighLevelTest < Minitest::Test
       assert_equal "test.fanout.objbind", msg.exchange_name
 
       # Test unbind with Exchange object
-      queue.unbind(exchange, "")
+      queue.unbind(exchange, binding_key: "")
 
       # Publish again - should not reach queue after unbind
-      exchange.publish("message after unbind", "")
+      exchange.publish("message after unbind", routing_key: "")
 
       sleep 0.01
       assert_raises(ThreadError) do
@@ -250,17 +250,17 @@ class HighLevelTest < Minitest::Test
       queue2 = client.queue("test.queue.bind.object")
 
       # Test queue.bind with string name
-      queue1.bind("test.queue.bind.string.vs.obj", "")
+      queue1.bind("test.queue.bind.string.vs.obj", binding_key: "")
 
       # Test queue.bind with Exchange object
-      queue2.bind(exchange, "")
+      queue2.bind(exchange, binding_key: "")
 
       # Both should work the same way
       assert true, "Queue can bind to both string names and Exchange objects"
 
       # Test unbinding
-      queue1.unbind("test.queue.bind.string.vs.obj", "")
-      queue2.unbind(exchange, "")
+      queue1.unbind("test.queue.bind.string.vs.obj", binding_key: "")
+      queue2.unbind(exchange, binding_key: "")
     ensure
       exchange&.delete
       queue1&.delete
@@ -278,17 +278,17 @@ class HighLevelTest < Minitest::Test
 
       # Create queue bound to destination
       queue = client.queue("test.exchange.exchange.bind.unique")
-      queue.bind(dest_exchange, "")
+      queue.bind(dest_exchange, binding_key: "")
 
       queue.subscribe do |msg|
         msgs.push msg
       end
 
       # Test exchange.bind with Exchange object
-      dest_exchange.bind(source_exchange, "") # Bind to Exchange object
+      dest_exchange.bind(source_exchange, binding_key: "") # Bind to Exchange object
 
       # Publish to source exchange
-      source_exchange.publish("message via exchange-exchange bind", "")
+      source_exchange.publish("message via exchange-exchange bind", routing_key: "")
 
       msg = msgs.pop
 
@@ -296,10 +296,10 @@ class HighLevelTest < Minitest::Test
       assert_equal "test.source.exchange.obj.unique", msg.exchange_name
 
       # Test unbind with Exchange object
-      dest_exchange.unbind(source_exchange, "")
+      dest_exchange.unbind(source_exchange, binding_key: "")
 
       # Publish again - should not reach queue
-      source_exchange.publish("message after exchange unbind", "")
+      source_exchange.publish("message after exchange unbind", routing_key: "")
 
       sleep 0.01
       assert_raises(ThreadError) do
@@ -325,8 +325,8 @@ class HighLevelTest < Minitest::Test
       dest_exchange.unbind(source_exchange) # No binding_key specified, should default to ""
 
       # Test explicit empty string works the same
-      dest_exchange.bind(source_exchange, "")
-      dest_exchange.unbind(source_exchange, "")
+      dest_exchange.bind(source_exchange, binding_key: "")
+      dest_exchange.unbind(source_exchange, binding_key: "")
 
       # If we got here without errors, the default works
       assert true, "Exchange bind/unbind default binding_key works"
@@ -342,12 +342,12 @@ class HighLevelTest < Minitest::Test
       exchange = client.fanout("test.exchange.requires.binding")
 
       # Queue bind/unbind still require explicit binding_key (no default)
-      queue.bind(exchange, "")
-      queue.unbind(exchange, "")
+      queue.bind(exchange, binding_key: "")
+      queue.unbind(exchange, binding_key: "")
 
       # Test with string
-      queue.bind("test.exchange.requires.binding", "")
-      queue.unbind("test.exchange.requires.binding", "")
+      queue.bind("test.exchange.requires.binding", binding_key: "")
+      queue.unbind("test.exchange.requires.binding", binding_key: "")
 
       # If we got here without errors, the API works
       assert true, "Queue bind/unbind with explicit binding_key works"
@@ -366,13 +366,13 @@ class HighLevelTest < Minitest::Test
       queue = client.queue("test.bind.args.queue.unique")
 
       # Test queue.bind with arguments
-      queue.bind(exchange, "", arguments: { "type" => "test", "x-match" => "all" })
-      queue.unbind(exchange, "", arguments: { "type" => "test", "x-match" => "all" })
+      queue.bind(exchange, binding_key: "", arguments: { "type" => "test", "x-match" => "all" })
+      queue.unbind(exchange, binding_key: "", arguments: { "type" => "test", "x-match" => "all" })
 
       # Test exchange.bind with arguments (to another exchange)
       dest_exchange = client.headers("test.dest.args.exchange.unique")
-      dest_exchange.bind(exchange, "", arguments: { "format" => "json", "x-match" => "any" })
-      dest_exchange.unbind(exchange, "", arguments: { "format" => "json", "x-match" => "any" })
+      dest_exchange.bind(exchange, binding_key: "", arguments: { "format" => "json", "x-match" => "any" })
+      dest_exchange.unbind(exchange, binding_key: "", arguments: { "format" => "json", "x-match" => "any" })
 
       # If we got here without errors, arguments work with both APIs
       assert true, "Queue and Exchange bind/unbind with arguments works"

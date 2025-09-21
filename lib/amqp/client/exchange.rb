@@ -32,8 +32,8 @@ module AMQP
       # @option properties [String] user_id Can be used to verify that this is the user that published the message
       # @option properties [String] app_id Can be used to indicates which app that generated the message
       # @return [Exchange] self
-      def publish(body, routing_key = "", **properties)
-        @client.publish(body, @name, routing_key, **properties)
+      def publish(body, routing_key: "", **properties)
+        @client.publish(body, exchange: @name, routing_key:, **properties)
         self
       end
 
@@ -42,9 +42,9 @@ module AMQP
       # @param binding_key [String] Binding key on which messages that match might be routed (defaults to empty string)
       # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
       # @return [Exchange] self
-      def bind(source, binding_key = "", arguments: {})
+      def bind(source, binding_key: "", arguments: {})
         source = source.name unless source.is_a?(String)
-        @client.exchange_bind(@name, source, binding_key, arguments:)
+        @client.exchange_bind(source:, destination: @name, binding_key:, arguments:)
         self
       end
 
@@ -53,9 +53,9 @@ module AMQP
       # @param binding_key [String] Binding key which the queue is bound to the exchange with (defaults to empty string)
       # @param arguments [Hash] Arguments matching the binding that's being removed
       # @return [Exchange] self
-      def unbind(source, binding_key = "", arguments: {})
+      def unbind(source, binding_key: "", arguments: {})
         source = source.name unless source.is_a?(String)
-        @client.exchange_unbind(@name, source, binding_key, arguments:)
+        @client.exchange_unbind(source:, destination: @name, binding_key:, arguments:)
         self
       end
 
