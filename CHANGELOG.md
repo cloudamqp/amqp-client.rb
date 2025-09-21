@@ -4,6 +4,10 @@
   - All methods now use keyword arguments instead of positional arguments (e.g., `publish(body, exchange:, routing_key:)`)
 - **BREAKING CHANGE**: Subscribe methods now return `Connection::Channel::ConsumeOk` for better consumer response handling
 - **BREAKING CHANGE**: `Connection::Channel::QueueOk` converted from `Struct` to `Data` class
+- **BREAKING CHANGE**: Direct exchange default name changed from empty string to "amq.direct" for API consistency
+- **BREAKING CHANGE**: Client exchange convenience methods renamed to `$type_exchange`, e.g. `direct_exchange` for improved clarity
+- Added: `Queue#subscribe` now handles ack and rejects automatically
+- Fixed: Running minitest with `--verbose` flag no longer causes TypeError
 - Updated: Documentation and examples to reflect new keyword argument API
 
 ## [1.2.1] - 2025-09-15
