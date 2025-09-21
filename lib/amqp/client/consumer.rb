@@ -4,7 +4,7 @@ module AMQP
   class Client
     # Consumer abstraction
     class Consumer
-      attr_reader :queue, :id, :tag, :no_ack, :prefetch, :worker_threads, :arguments, :block
+      attr_reader :queue, :id, :channel_id, :tag, :no_ack, :prefetch, :worker_threads, :arguments, :block
 
       # @api private
       def initialize(client:, channel_id:, id:, consume_args:, consume_ok:)

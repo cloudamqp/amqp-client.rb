@@ -29,8 +29,8 @@ module AMQP
       # @param (see Client#publish_and_forget)
       # @option (see Client#publish_and_forget)
       # @return [self]
-      def publish_and_forget(body, routing_key = "", **properties)
-        @client.publish_and_forget(body, @name, routing_key, **properties)
+      def publish_and_forget(body, routing_key: "", **properties)
+        @client.publish_and_forget(body, exchange: @name, routing_key:, **properties)
         self
       end
 
