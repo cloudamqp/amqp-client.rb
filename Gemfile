@@ -18,3 +18,5 @@ gem "rubocop-rake", require: false
 gem "yard", require: false
 
 gem "redcarpet", require: false, platforms: :ruby
+
+gem "bunny"
