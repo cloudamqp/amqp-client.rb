@@ -143,7 +143,7 @@ module AMQP
       # @param secret [String] The new secret
       # @param reason [String] A reason to update it
       # @return [nil]
-      def update_secret(secret, reason)
+      def update_secret(secret, reason:)
         write_bytes FrameBytes.update_secret(secret, reason)
         expect(:update_secret_ok)
         nil

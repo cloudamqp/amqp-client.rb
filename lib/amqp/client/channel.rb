@@ -100,7 +100,7 @@ module AMQP
         # @param internal [Boolean] If true the exchange can't be published to directly
         # @param arguments [Hash] Custom arguments
         # @return [nil]
-        def exchange_declare(name, type, passive: false, durable: true, auto_delete: false, internal: false, arguments: {})
+        def exchange_declare(name, type:, passive: false, durable: true, auto_delete: false, internal: false, arguments: {})
           write_bytes FrameBytes.exchange_declare(@id, name, type, passive, durable, auto_delete, internal, arguments)
           expect :exchange_declare_ok
           nil
@@ -118,12 +118,12 @@ module AMQP
         end
 
         # Bind an exchange to another exchange
-        # @param destination [String] Name of the exchange to bind
         # @param source [String] Name of the exchange to bind to
+        # @param destination [String] Name of the exchange to bind
         # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
         # @param arguments [Hash] Message headers to match on, but only when bound to header exchanges
         # @return [nil]
-        def exchange_bind(destination, source, binding_key, arguments: {})
+        def exchange_bind(source:, destination:, binding_key:, arguments: {})
           write_bytes FrameBytes.exchange_bind(@id, destination, source, binding_key, false, arguments)
           expect :exchange_bind_ok
           nil
@@ -135,7 +135,7 @@ module AMQP
         # @param binding_key [String] Binding key which the queue is bound to the exchange with
         # @param arguments [Hash] Arguments matching the binding that's being removed
         # @return [nil]
-        def exchange_unbind(destination, source, binding_key, arguments: {})
+        def exchange_unbind(source:, destination:, binding_key:, arguments: {})
           write_bytes FrameBytes.exchange_unbind(@id, destination, source, binding_key, false, arguments)
           expect :exchange_unbind_ok
           nil
@@ -193,7 +193,7 @@ module AMQP
         # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
         # @param arguments [Hash] Message headers to match on, but only when bound to header exchanges
         # @return [nil]
-        def queue_bind(name, exchange, binding_key, arguments: {})
+        def queue_bind(name, exchange:, binding_key: "", arguments: {})
           write_bytes FrameBytes.queue_bind(@id, name, exchange, binding_key, false, arguments)
           expect :queue_bind_ok
           nil
@@ -216,7 +216,7 @@ module AMQP
         # @param binding_key [String] Binding key which the queue is bound to the exchange with
         # @param arguments [Hash] Arguments matching the binding that's being removed
         # @return [nil]
-        def queue_unbind(name, exchange, binding_key, arguments: {})
+        def queue_unbind(name, exchange:, binding_key: "", arguments: {})
           write_bytes FrameBytes.queue_unbind(@id, name, exchange, binding_key, arguments)
           expect :queue_unbind_ok
           nil
@@ -260,7 +260,7 @@ module AMQP
         # @option properties [String] user_id Can be used to verify that this is the user that published the message
         # @option properties [String] app_id Can be used to indicates which app that generated the message
         # @return [nil]
-        def basic_publish(body, exchange, routing_key, **properties)
+        def basic_publish(body, exchange:, routing_key: "", **properties)
           body_max = @connection.frame_max - 8
           id = @id
           mandatory = properties.delete(:mandatory) || false
@@ -297,11 +297,18 @@ module AMQP
         # @option (see #basic_publish)
         # @return [Boolean] True if the message was successfully published
         # @raise (see #basic_publish)
-        def basic_publish_confirm(body, exchange, routing_key, **properties)
+        def basic_publish_confirm(body, exchange:, routing_key: "", **properties)
           confirm_select(no_wait: true)
-          basic_publish(body, exchange, routing_key, **properties)
+          basic_publish(body, exchange:, routing_key:, **properties)
           wait_for_confirms
         end
+
+        # Response when subscribing (starting a consumer)
+        # @!attribute consumer_tag
+        #   @return [String] The consumer tag
+        # @!attribute worker_threads
+        #   @return [Array<Thread>] Array of worker threads
+        ConsumeOk = Struct.new(:consumer_tag, :worker_threads)
 
         # Consume messages from a queue
         # @param queue [String] Name of the queue to subscribe to
@@ -313,7 +320,7 @@ module AMQP
         # @param worker_threads [Integer] Number of threads processing messages,
         #   0 means that the thread calling this method will process the messages and thus this method will block
         # @yield [Message] Delivered message from the queue
-        # @return [Array<(String, Array<Thread>)>] Returns consumer_tag and an array of worker threads
+        # @return [ConsumeOk] Returns consumer_tag and an array of worker threads
         # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
         def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {}, worker_threads: 1, &blk)
           write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
@@ -326,7 +333,7 @@ module AMQP
             threads = Array.new(worker_threads) do
               Thread.new { consume_loop(q, tag, &blk) }
             end
-            [tag, threads]
+            ConsumeOk.new(consumer_tag: tag, worker_threads: threads)
           end
         end
 

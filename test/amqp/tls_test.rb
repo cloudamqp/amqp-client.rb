@@ -7,7 +7,7 @@ class AMQPSClientTest < Minitest::Test
     connection = AMQP::Client.new("amqps://#{TEST_AMQP_HOST}", verify_peer: false).connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_publish "foobar", "", q[:queue_name]
+    channel.basic_publish "foobar", exchange: "", routing_key: q[:queue_name]
     channel.basic_consume(q[:queue_name]) do |msg|
       assert_equal "foobar", msg.body
       channel.basic_cancel msg.consumer_tag
@@ -20,7 +20,7 @@ class AMQPSClientTest < Minitest::Test
     ch1 = connection.channel
     q = ch1.queue_declare ""
     ch1.basic_qos(200)
-    ch1.queue_bind(q[:queue_name], "amq.topic", "foo")
+    ch1.queue_bind(q[:queue_name], exchange: "amq.topic", binding_key: "foo")
     ch1.basic_consume(q[:queue_name], no_ack: false, worker_threads: 100) do |msg|
       msg.ack
       msgs1 << msg
@@ -29,7 +29,7 @@ class AMQPSClientTest < Minitest::Test
     ch2 = connection.channel
     ch2.confirm_select
     10_000.times do |i|
-      ch2.basic_publish "bar #{i + 1}", "amq.topic", "foo"
+      ch2.basic_publish "bar #{i + 1}", exchange: "amq.topic", routing_key: "foo"
     end
     ch2.wait_for_confirms
 
