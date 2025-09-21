@@ -1,8 +1,8 @@
 # AMQP::Client
 
-A modern AMQP 0-9-1 Ruby client. Very fast (just as fast as the Java client, and >4x than other Ruby clients), fully thread-safe, blocking operations and straight-forward error handling.
+A modern AMQP 0-9-1 Ruby client. Very fast (just as fast as the Java client, and >2x than other Ruby clients), fully thread-safe, blocking operations and straight-forward error handling.
 
-It's small, only ~1800 lines of code, and without any dependencies. Other Ruby clients are about 4 times bigger. But without trading functionallity.
+It's small, and without any dependencies. Other Ruby clients are about several times bigger. But without trading functionality.
 
 It's safe by default, messages are published as persistent, and is waiting for confirmation from the broker. That can of course be disabled if performance is a priority.
 
@@ -89,22 +89,6 @@ msg = ch.basic_get(q.queue_name)
 # Print the message's body to STDOUT
 puts msg.body
 ```
-
-## Benchmark
-
-1 byte messages:
-
-| Client | Publish rate | Consume rate | Memory usage |
-| ------ | ------------ | ------------ | ------------ |
-| amqp-client.rb | 237.000 msgs/s | 154.000 msgs/s | 23 MB |
-| bunny | 39.000 msgs/s | 44.000 msgs/s | 31 MB |
-
-Gem comparison:
-
-| Client | Runtime dependencies | [Lines of code](https://github.com/AlDanial/cloc) |
-| --- | --- | --- |
-| amqp-client.rb | 0 | 1876 |
-| bunny | 2 | 4003 |
 
 ## Supported Ruby versions
 
