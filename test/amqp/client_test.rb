@@ -71,9 +71,9 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     channel.exchange_declare "foo", type: "fanout"
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "foo", binding_key: ""
+    channel.queue_bind q.queue_name, exchange: "foo", binding_key: ""
     channel.basic_publish "foo", exchange: "foo", routing_key: ""
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_equal "foo", msg.exchange_name
   end
@@ -84,11 +84,11 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     channel.exchange_declare "foo", type: "fanout"
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "foo", binding_key: ""
+    channel.queue_bind q.queue_name, exchange: "foo", binding_key: ""
     channel.exchange_delete "foo"
     channel.basic_publish "foo", exchange: "foo", routing_key: ""
     assert_raises(AMQP::Client::Error::ChannelClosed) do
-      channel.basic_get q[:queue_name]
+      channel.basic_get q.queue_name
     end
   end
 
@@ -99,10 +99,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel.exchange_declare "foo", type: "fanout"
     channel.exchange_declare "bar", type: "fanout"
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "bar", binding_key: ""
+    channel.queue_bind q.queue_name, exchange: "bar", binding_key: ""
     channel.exchange_bind destination: "bar", source: "foo", binding_key: ""
     channel.basic_publish "foo", exchange: "foo", routing_key: ""
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_equal "foo", msg.exchange_name
     assert_equal "foo", msg.body
@@ -115,11 +115,11 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel.exchange_declare "foo", type: "fanout"
     channel.exchange_declare "bar", type: "fanout"
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "bar", binding_key: ""
+    channel.queue_bind q.queue_name, exchange: "bar", binding_key: ""
     channel.exchange_bind destination: "bar", source: "foo", binding_key: ""
     channel.exchange_unbind destination: "bar", source: "foo", binding_key: ""
     channel.basic_publish "foo", exchange: "foo", routing_key: ""
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_nil msg
   end
@@ -130,7 +130,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     resp = channel.queue_declare "foo", exclusive: true
 
-    assert_equal "foo", resp[:queue_name]
+    assert_equal "foo", resp.queue_name
     connection.close
   end
 
@@ -152,7 +152,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_nil msg
     connection.close
@@ -175,8 +175,8 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_publish "foobar", exchange: "", routing_key: q[:queue_name]
-    msg = channel.basic_get q[:queue_name]
+    channel.basic_publish "foobar", exchange: "", routing_key: q.queue_name
+    msg = channel.basic_get q.queue_name
 
     assert_equal "foobar", msg.body
   end
@@ -186,8 +186,8 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_publish "foobar", exchange: "", routing_key: q[:queue_name]
-    channel.basic_consume(q[:queue_name]) do |msg|
+    channel.basic_publish "foobar", exchange: "", routing_key: q.queue_name
+    channel.basic_consume(q.queue_name) do |msg|
       assert_equal "foobar", msg.body
       channel.basic_cancel msg.consumer_tag
     end
@@ -198,9 +198,9 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "amq.direct", binding_key: "bar"
+    channel.queue_bind q.queue_name, exchange: "amq.direct", binding_key: "bar"
     channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_equal "amq.direct", msg.exchange_name
     assert_equal "foo", msg.body
@@ -211,10 +211,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "amq.direct", binding_key: "bar"
-    channel.queue_unbind q[:queue_name], exchange: "amq.direct", binding_key: "bar"
+    channel.queue_bind q.queue_name, exchange: "amq.direct", binding_key: "bar"
+    channel.queue_unbind q.queue_name, exchange: "amq.direct", binding_key: "bar"
     channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_nil msg
   end
@@ -224,10 +224,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "amq.direct", binding_key: "bar"
+    channel.queue_bind q.queue_name, exchange: "amq.direct", binding_key: "bar"
     channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
-    channel.queue_purge q[:queue_name]
-    msg = channel.basic_get q[:queue_name]
+    channel.queue_purge q.queue_name
+    msg = channel.basic_get q.queue_name
 
     assert_nil msg
   end
@@ -238,10 +238,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_qos(1)
-    channel.basic_publish "foo", exchange: "", routing_key: q[:queue_name]
-    channel.basic_publish "bar", exchange: "", routing_key: q[:queue_name]
+    channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
+    channel.basic_publish "bar", exchange: "", routing_key: q.queue_name
     i = 0
-    channel.basic_consume(q[:queue_name], no_ack: false) do
+    channel.basic_consume(q.queue_name, no_ack: false) do
       i += 1
     end
     sleep(0.1)
@@ -255,10 +255,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_qos 1
-    channel.basic_publish "foo", exchange: "", routing_key: q[:queue_name]
-    channel.basic_publish "bar", exchange: "", routing_key: q[:queue_name]
+    channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
+    channel.basic_publish "bar", exchange: "", routing_key: q.queue_name
     i = 0
-    channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
+    channel.basic_consume(q.queue_name, no_ack: false) do |msg|
       channel.basic_ack msg.delivery_tag
       i += 1
     end
@@ -273,9 +273,9 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_qos 1
-    channel.basic_publish "foo", exchange: "", routing_key: q[:queue_name]
+    channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
     i = 0
-    channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
+    channel.basic_consume(q.queue_name, no_ack: false) do |msg|
       if i.zero?
         channel.basic_nack msg.delivery_tag, requeue: true
       else
@@ -294,9 +294,9 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_qos 1
-    channel.basic_publish "foo", exchange: "", routing_key: q[:queue_name]
+    channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
     i = 0
-    channel.basic_consume(q[:queue_name], no_ack: false) do |msg|
+    channel.basic_consume(q.queue_name, no_ack: false) do |msg|
       if i.zero?
         channel.basic_reject msg.delivery_tag, requeue: true
       else
@@ -314,9 +314,9 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.basic_publish "foo", exchange: "", routing_key: q[:queue_name]
+    channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
     i = 0
-    channel.basic_consume(q[:queue_name], no_ack: false) do
+    channel.basic_consume(q.queue_name, no_ack: false) do
       i += 1
     end
     sleep(0.1)
@@ -359,7 +359,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel.tx_select
     channel.basic_publish "foo", exchange: "", routing_key: "foo"
     channel.tx_commit
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_equal "foo", msg.body
     connection.close
@@ -373,12 +373,12 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel.tx_select
     channel.basic_publish "bar", exchange: "", routing_key: "foo"
     channel.tx_rollback
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_nil msg
     channel.basic_publish "bar", exchange: "", routing_key: "foo"
     channel.tx_commit
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_equal "bar", msg.body
     connection.close
@@ -389,9 +389,9 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     connection = client.connect
     channel = connection.channel
     q = channel.queue_declare ""
-    channel.queue_bind q[:queue_name], exchange: "amq.headers", binding_key: "", arguments: { a: "b" }
+    channel.queue_bind q.queue_name, exchange: "amq.headers", binding_key: "", arguments: { a: "b" }
     channel.basic_publish "foo", exchange: "amq.headers", routing_key: "bar", headers: { a: "b" }
-    msg = channel.basic_get q[:queue_name]
+    msg = channel.basic_get q.queue_name
 
     assert_equal "foo", msg.body
     assert_equal({ "a" => "b" }, msg.properties.headers)
@@ -435,14 +435,14 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel = connection.channel
     q1 = channel.queue_declare ""
     q2 = channel.queue_declare ""
-    channel.basic_consume(q1[:queue_name]) do |msg|
+    channel.basic_consume(q1.queue_name) do |msg|
       msgs1 << msg
     end
-    channel.basic_consume(q2[:queue_name]) do |msg|
+    channel.basic_consume(q2.queue_name) do |msg|
       msgs2 << msg
     end
-    channel.basic_publish "foo", exchange: "", routing_key: q1[:queue_name]
-    channel.basic_publish "bar", exchange: "", routing_key: q2[:queue_name]
+    channel.basic_publish "foo", exchange: "", routing_key: q1.queue_name
+    channel.basic_publish "bar", exchange: "", routing_key: q2.queue_name
 
     assert_equal "foo", msgs1.pop.body
     assert_equal "bar", msgs2.pop.body
@@ -457,14 +457,14 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     ch2 = connection.channel
     q1 = ch1.queue_declare ""
     q2 = ch2.queue_declare ""
-    ch1.basic_consume(q1[:queue_name]) do |msg|
+    ch1.basic_consume(q1.queue_name) do |msg|
       msgs1 << msg
     end
-    ch2.basic_consume(q2[:queue_name]) do |msg|
+    ch2.basic_consume(q2.queue_name) do |msg|
       msgs2 << msg
     end
-    ch1.basic_publish "foo", exchange: "", routing_key: q1[:queue_name]
-    ch2.basic_publish "bar", exchange: "", routing_key: q2[:queue_name]
+    ch1.basic_publish "foo", exchange: "", routing_key: q1.queue_name
+    ch2.basic_publish "bar", exchange: "", routing_key: q2.queue_name
 
     assert_equal "foo", msgs1.pop.body
     assert_equal "bar", msgs2.pop.body
@@ -477,8 +477,8 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     ch1 = connection.channel
     q = ch1.queue_declare ""
     ch1.basic_qos(200)
-    ch1.queue_bind(q[:queue_name], exchange: "amq.topic", binding_key: "foo")
-    ch1.basic_consume(q[:queue_name], no_ack: false, worker_threads: 100) do |msg|
+    ch1.queue_bind(q.queue_name, exchange: "amq.topic", binding_key: "foo")
+    ch1.basic_consume(q.queue_name, no_ack: false, worker_threads: 100) do |msg|
       msg.ack
       msgs1 << msg
     end
