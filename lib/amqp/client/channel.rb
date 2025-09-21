@@ -51,7 +51,9 @@ module AMQP
           self
         end
 
-        # Gracefully close a connection
+        # Gracefully close channel
+        # @param reason [String] The reason for closing the channel
+        # @param code [Integer] The close code
         # @return [nil]
         def close(reason: "", code: 200)
           return if @closed
@@ -118,8 +120,8 @@ module AMQP
         end
 
         # Bind an exchange to another exchange
-        # @param source [String] Name of the exchange to bind to
-        # @param destination [String] Name of the exchange to bind
+        # @param source [String] Name of the source exchange
+        # @param destination [String] Name of the destination exchange
         # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
         # @param arguments [Hash] Message headers to match on, but only when bound to header exchanges
         # @return [nil]
@@ -130,8 +132,8 @@ module AMQP
         end
 
         # Unbind an exchange from another exchange
-        # @param destination [String] Name of the exchange to unbind
-        # @param source [String] Name of the exchange to unbind from
+        # @param source [String] Name of the source exchange
+        # @param destination [String] Name of the destination exchange
         # @param binding_key [String] Binding key which the queue is bound to the exchange with
         # @param arguments [Hash] Arguments matching the binding that's being removed
         # @return [nil]
@@ -162,7 +164,7 @@ module AMQP
         # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
         #   (it won't be deleted until at least one consumer has consumed from it)
         # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
-        # @return [QueueOk] The QueueOk struct got `queue_name`, `message_count` and `consumer_count` properties
+        # @return [QueueOk]
         def queue_declare(name = "", passive: false, durable: true, exclusive: false, auto_delete: false, arguments: {})
           durable = false if name.empty?
           exclusive = true if name.empty?
@@ -188,8 +190,8 @@ module AMQP
         end
 
         # Bind a queue to an exchange
-        # @param name [String] Name of the queue to bind
-        # @param exchange [String] Name of the exchange to bind to
+        # @param name [String] Name of the queue
+        # @param exchange [String] Name of the exchange
         # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
         # @param arguments [Hash] Message headers to match on, but only when bound to header exchanges
         # @return [nil]
@@ -211,8 +213,8 @@ module AMQP
         end
 
         # Unbind a queue from an exchange
-        # @param name [String] Name of the queue to unbind
-        # @param exchange [String] Name of the exchange to unbind from
+        # @param name [String] Name of the queue
+        # @param exchange [String] Name of the exchange
         # @param binding_key [String] Binding key which the queue is bound to the exchange with
         # @param arguments [Hash] Arguments matching the binding that's being removed
         # @return [nil]
@@ -240,7 +242,7 @@ module AMQP
         end
 
         # Publishes a message to an exchange
-        # @param body [String] The body, can be a string or a byte array
+        # @param body [String] The body
         # @param exchange [String] Name of the exchange to publish to
         # @param routing_key [String] The routing key that the exchange might use to route the message to a queue
         # @param properties [Properties]
@@ -320,7 +322,7 @@ module AMQP
         # @param worker_threads [Integer] Number of threads processing messages,
         #   0 means that the thread calling this method will process the messages and thus this method will block
         # @yield [Message] Delivered message from the queue
-        # @return [ConsumeOk] Returns consumer_tag and an array of worker threads
+        # @return [ConsumeOk]
         # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
         def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {}, worker_threads: 1, &blk)
           write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
@@ -364,6 +366,7 @@ module AMQP
 
         # Acknowledge a message
         # @param delivery_tag [Integer] The delivery tag of the message to acknowledge
+        # @param multiple [Boolean] Ack all messages up to this message
         # @return [nil]
         def basic_ack(delivery_tag, multiple: false)
           write_bytes FrameBytes.basic_ack(@id, delivery_tag, multiple)

@@ -17,20 +17,8 @@ module AMQP
       # @param body [String] The message body
       # @param routing_key [String] The routing key of the message,
       #   the exchange may use this when routing the message to bound queues (defaults to empty string)
-      # @param properties [Properties]
-      # @option properties [String] content_type Content type of the message body
-      # @option properties [String] content_encoding Content encoding of the body
-      # @option properties [Hash<String, Object>] headers Custom headers
-      # @option properties [Integer] delivery_mode 2 for persisted message, transient messages for all other values
-      # @option properties [Integer] priority A priority of the message (between 0 and 255)
-      # @option properties [Integer] correlation_id A correlation id, most often used used for RPC communication
-      # @option properties [String] reply_to Queue to reply RPC responses to
-      # @option properties [Integer, String] expiration Number of seconds the message will stay in the queue
-      # @option properties [String] message_id Can be used to uniquely identify the message, e.g. for deduplication
-      # @option properties [Date] timestamp Often used for the time the message was originally generated
-      # @option properties [String] type Can indicate what kind of message this is
-      # @option properties [String] user_id Can be used to verify that this is the user that published the message
-      # @option properties [String] app_id Can be used to indicates which app that generated the message
+      # @option (see Client#publish)
+      # @raise (see Client#publish)
       # @return [Exchange] self
       def publish(body, routing_key: "", **properties)
         @client.publish(body, exchange: @name, routing_key:, **properties)
