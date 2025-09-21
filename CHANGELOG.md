@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+- **BREAKING CHANGE**: Refactored public API to use keyword arguments for improved clarity and consistency
+  - All methods now use keyword arguments instead of positional arguments (e.g., `publish(body, exchange:, routing_key:)`)
+- **BREAKING CHANGE**: Subscribe methods now return `Connection::Channel::ConsumeOk` for better consumer response handling
+- **BREAKING CHANGE**: `Connection::Channel::QueueOk` converted from `Struct` to `Data` class
+- Updated: Documentation and examples to reflect new keyword argument API
+
 ## [1.2.1] - 2025-09-15
 
 - Added: Convenience methods for creating exchange types: `fanout()`, `direct()`, `topic()`, and `headers()`
