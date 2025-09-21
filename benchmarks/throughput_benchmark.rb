@@ -49,6 +49,8 @@ class ThroughputBenchmark
     results
   end
 
+  Cancelable = Struct.new(:cancel)
+
   private
 
   def setup
@@ -160,14 +162,14 @@ class ThroughputBenchmark
 
     # Test publishing
     results[:publish] = benchmark_publishing do
-      @channel.basic_publish(@test_data, "", queue_name)
+      @channel.basic_publish(@test_data, exchange: "", routing_key: queue_name)
     end
 
     # Test consuming
     results[:consume] = benchmark_consuming do |consume_callback|
       tag, = @channel.basic_consume(queue_name, no_ack: true, &consume_callback)
       # Return an object that can be canceled
-      OpenStruct.new(cancel: -> { @channel.basic_cancel(tag) })
+      Cancelable.new(cancel: -> { @channel.basic_cancel(tag) })
     end
 
     results
