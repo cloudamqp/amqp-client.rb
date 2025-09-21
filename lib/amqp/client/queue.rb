@@ -30,7 +30,7 @@ module AMQP
       # @option (see Client#publish_and_forget)
       # @return [self]
       def publish_and_forget(body, **properties)
-        @client.publish_and_forget(body, "", @name, **properties)
+        @client.publish_and_forget(body, exchange: "", routing_key: @name, **properties)
         self
       end
 
