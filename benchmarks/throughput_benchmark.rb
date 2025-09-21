@@ -3,6 +3,7 @@
 
 require_relative "../lib/amqp-client"
 require "benchmark"
+require "bunny"
 
 # Throughput benchmark for AMQP client
 class ThroughputBenchmark
@@ -37,6 +38,11 @@ class ThroughputBenchmark
     results[:lowlevel] = test_lowlevel_api
     puts
 
+    # Test Bunny
+    puts "Bunny API Tests"
+    puts "-" * 20
+    results[:bunny] = test_bunny
+
     print_summary(results)
 
     cleanup
@@ -53,12 +59,17 @@ class ThroughputBenchmark
     # Low-level API setup
     @connection = AMQP::Client.new(@amqp_uri).connect
     @channel = @connection.channel
+
+    # Bunny
+    @bunny = Bunny.new
+    @bunny.start
   end
 
   def cleanup
     @client&.stop
     @channel&.close
     @connection&.close
+    @bunny&.stop
   end
 
   def test_highlevel_api
@@ -131,9 +142,6 @@ class ThroughputBenchmark
     @channel.queue_purge(queue_name)
     results = {}
 
-    # Clear any remaining messages
-    @channel.queue_purge(queue_name)
-
     # Test publishing
     puts "  Publishing #{@message_count} messages..."
     publish_time = Benchmark.realtime do
@@ -190,7 +198,73 @@ class ThroughputBenchmark
     results
   end
 
+  def test_bunny
+    channel = @bunny.channel
+    queue_name = "benchmark_bunny_#{Time.now.to_i}"
+    queue = channel.queue(queue_name, durable: false, auto_delete: true)
+    queue.purge
+    results = {}
+
+    # Test publishing
+    puts "  Publishing #{@message_count} messages..."
+    publish_time = Benchmark.realtime do
+      @message_count.times do
+        queue.publish(@test_data)
+      end
+    end
+
+    publish_rate = @message_count / publish_time
+    publish_throughput = (@message_count * @message_size) / publish_time / 1024 / 1024 # MB/s
+
+    puts "    Duration: #{publish_time.round(3)}s"
+    puts "    Rate: #{publish_rate.round(1)} msg/s"
+    puts "    Throughput: #{publish_throughput.round(1)} MB/s"
+
+    results[:publish] = {
+      duration: publish_time,
+      rate: publish_rate,
+      throughput_mbps: publish_throughput
+    }
+
+    # Test consuming
+    puts "  Consuming #{@message_count} messages..."
+
+    consumed_count = 0
+
+    done_q = ::Queue.new
+    consumer = nil
+    consume_time = Benchmark.realtime do
+      consumer = queue.subscribe(manual_ack: false) do |_msg|
+        consumed_count += 1
+        done_q.push(nil) if consumed_count == @message_count
+      end
+      done_q.pop # Wait until all messages are consumed
+    end
+
+    consumer.cancel # Cancel the consumer
+
+    consume_rate = consumed_count.positive? ? consumed_count / consume_time : 0
+    consume_throughput = (consumed_count * @message_size) / consume_time / 1024 / 1024 # MB/s
+
+    puts "    Duration: #{consume_time.round(3)}s"
+    puts "    Rate: #{consume_rate.round(1)} msg/s"
+    puts "    Throughput: #{consume_throughput.round(1)} MB/s"
+    puts "    Messages consumed: #{consumed_count}/#{@message_count}"
+
+    results[:consume] = {
+      duration: consume_time,
+      rate: consume_rate,
+      throughput_mbps: consume_throughput,
+      messages_consumed: consumed_count
+    }
+
+    results
+  ensure
+    channel&.close
+  end
+
   def print_summary(results)
+    puts ""
     puts "Summary"
     puts "=" * 40
 
@@ -198,17 +272,25 @@ class ThroughputBenchmark
     hl_con = results[:highlevel][:consume][:rate]
     ll_pub = results[:lowlevel][:publish][:rate]
     ll_con = results[:lowlevel][:consume][:rate]
+    b_pub = results[:bunny][:publish][:rate]
+    b_con = results[:bunny][:consume][:rate]
 
     puts "Publishing Rate:"
     puts "  High-level: #{hl_pub.round(1)} msg/s"
     puts "  Low-level:  #{ll_pub.round(1)} msg/s"
-    puts "  Ratio: #{(ll_pub / hl_pub).round(1)}x"
+    puts "  Bunny:      #{b_pub.round(1)}  msg/s"
+    puts "  L/H Ratio:  #{(ll_pub / hl_pub).round(1)}x"
+    puts "  L/B Ratio:  #{(ll_pub / b_pub).round(1)}x"
+    puts "  H/B Ratio:  #{(hl_pub / b_pub).round(1)}x"
     puts
 
     puts "Consuming Rate:"
     puts "  High-level: #{hl_con.round(1)} msg/s"
     puts "  Low-level:  #{ll_con.round(1)} msg/s"
-    puts "  Ratio: #{(ll_con / hl_con).round(1)}x"
+    puts "  Bunny:      #{b_con.round(1)}  msg/s"
+    puts "  L/H Ratio:  #{(ll_con / hl_con).round(1)}x"
+    puts "  L/B Ratio:  #{(ll_con / b_con).round(1)}x"
+    puts "  H/B Ratio:  #{(hl_con / b_con).round(1)}x"
   end
 end
 
