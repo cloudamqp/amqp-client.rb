@@ -4,15 +4,14 @@
 require_relative "../lib/amqp-client"
 require "benchmark"
 require "bunny"
-require "ostruct"
 
 # Throughput benchmark for AMQP client
 class ThroughputBenchmark
-  def initialize(message_count:, message_size:, amqp_uri: "amqp://localhost")
+  def initialize(message_count:, message_size_bytes:, amqp_uri: "amqp://localhost")
     @amqp_uri = amqp_uri
     @message_count = message_count
-    @message_size = message_size
-    @test_data = "x" * @message_size
+    @message_size_bytes = message_size_bytes
+    @test_data = "x" * @message_size_bytes
   end
 
   def run
@@ -20,7 +19,7 @@ class ThroughputBenchmark
     puts "=" * 40
     puts "URI: #{@amqp_uri}"
     puts "Messages: #{@message_count}"
-    puts "Message size: #{@message_size} bytes"
+    puts "Message size: #{@message_size_bytes} bytes"
     puts
 
     setup
@@ -82,7 +81,7 @@ class ThroughputBenchmark
     end
 
     publish_rate = @message_count / publish_time
-    publish_throughput = (@message_count * @message_size) / publish_time / 1024 / 1024 # MB/s
+    publish_throughput = (@message_count * @message_size_bytes) / publish_time / 1024 / 1024 # MB/s
 
     puts "    Duration: #{publish_time.round(3)}s"
     puts "    Rate: #{publish_rate.round(1)} msg/s"
@@ -118,7 +117,7 @@ class ThroughputBenchmark
     consumer&.cancel if consumer.respond_to?(:cancel)
 
     consume_rate = consumed_count.positive? ? consumed_count / consume_time : 0
-    consume_throughput = (consumed_count * @message_size) / consume_time / 1024 / 1024 # MB/s
+    consume_throughput = (consumed_count * @message_size_bytes) / consume_time / 1024 / 1024 # MB/s
 
     puts "    Duration: #{consume_time.round(3)}s"
     puts "    Rate: #{consume_rate.round(1)} msg/s"
@@ -234,7 +233,7 @@ if __FILE__ == $PROGRAM_NAME
   options = {
     amqp_uri: "amqp://localhost",
     message_count: 100_000,
-    message_size: 1024
+    message_size_bytes: 1024
   }
 
   OptionParser.new do |opts|
@@ -244,12 +243,12 @@ if __FILE__ == $PROGRAM_NAME
       options[:amqp_uri] = v
     end
 
-    opts.on("-c", "--count COUNT", Integer, "Number of messages (default: 1000)") do |v|
+    opts.on("-c", "--count COUNT", Integer, "Number of messages (default: 100,000)") do |v|
       options[:message_count] = v
     end
 
     opts.on("-s", "--size SIZE", Integer, "Message size in bytes (default: 1024)") do |v|
-      options[:message_size] = v
+      options[:message_size_bytes] = v
     end
 
     opts.on("-h", "--help", "Show this help") do
