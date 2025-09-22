@@ -7,11 +7,12 @@ require "bunny"
 
 # Throughput benchmark for AMQP client
 class ThroughputBenchmark
-  def initialize(message_count:, message_size_bytes:, amqp_uri: "amqp://localhost")
+  def initialize(message_count:, message_size_bytes:, amqp_uri: "amqp://localhost", with_bunny: true)
     @amqp_uri = amqp_uri
     @message_count = message_count
     @message_size_bytes = message_size_bytes
     @test_data = "x" * @message_size_bytes
+    @with_bunny = with_bunny
   end
 
   def run
@@ -38,10 +39,12 @@ class ThroughputBenchmark
     results[:lowlevel] = test_lowlevel_api
     puts
 
-    # Test Bunny
-    puts "Bunny API Tests"
-    puts "-" * 20
-    results[:bunny] = test_bunny
+    if @with_bunny
+      # Test Bunny
+      puts "Bunny API Tests"
+      puts "-" * 20
+      results[:bunny] = test_bunny
+    end
 
     print_summary(results)
 
@@ -202,29 +205,29 @@ class ThroughputBenchmark
     puts "Summary"
     puts "=" * 40
 
-    hl_pub = results[:highlevel][:publish][:rate]
-    hl_con = results[:highlevel][:consume][:rate]
-    ll_pub = results[:lowlevel][:publish][:rate]
-    ll_con = results[:lowlevel][:consume][:rate]
-    b_pub = results[:bunny][:publish][:rate]
-    b_con = results[:bunny][:consume][:rate]
+    hl_pub = results.dig(:highlevel, :publish, :rate)
+    hl_con = results.dig(:highlevel, :consume, :rate)
+    ll_pub = results.dig(:lowlevel, :publish, :rate)
+    ll_con = results.dig(:lowlevel, :consume, :rate)
+    b_pub = results.dig(:bunny, :publish, :rate)
+    b_con = results.dig(:bunny, :consume, :rate)
 
     puts "Publishing Rate:"
     puts "  High-level: #{hl_pub.round(1)} msg/s"
     puts "  Low-level:  #{ll_pub.round(1)} msg/s"
-    puts "  Bunny:      #{b_pub.round(1)}  msg/s"
+    puts "  Bunny:      #{b_pub.round(1)}  msg/s" if @with_bunny
     puts "  L/H Ratio:  #{(ll_pub / hl_pub).round(1)}x"
-    puts "  L/B Ratio:  #{(ll_pub / b_pub).round(1)}x"
-    puts "  H/B Ratio:  #{(hl_pub / b_pub).round(1)}x"
+    puts "  L/B Ratio:  #{(ll_pub / b_pub).round(1)}x" if @with_bunny
+    puts "  H/B Ratio:  #{(hl_pub / b_pub).round(1)}x" if @with_bunny
     puts
 
     puts "Consuming Rate:"
     puts "  High-level: #{hl_con.round(1)} msg/s"
     puts "  Low-level:  #{ll_con.round(1)} msg/s"
-    puts "  Bunny:      #{b_con.round(1)}  msg/s"
+    puts "  Bunny:      #{b_con.round(1)}  msg/s" if @with_bunny
     puts "  L/H Ratio:  #{(ll_con / hl_con).round(1)}x"
-    puts "  L/B Ratio:  #{(ll_con / b_con).round(1)}x"
-    puts "  H/B Ratio:  #{(hl_con / b_con).round(1)}x"
+    puts "  L/B Ratio:  #{(ll_con / b_con).round(1)}x" if @with_bunny
+    puts "  H/B Ratio:  #{(hl_con / b_con).round(1)}x" if @with_bunny
   end
 end
 

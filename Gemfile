@@ -21,4 +21,6 @@ gem "redcarpet", require: false, platforms: :ruby
 
 gem "bunny"
 
+gem "stackprof"
+
 gem "minitest-reporters", "~> 1.7"
