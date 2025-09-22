@@ -219,7 +219,7 @@ module AMQP
     # @raise (see Connection::Channel#basic_publish_confirm)
     def publish(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
-        properties = { delivery_mode: 2 }.merge!(properties)
+        properties[:delivery_mode] ||= 2
         conn.channel(1).basic_publish_confirm(body, exchange:, routing_key:, **properties)
       end
     end
@@ -231,7 +231,7 @@ module AMQP
     # @raise (see Connection::Channel#basic_publish)
     def publish_and_forget(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
-        properties = { delivery_mode: 2 }.merge!(properties)
+        properties[:delivery_mode] ||= 2
         conn.channel(1).basic_publish(body, exchange:, routing_key:, **properties)
       end
     end
