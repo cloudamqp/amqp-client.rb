@@ -482,6 +482,7 @@ module AMQP
       def open_socket(host, port, tls, options)
         connect_timeout = options.fetch(:connect_timeout, 30).to_f
         socket = Socket.tcp(host, port, connect_timeout:)
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         keepalive = options.fetch(:keepalive, "").split(":", 3).map!(&:to_i)
         enable_tcp_keepalive(socket, *keepalive)
         if tls
