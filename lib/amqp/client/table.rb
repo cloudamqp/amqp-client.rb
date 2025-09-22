@@ -5,11 +5,13 @@ module AMQP
     # Encode and decode an AMQP table to/from hash, only used internally
     # @api private
     module Table
+      EMPTY_ENCODED = "".b.freeze
+
       # Encodes a hash into a byte array
       # @param hash [Hash]
       # @return [String] Byte array
       def self.encode(hash)
-        return "" if hash.empty?
+        return EMPTY_ENCODED if hash.empty?
 
         arr = []
         fmt = String.new
