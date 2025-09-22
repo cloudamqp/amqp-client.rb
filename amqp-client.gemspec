@@ -20,7 +20,5 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files         = Dir["amqp-client.gemspec", "LICENSE.txt", "lib/**/*.rb"]
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 end
