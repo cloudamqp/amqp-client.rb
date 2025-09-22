@@ -370,9 +370,8 @@ module AMQP
         ].pack("C S> L> a* C")
       end
 
-      def self.basic_consume(id, queue, tag, no_ack, exclusive, arguments)
+      def self.basic_consume(id, queue, tag, no_ack, exclusive, no_wait, arguments)
         no_local = false
-        no_wait = false
         bits = 0
         bits |= (1 << 0) if no_local
         bits |= (1 << 1) if no_ack

@@ -326,9 +326,12 @@ module AMQP
         # @yield [Message] Delivered message from the queue
         # @return [ConsumeOk]
         # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
-        def basic_consume(queue, tag: "", no_ack: true, exclusive: false, arguments: {}, worker_threads: 1, &blk)
-          write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, arguments)
-          tag, = expect(:basic_consume_ok)
+        def basic_consume(queue, tag: "", no_ack: true, exclusive: false, no_wait: false,
+                          arguments: {}, worker_threads: 1, &blk)
+          raise ArgumentError, "consumer_tag required when no_wait" if no_wait && tag.empty?
+
+          write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, no_wait, arguments)
+          tag, = expect(:basic_consume_ok) unless no_wait
           @consumers[tag] = q = ::Queue.new
           if worker_threads.zero?
             consume_loop(q, tag, &blk)
