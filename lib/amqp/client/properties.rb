@@ -192,7 +192,7 @@ module AMQP
         end
 
         arr.unshift(flags)
-        arr.pack("S>" + segments.join)
+        arr.pack("S>#{segments.join}")
       end
 
       # Decode a byte array
