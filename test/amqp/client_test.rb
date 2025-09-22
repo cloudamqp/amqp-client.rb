@@ -41,6 +41,13 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert connection
   end
 
+  def test_it_can_stop
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
+    client.stop
+
+    assert client
+  end
+
   def test_it_can_open_channel
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect
