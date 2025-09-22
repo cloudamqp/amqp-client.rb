@@ -19,6 +19,6 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"] = "https://github.com/cloudamqp/amqp-client.rb/blob/main/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
-  spec.files         = Dir["amqp-client.gemspec", "LICENSE.txt", "lib/**/*.rb"]
+  spec.files         = Dir["LICENSE.txt", "lib/**/*.rb"]
   spec.require_paths = ["lib"]
 end
