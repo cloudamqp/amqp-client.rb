@@ -287,9 +287,11 @@ module AMQP
               reply_code, reply_text_len = buf.unpack("@4 S> C")
               reply_text = buf.byteslice(7, reply_text_len).force_encoding("utf-8")
               classid, methodid = buf.byteslice(7 + reply_text_len, 4).unpack("S> S>")
-              channel = @channels_lock.synchronize { @channels.delete(channel_id) }
-              channel.closed!(:channel, reply_code, reply_text, classid, methodid)
-              write_bytes FrameBytes.channel_close_ok(channel_id)
+              @channels_lock.synchronize do
+                channel = @channels.delete(channel_id)
+                channel.closed!(:channel, reply_code, reply_text, classid, methodid)
+                write_bytes FrameBytes.channel_close_ok(channel_id)
+              end
             when 41 # channel#close-ok
               channel = @channels_lock.synchronize { @channels.delete(channel_id) }
               channel.reply [:channel_close_ok]
