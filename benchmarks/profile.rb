@@ -23,8 +23,7 @@ class AMQPClientProfiler
     puts "Message size: #{@message_size} bytes"
     puts ""
 
-    # Create tmp directory for profile dumps
-    FileUtils.mkdir_p("tmp")
+    FileUtils.mkdir_p(File.join(__dir__, "..", "tmp"))
 
     # Profile high-level API (where performance gap exists)
     puts "Profiling High-Level API Publishing..."
@@ -39,7 +38,7 @@ class AMQPClientProfiler
     # Profile low-level API for comparison
     puts "Profiling Low-Level API Publishing..."
 
-    StackProf.run(mode: :cpu, interval: 100, out: "tmp/stackprof-low-level.dump") do
+    StackProf.run(raw: true, mode: :cpu, interval: 100, out: "tmp/stackprof-low-level.dump") do
       profile_low_level_publishing
     end
 
