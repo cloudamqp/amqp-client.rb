@@ -106,118 +106,93 @@ module AMQP
         return "\x00\x00" if properties.empty?
 
         flags = 0
-        arr = [flags]
-        fmt = String.new("S>", capacity: 37)
+        segments = [] # format segments
+        arr = []
 
         if (content_type = properties[:content_type])
           content_type.is_a?(String) || raise(ArgumentError, "content_type must be a string")
-
           flags |= (1 << 15)
           arr << content_type.bytesize << content_type
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (content_encoding = properties[:content_encoding])
           content_encoding.is_a?(String) || raise(ArgumentError, "content_encoding must be a string")
-
           flags |= (1 << 14)
           arr << content_encoding.bytesize << content_encoding
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (headers = properties[:headers])
           headers.is_a?(Hash) || raise(ArgumentError, "headers must be a hash")
-
           flags |= (1 << 13)
           tbl = Table.encode(headers)
           arr << tbl.bytesize << tbl
-          fmt << "L>a*"
+          segments << "L>a*"
         end
-
         if (delivery_mode = properties[:delivery_mode])
           delivery_mode.is_a?(Integer) || raise(ArgumentError, "delivery_mode must be an int")
-
           flags |= (1 << 12)
           arr << delivery_mode
-          fmt << "C"
+          segments << "C"
         end
-
         if (priority = properties[:priority])
           priority.is_a?(Integer) || raise(ArgumentError, "priority must be an int")
-
           flags |= (1 << 11)
           arr << priority
-          fmt << "C"
+          segments << "C"
         end
-
         if (correlation_id = properties[:correlation_id])
           correlation_id.is_a?(String) || raise(ArgumentError, "correlation_id must be a string")
-
           flags |= (1 << 10)
           arr << correlation_id.bytesize << correlation_id
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (reply_to = properties[:reply_to])
           reply_to.is_a?(String) || raise(ArgumentError, "reply_to must be a string")
-
           flags |= (1 << 9)
           arr << reply_to.bytesize << reply_to
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (expiration = properties[:expiration])
           expiration = expiration.to_s if expiration.is_a?(Integer)
           expiration.is_a?(String) || raise(ArgumentError, "expiration must be a string or integer")
-
           flags |= (1 << 8)
           arr << expiration.bytesize << expiration
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (message_id = properties[:message_id])
           message_id.is_a?(String) || raise(ArgumentError, "message_id must be a string")
-
           flags |= (1 << 7)
           arr << message_id.bytesize << message_id
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (timestamp = properties[:timestamp])
           timestamp.is_a?(Integer) || timestamp.is_a?(Time) ||
             raise(ArgumentError, "timestamp must be an Integer or a Time")
-
           flags |= (1 << 6)
           arr << timestamp.to_i
-          fmt << "Q>"
+          segments << "Q>"
         end
-
         if (type = properties[:type])
           type.is_a?(String) || raise(ArgumentError, "type must be a string")
-
           flags |= (1 << 5)
           arr << type.bytesize << type
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (user_id = properties[:user_id])
           user_id.is_a?(String) || raise(ArgumentError, "user_id must be a string")
-
           flags |= (1 << 4)
           arr << user_id.bytesize << user_id
-          fmt << "Ca*"
+          segments << "Ca*"
         end
-
         if (app_id = properties[:app_id])
           app_id.is_a?(String) || raise(ArgumentError, "app_id must be a string")
-
           flags |= (1 << 3)
           arr << app_id.bytesize << app_id
-          fmt << "Ca*"
+          segments << "Ca*"
         end
 
-        arr[0] = flags
-        arr.pack(fmt)
+        arr.unshift(flags)
+        arr.pack("S>" + segments.join)
       end
 
       # Decode a byte array
