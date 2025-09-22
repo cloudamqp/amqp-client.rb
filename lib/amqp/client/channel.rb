@@ -341,6 +341,17 @@ module AMQP
           end
         end
 
+        def basic_consume_once(queue, &)
+          tag = "consume-once-#{rand(1024)}"
+          write_bytes FrameBytes.basic_consume(@id, queue, tag, true, false, true, nil)
+          @consumers[tag] = q = ::Queue.new
+          yield
+          msg = q.pop
+          write_bytes FrameBytes.basic_cancel(@id, tag, no_wait: true)
+          @consumers.delete tag
+          msg
+        end
+
         # Cancel/abort/stop a consumer
         # @param consumer_tag [String] Tag of the consumer to cancel
         # @param no_wait [Boolean] Will wait for a confirmation from the broker that the consumer is cancelled

@@ -5,6 +5,7 @@ require_relative "client/connection"
 require_relative "client/exchange"
 require_relative "client/queue"
 require_relative "client/consumer"
+require_relative "client/rpc_client"
 
 # AMQP 0-9-1 Protocol, this library only implements the Client
 # @see Client
@@ -354,6 +355,50 @@ module AMQP
         @exchanges.delete(name)
         nil
       end
+    end
+
+    # Create a RPC server for a single method/function/procedure
+    # @param queue [String] name of the queue that RPC calls will be sent to
+    # @param worker_threads [Integer] number of threads that process requests
+    # @yield Block that processes the RPC request messages
+    # @yieldparam [String] The body of the request message
+    # @yieldreturn [String] The response message body
+    # @return (see #subscribe)
+    def rpc_server(queue:, worker_threads: 1, &_)
+      queue(queue)
+      subscribe(queue, prefetch: worker_threads, worker_threads:) do |msg|
+        result = yield msg.body
+        msg.channel.basic_publish(result, exchange: "", routing_key: msg.properties.reply_to,
+                                          correlation_id: msg.properties.correlation_id)
+        msg.ack
+      rescue StandardError
+        msg.reject(requeue: false)
+        raise
+      end
+    end
+
+    # Do a RPC call, sends a messages, waits for a response
+    # @param arguments [String] arguments/body to the call
+    # @param queue [String] name of the queue that RPC calls will be sent to
+    # @return [String] Returns the result from the call
+    def rpc_call(arguments, queue:)
+      ch = with_connection(&:channel)
+      begin
+        msg = ch.basic_consume_once("amq.rabbitmq.reply-to") do
+          ch.basic_publish(arguments, exchange: "", routing_key: queue,
+                                      reply_to: "amq.rabbitmq.reply-to")
+        end
+        msg.body
+      ensure
+        ch.close
+      end
+    end
+
+    # Create a reusable RPC client
+    # @return [RPCClient]
+    def rpc_client
+      ch = with_connection(&:channel)
+      RPCClient.new(ch).start
     end
 
     # @!endgroup
