@@ -8,6 +8,9 @@
 - **BREAKING CHANGE**: Client exchange convenience methods renamed to `$type_exchange`, e.g. `direct_exchange` for improved clarity
 - **BREAKING_CHANGE**: `Client#subscribe` and `Queue#subscribe` now return a `Consumer` which can be cancelled.
 - Added: `Queue#subscribe` now handles ack and rejects automatically
+- Added: RPC API
+- Added: Support `no_wait` argument in `#basic_consume`
+- Changed: Disabled nagle's algorithm
 - Fixed: Running minitest with `--verbose` flag no longer causes TypeError
 - Updated: Documentation and examples to reflect new keyword argument API
 
