@@ -24,3 +24,7 @@ gem "bunny"
 gem "stackprof"
 
 gem "minitest-reporters", "~> 1.7"
+
+gem "benchmark", "~> 0.4.1"
+
+gem "logger", "~> 1.7"
