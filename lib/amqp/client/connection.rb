@@ -340,7 +340,7 @@ module AMQP
               tag_len = buf.getbyte(4)
               tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
               no_wait = buf.getbyte(5 + tag_len) == 1
-              channel.close_consumer(tag)
+              channel.cancel_consumer(tag)
               write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait
             when 31 # cancel-ok
               tag_len = buf.getbyte(4)

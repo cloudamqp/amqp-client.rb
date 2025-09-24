@@ -143,6 +143,24 @@ class HighLevelTest < Minitest::Test
     end
   end
 
+  def test_it_calls_on_cancel_on_basic_cancel_from_server
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    q = client.queue("test.cancel")
+    cancelled = Queue.new
+
+    q.subscribe(on_cancel: ->(tag) { cancelled << tag }) do |msg|
+      # noop
+    end
+    q.delete # This will send basic.cancel to the client
+
+    tag = cancelled.pop(timeout: 2)
+
+    refute_nil tag, "Did not receive basic.cancel callback"
+    refute client.instance_variable_get(:@consumers).values.any? { |c|
+      c.tag == tag
+    }, "Consumer was not removed after basic.cancel"
+  end
+
   def test_default_direct_exchange
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
     begin
