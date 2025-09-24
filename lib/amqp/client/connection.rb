@@ -563,7 +563,7 @@ module AMQP
         rescue *READ_EXCEPTIONS
           nil
         end
-        raise e
+        raise Error, "Could not establish AMQP connection: invalid handshake (#{e.message})"
       end
 
       # Enable TCP keepalive, which is preferred to heartbeats
