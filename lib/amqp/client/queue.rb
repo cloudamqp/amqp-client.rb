@@ -43,11 +43,13 @@ module AMQP
       #   0 means that the thread calling this method will be blocked
       # @param requeue_on_reject [Boolean] If true, messages that are rejected due to an exception in the block
       #   will be requeued. Only relevant if no_ack is false. (Default: true)
+      # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
+      #   The proc will be called with the consumer tag as the only argument
       # @param arguments [Hash] Custom arguments to the consumer
       # @yield [Message] Delivered message from the queue
       # @return [Consumer] The consumer object, which can be used to cancel the consumer
-      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, arguments: {})
-        @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, arguments:) do |message|
+      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, on_cancel: nil, arguments: {})
+        @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, on_cancel:, arguments:) do |message|
           yield message
           message.ack unless no_ack
         rescue StandardError => e

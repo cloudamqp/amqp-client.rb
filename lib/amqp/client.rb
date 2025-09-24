@@ -53,12 +53,13 @@ module AMQP
     #   amqp.queue("foobar")
     def start
       @stopped = false
-      Thread.new(connect(read_loop_thread: false)) do |conn|
+      Thread.new(connect(read_loop_thread: false)) do |conn| # rubocop:disable Metrics/BlockLength
         Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
         loop do
           break if @stopped
 
           conn ||= connect(read_loop_thread: false)
+
           Thread.new do
             # restore connection in another thread, read_loop have to run
             conn.channel(1) # reserve channel 1 for publishes
@@ -68,12 +69,15 @@ module AMQP
               consume_ok = ch.basic_consume(consumer.queue,
                                             no_ack: consumer.no_ack,
                                             worker_threads: consumer.worker_threads,
+                                            on_cancel: consumer.on_cancel,
                                             arguments: consumer.arguments,
                                             &consumer.block)
-              # Update the consumer with new channel and consumer_tag
-              consumer.update_channel_id_and_tag(ch.id, consume_ok.consumer_tag)
+              # Update the consumer with new channel and consume_ok metadata
+              consumer.update_consume_ok(consume_ok)
             end
             @connq << conn
+            # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
+            @consumers.delete_if { |_, c| c.closed? }
           end
           conn.read_loop # blocks until connection is closed, then reconnect
         rescue Error => e
@@ -247,27 +251,31 @@ module AMQP
 
     # @!group Queue actions
 
-    # @api private
-    ConsumeArgs = Data.define(:queue, :no_ack, :prefetch, :worker_threads, :arguments, :block)
-
     # Consume messages from a queue
     # @param queue [String] Name of the queue to subscribe to
     # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected) (default: false)
     # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false (default: 1)
     # @param worker_threads [Integer] Number of threads processing messages (default: 1)
+    # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
+    #   The proc will be called with the consumer tag as the only argument
     # @param arguments [Hash] Custom arguments to the consumer
     # @yield [Message] Delivered message from the queue
     # @return [Consumer] The consumer object, which can be used to cancel the consumer
-    def subscribe(queue, no_ack: false, prefetch: 1, worker_threads: 1, arguments: {}, &blk)
+    def subscribe(queue, no_ack: false, prefetch: 1, worker_threads: 1, on_cancel: nil, arguments: {}, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 
       with_connection do |conn|
         ch = conn.channel
         ch.basic_qos(prefetch)
-        consume_ok = ch.basic_consume(queue, no_ack:, worker_threads:, arguments:, &blk)
-        consume_args = ConsumeArgs.new(queue:, no_ack:, prefetch:, worker_threads:, arguments:, block: blk)
         consumer_id = @next_consumer_id += 1
-        consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, consume_args:, consume_ok:)
+        on_cancel_proc = proc do |tag|
+          @consumers.delete(consumer_id)
+          on_cancel&.call(tag)
+        end
+        basic_consume_args = { no_ack:, worker_threads:, on_cancel: on_cancel_proc, arguments: }
+        consume_ok = ch.basic_consume(queue, **basic_consume_args, &blk)
+        consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, block: blk,
+                                queue:, consume_ok:, prefetch:, **basic_consume_args)
         @consumers[consumer_id] = consumer
         consumer
       end

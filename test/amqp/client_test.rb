@@ -200,6 +200,21 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     end
   end
 
+  def test_it_handles_basic_cancel_from_server
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
+    connection = client.connect
+    channel = connection.channel
+    q = channel.queue_declare ""
+    cancelled = Queue.new
+
+    channel.basic_consume(q.queue_name, on_cancel: ->(tag) { cancelled << tag }) do |msg|
+      # noop
+    end
+    channel.queue_delete q.queue_name # This will send basic.cancel to the client
+
+    refute_nil cancelled.pop(timeout: 1)
+  end
+
   def test_it_can_bind_queue
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
     connection = client.connect

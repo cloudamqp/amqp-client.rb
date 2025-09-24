@@ -64,7 +64,7 @@ module AMQP
           @replies.close
           @basic_gets.close
           @unconfirmed_lock.synchronize { @unconfirmed_empty.broadcast }
-          @consumers.each_value(&:close)
+          @consumers.each_value { |c| close_consumer(c) }
           nil
         end
 
@@ -77,8 +77,10 @@ module AMQP
           @replies.close
           @basic_gets.close
           @unconfirmed_lock.synchronize { @unconfirmed_empty.broadcast }
-          @consumers.each_value(&:close)
-          @consumers.each_value(&:clear) # empty the queues too, messages can't be acked anymore
+          @consumers.each_value do |c|
+            close_consumer(c)
+            c.msg_q.clear # empty the queues too, messages can't be acked anymore
+          end
           nil
         end
 
@@ -312,46 +314,58 @@ module AMQP
         #   @return [String] The consumer tag
         # @!attribute worker_threads
         #   @return [Array<Thread>] Array of worker threads
-        ConsumeOk = Data.define(:channel_id, :consumer_tag, :worker_threads)
+        ConsumeOk = Data.define(:channel_id, :consumer_tag, :worker_threads, :msg_q, :on_cancel)
 
         # Consume messages from a queue
         # @param queue [String] Name of the queue to subscribe to
         # @param tag [String] Custom consumer tag, will be auto assigned by the broker if empty.
-        #   Has to be uniqe among this channel's consumers only
+        #   Has to be unique among this channel's consumers only
         # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected)
         # @param exclusive [Boolean] When true only a single consumer can consume from the queue at a time
         # @param arguments [Hash] Custom arguments for the consumer
         # @param worker_threads [Integer] Number of threads processing messages,
         #   0 means that the thread calling this method will process the messages and thus this method will block
+        # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
+        #   The proc will be called with the consumer tag as the only argument
         # @yield [Message] Delivered message from the queue
         # @return [ConsumeOk]
         # @return [nil] When `worker_threads` is 0 the method will return when the consumer is cancelled
         def basic_consume(queue, tag: "", no_ack: true, exclusive: false, no_wait: false,
-                          arguments: {}, worker_threads: 1, &blk)
+                          arguments: {}, worker_threads: 1, on_cancel: nil, &blk)
           raise ArgumentError, "consumer_tag required when no_wait" if no_wait && tag.empty?
 
           write_bytes FrameBytes.basic_consume(@id, queue, tag, no_ack, exclusive, no_wait, arguments)
-          tag, = expect(:basic_consume_ok) unless no_wait
-          @consumers[tag] = q = ::Queue.new
+          consumer_tag, = expect(:basic_consume_ok) unless no_wait
+          msg_q = ::Queue.new
           if worker_threads.zero?
-            consume_loop(q, tag, &blk)
+            @consumers[consumer_tag] =
+              ConsumeOk.new(channel_id: @id, consumer_tag:, worker_threads: [], msg_q:, on_cancel:)
+            consume_loop(msg_q, consumer_tag, &blk)
             nil
           else
             threads = Array.new(worker_threads) do
-              Thread.new { consume_loop(q, tag, &blk) }
+              Thread.new { consume_loop(msg_q, consumer_tag, &blk) }
             end
-            ConsumeOk.new(channel_id: @id, consumer_tag: tag, worker_threads: threads)
+            @consumers[consumer_tag] =
+              ConsumeOk.new(channel_id: @id, consumer_tag:, worker_threads: threads, msg_q:, on_cancel:)
           end
         end
 
+        # Consume a single message from a queue
+        # @param queue [String] Name of the queue to subscribe to
+        # @yield [] Block in which the message will be yielded
+        # @return [Message] The single message received from the queue
         def basic_consume_once(queue, &)
           tag = "consume-once-#{rand(1024)}"
           write_bytes FrameBytes.basic_consume(@id, queue, tag, true, false, true, nil)
-          @consumers[tag] = q = ::Queue.new
-          yield
-          msg = q.pop
+          msg_q = ::Queue.new
+          @consumers[tag] =
+            ConsumeOk.new(channel_id: @id, consumer_tag: tag, worker_threads: [], msg_q:, on_cancel: nil)
+          yield if block_given?
+          msg = msg_q.pop
           write_bytes FrameBytes.basic_cancel(@id, tag, no_wait: true)
-          @consumers.delete tag
+          consumer = @consumers.delete(tag)
+          close_consumer(consumer)
           msg
         end
 
@@ -360,12 +374,13 @@ module AMQP
         # @param no_wait [Boolean] Will wait for a confirmation from the broker that the consumer is cancelled
         # @return [nil]
         def basic_cancel(consumer_tag, no_wait: false)
-          consumer = @consumers.fetch(consumer_tag)
-          return if consumer.closed?
+          consumer = @consumers[consumer_tag]
+          return unless consumer
 
           write_bytes FrameBytes.basic_cancel(@id, consumer_tag)
           expect(:basic_cancel_ok) unless no_wait
-          consumer.close
+          @consumers.delete(consumer_tag)
+          close_consumer(consumer)
           nil
         end
 
@@ -534,13 +549,28 @@ module AMQP
           next_message_finished!
         end
 
+        # Handle consumer cancellation from the broker
         # @api private
-        def close_consumer(tag)
-          @consumers.fetch(tag).close
+        def cancel_consumer(tag)
+          consumer = @consumers.delete(tag)
+          return unless consumer
+
+          close_consumer(consumer)
+          begin
+            consumer.on_cancel&.call(consumer.consumer_tag)
+          rescue StandardError => e
+            warn "AMQP-Client consumer on_cancel callback error: #{e.class}: #{e.message}"
+          end
           nil
         end
 
         private
+
+        def close_consumer(consumer)
+          consumer.msg_q.close
+          # The worker threads will exit when the queue is closed
+          nil
+        end
 
         def next_message_finished!
           next_msg = @next_msg
@@ -554,7 +584,7 @@ module AMQP
             @basic_gets.push next_msg
           else
             Thread.pass until (consumer = @consumers[next_msg.consumer_tag])
-            consumer.push next_msg
+            consumer.msg_q.push next_msg
           end
           nil
         ensure
