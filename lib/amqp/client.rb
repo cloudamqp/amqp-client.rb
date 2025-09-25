@@ -99,6 +99,12 @@ module AMQP
       nil
     end
 
+    def open?
+      return false if @stopped.nil?
+
+      !@stopped
+    end
+
     # @!endgroup
     # @!group High level objects
 
