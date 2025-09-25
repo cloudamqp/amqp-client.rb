@@ -52,6 +52,8 @@ module AMQP
     #   amqp.start
     #   amqp.queue("foobar")
     def start
+      return self if started?
+
       @stopped = false
       Thread.new(connect(read_loop_thread: false)) do |conn|
         Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
@@ -99,7 +101,10 @@ module AMQP
       nil
     end
 
-    def open?
+    # Check if the client is connected
+    # @return [Boolean] true if connected or currently trying to connect, false otherwise
+    def started?
+      # nil means never started, false mean started, true means stopped
       return false if @stopped.nil?
 
       !@stopped
