@@ -384,19 +384,19 @@ class HighLevelTest < Minitest::Test
     end
   end
 
-  def test_client_open_method
+  def test_client_started_method
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
 
-    refute_predicate client, :open?
+    refute_predicate client, :started?
 
     client.start
 
-    assert_predicate client, :open?
+    assert_predicate client, :started?
 
     client.stop
 
-    refute_predicate client, :open?
+    refute_predicate client, :started?
   ensure
-    client.stop if client&.open?
+    client.stop if client&.started?
   end
 end
