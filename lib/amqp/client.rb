@@ -40,6 +40,9 @@ module AMQP
       @connq = SizedQueue.new(1)
       @codec_registry = self.class.codec_registry.dup
       @strict_coding = self.class.strict_coding
+      @start_lock = Mutex.new
+      @supervisor_started = false
+      @stopped = false
     end
 
     # @!group Connect and disconnect
@@ -62,45 +65,51 @@ module AMQP
     def start
       return self if started?
 
-      @stopped = false
-      Thread.new(connect(read_loop_thread: false)) do |conn|
-        Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
-        loop do
-          break if @stopped
+      @start_lock.synchronize do # rubocop:disable Metrics/BlockLength
+        return self if started?
 
-          conn ||= connect(read_loop_thread: false)
+        @supervisor_started = true
+        @stopped = false
+        Thread.new(connect(read_loop_thread: false)) do |conn|
+          Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
+          loop do
+            break if @stopped
 
-          Thread.new do
-            # restore connection in another thread, read_loop have to run
-            conn.channel(1) # reserve channel 1 for publishes
-            @consumers.each_value do |consumer|
-              ch = conn.channel
-              ch.basic_qos(consumer.prefetch)
-              consume_ok = ch.basic_consume(consumer.queue,
-                                            **consumer.basic_consume_args,
-                                            &consumer.block)
-              # Update the consumer with new channel and consume_ok metadata
-              consumer.update_consume_ok(consume_ok)
+            conn ||= connect(read_loop_thread: false)
+
+            Thread.new do
+              # restore connection in another thread, read_loop have to run
+              conn.channel(1) # reserve channel 1 for publishes
+              @consumers.each_value do |consumer|
+                ch = conn.channel
+                ch.basic_qos(consumer.prefetch)
+                consume_ok = ch.basic_consume(consumer.queue,
+                                              **consumer.basic_consume_args,
+                                              &consumer.block)
+                # Update the consumer with new channel and consume_ok metadata
+                consumer.update_consume_ok(consume_ok)
+              end
+              @connq << conn
+              # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
+              @consumers.delete_if { |_, c| c.closed? }
             end
-            @connq << conn
-            # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
-            @consumers.delete_if { |_, c| c.closed? }
+            conn.read_loop # blocks until connection is closed, then reconnect
+          rescue Error => e
+            warn "AMQP-Client reconnect error: #{e.inspect}"
+            sleep @options[:reconnect_interval] || 1
+          ensure
+            @connq.clear
+            conn = nil
           end
-          conn.read_loop # blocks until connection is closed, then reconnect
-        rescue Error => e
-          warn "AMQP-Client reconnect error: #{e.inspect}"
-          sleep @options[:reconnect_interval] || 1
-        ensure
-          conn = nil
         end
       end
       self
     end
 
-    # Close the currently open connection
+    # Close the currently open connection and stop the supervision / reconnection logic.
     # @return [nil]
     def stop
-      return if @stopped
+      return if @stopped && !@supervisor_started
 
       @stopped = true
       return unless @connq.size.positive?
@@ -113,10 +122,7 @@ module AMQP
     # Check if the client is connected
     # @return [Boolean] true if connected or currently trying to connect, false otherwise
     def started?
-      # nil means never started, false mean started, true means stopped
-      return false if @stopped.nil?
-
-      !@stopped
+      @supervisor_started && !@stopped
     end
 
     # @!endgroup
