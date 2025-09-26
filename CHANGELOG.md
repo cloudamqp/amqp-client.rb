@@ -10,7 +10,9 @@
 - Added: `Queue#subscribe` now handles ack and rejects automatically
 - Added: RPC API
 - Added: Support `no_wait` argument in `#basic_consume`
+- Added: `Client#started?` to check if `start` has already been called
 - Changed: Disabled nagle's algorithm
+- Changed: `Clinet#start` is now idempotent
 - Fixed: Running minitest with `--verbose` flag no longer causes TypeError
 - Updated: Documentation and examples to reflect new keyword argument API
 
