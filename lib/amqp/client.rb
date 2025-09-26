@@ -93,6 +93,7 @@ module AMQP
             warn "AMQP-Client reconnect error: #{e.inspect}"
             sleep @options[:reconnect_interval] || 1
           ensure
+            @connq.clear
             conn = nil
           end
         end
