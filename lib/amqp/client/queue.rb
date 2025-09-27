@@ -16,7 +16,8 @@ module AMQP
       end
 
       # Publish to the queue, wait for confirm
-      # @param body [String] The body
+      # @param body [Object] The message body
+      #   will be encoded if any matching codec is found in the client's codec registry
       # @option (see Client#publish)
       # @raise (see Client#publish)
       # @return [Queue] self

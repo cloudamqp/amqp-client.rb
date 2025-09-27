@@ -78,6 +78,46 @@ module AMQP
       def exchange_name
         @exchange
       end
+
+      # @!group Message coding
+
+      # Parse the message body based on content_type and content_encoding
+      # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
+      # @raise [Error::UnsupportedContentType] If the content type is not supported
+      # @return [Object] The parsed message body
+      def parse
+        registry = @channel.client.codec_registry
+        strict = @channel.client.strict_coding
+        decoded = decode
+        ct = @properties&.content_type
+        parser = registry.find_parser(ct)
+
+        return parser.parse(decoded, @properties) if parser
+
+        is_unsupported = ct && ct != "" && ct != "text/plain"
+        raise Error::UnsupportedContentType, ct if is_unsupported && strict
+
+        decoded
+      end
+
+      # Decode the message body based on content_encoding
+      # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
+      # @return [String] The decoded message body
+      def decode
+        registry = @channel.client.codec_registry
+        strict = @channel.client.strict_coding
+        ce = @properties&.content_encoding
+        coder = registry.find_coder(ce)
+
+        return coder.decode(@body, @properties) if coder
+
+        is_unsupported = ce && ce != ""
+        raise Error::UnsupportedContentEncoding, ce if is_unsupported && strict
+
+        @body
+      end
+
+      # @!endgroup
     end
 
     # A published message returned by the broker due to some error
