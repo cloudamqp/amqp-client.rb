@@ -6,6 +6,8 @@ source "https://rubygems.org"
 gemspec
 
 gem "benchmark", "~> 0.4.1"
+gem "benchmark-ips"
+gem "benchmark-memory"
 gem "bunny"
 gem "logger", "~> 1.7"
 gem "minitest", "~> 5.0"
