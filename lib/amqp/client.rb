@@ -22,8 +22,8 @@ module AMQP
     # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
     # @option options [Integer] frame_max (131_072) Maximum frame size,
     #    the smallest of the client's and the broker's values will be used
-    # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
-    #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
+    # @option options [Integer] channel_max (2048) Maximum number of channels the client will be allowed to have open.
+    #   Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.
     def initialize(uri = "", **options)
       @uri = uri
       @options = options

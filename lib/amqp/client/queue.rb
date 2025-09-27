@@ -19,16 +19,17 @@ module AMQP
       # @param body [String] The body
       # @option (see Client#publish)
       # @raise (see Client#publish)
-      # @return [self]
+      # @return [Queue] self
       def publish(body, **properties)
         @client.publish(body, exchange: "", routing_key: @name, **properties)
         self
       end
 
       # Publish to the queue, without waiting for confirm
-      # @param (see Client#publish_and_forget)
-      # @option (see Client#publish_and_forget)
-      # @return [self]
+      # @param (see Queue#publish)
+      # @option (see Queue#publish)
+      # @raise (see Queue#publish)
+      # @return [Queue] self
       def publish_and_forget(body, **properties)
         @client.publish_and_forget(body, exchange: "", routing_key: @name, **properties)
         self
@@ -37,7 +38,8 @@ module AMQP
       # Subscribe/consume from the queue
       # @param no_ack [Boolean] If true, messages are automatically acknowledged by the server upon delivery.
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
-      #   an exception, the message is rejected and can be optionally requeued. (Default: false)
+      #   an exception, the message is rejected and can be optionally requeued.
+      #   You can of course handle the ack/reject in the block yourself. (Default: false)
       # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
       # @param worker_threads [Integer] Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked

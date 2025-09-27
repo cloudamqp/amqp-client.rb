@@ -26,9 +26,10 @@ module AMQP
       end
 
       # Publish to the exchange, without waiting for confirm
-      # @param (see Client#publish_and_forget)
-      # @option (see Client#publish_and_forget)
-      # @return [self]
+      # @param (see Exchange#publish)
+      # @option (see Exchange#publish)
+      # @raise (see Exchange#publish)
+      # @return [Exchange] self
       def publish_and_forget(body, routing_key: "", **properties)
         @client.publish_and_forget(body, exchange: @name, routing_key:, **properties)
         self
