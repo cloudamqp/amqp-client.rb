@@ -24,6 +24,7 @@ The library provides a high-level API that manages channels, content-types, enco
 
 ```ruby
 require "amqp-client"
+require "amqp-client/enable_builtin_codecs" # Auto-code gzip, deflate and json
 require "json"
 require "zlib"
 
@@ -43,7 +44,7 @@ myqueue.bind(ex, binding_key: "my.events.*")
 # The message will be reprocessed if the client loses connection to the broker
 # between message arrival and when the message was supposed to be ack'ed.
 myqueue.subscribe(prefetch: 20) do |msg|
-  puts JSON.parse(msg.body)
+  puts msg.parse # Parses msg.body based on content_type and content_encoding
 rescue => e
   puts e.full_message
 end
@@ -56,13 +57,22 @@ rescue => e
   msg.reject
 end
 
-# Publish directly to the queue
-myqueue.publish({ foo: "bar" }.to_json, content_type: "application/json")
+# Publish directly to the queue, message will be serialized to json automatically
+myqueue.publish({ foo: "bar" }, content_type: "application/json")
 
 # Publish to any exchange
 ex.publish("my message", routing_key: "topic.foo", headers: { foo: "bar" })
-amqp.publish(Zlib.gzip("an event"), exchange: "amq.topic", routing_key: "my.event", content_encoding: "gzip")
+# Message will be gzip encoded automatically
+amqp.publish("an event", exchange: "amq.topic", routing_key: "my.event", content_encoding: "gzip")
 ```
+
+#### Supported Content Types and Encodings
+
+`Queue#publish`, `Exchange#publish` and `Message.parse` will automatically handle:
+
+* application/json
+* gzip
+* deflate
 
 ### Low level API
 

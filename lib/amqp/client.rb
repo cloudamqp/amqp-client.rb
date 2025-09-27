@@ -6,6 +6,8 @@ require_relative "client/exchange"
 require_relative "client/queue"
 require_relative "client/consumer"
 require_relative "client/rpc_client"
+require_relative "client/message_codecs"
+require_relative "client/message_codec_registry"
 
 # AMQP 0-9-1 Protocol, this library only implements the Client
 # @see Client
@@ -13,6 +15,10 @@ module AMQP
   # AMQP 0-9-1 Client
   # @see Connection
   class Client
+    # Class-level defaults (not automatically inherited by subclasses)
+    @codec_registry = MessageCodecRegistry.new
+    @strict_coding = false
+
     # Create a new Client object, this won't establish a connection yet, use {#connect} or {#start} for that
     # @param uri [String] URL on the format amqp://username:password@hostname/vhost,
     #   use amqps:// for encrypted connection
@@ -32,6 +38,8 @@ module AMQP
       @consumers = {}
       @next_consumer_id = 0
       @connq = SizedQueue.new(1)
+      @codec_registry = self.class.codec_registry.dup
+      @strict_coding = self.class.strict_coding
     end
 
     # @!group Connect and disconnect
@@ -226,13 +234,19 @@ module AMQP
     # @!group Publish
 
     # Publish a (persistent) message and wait for confirmation
-    # @param (see Connection::Channel#basic_publish_confirm)
+    # @param body [Object] The message body
+    #   will be encoded if any matching codec is found in the client's codec registry
+    # @param exchange [String] Name of the exchange to publish to
+    # @param routing_key [String] Routing key for the message
     # @option (see Connection::Channel#basic_publish_confirm)
     # @return (see Connection::Channel#basic_publish_confirm)
     # @raise (see Connection::Channel#basic_publish_confirm)
+    # @raise [Error::UnsupportedContentType] If content type is unsupported
+    # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
     def publish(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
+        body = serialize_and_encode_body(body, properties)
         conn.channel(1).basic_publish_confirm(body, exchange:, routing_key:, **properties)
       end
     end
@@ -242,9 +256,12 @@ module AMQP
     # @option (see Connection::Channel#basic_publish)
     # @return (see Connection::Channel#basic_publish)
     # @raise (see Connection::Channel#basic_publish)
+    # @raise [Error::UnsupportedContentType] If content type is unsupported
+    # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
     def publish_and_forget(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
+        body = serialize_and_encode_body(body, properties)
         conn.channel(1).basic_publish(body, exchange:, routing_key:, **properties)
       end
     end
@@ -428,7 +445,35 @@ module AMQP
     end
 
     # @!endgroup
+    # @!group Message coding
 
+    class << self
+      # Get the default codec registry
+      # @return [MessageCodecRegistry]
+      attr_reader :codec_registry
+
+      # Get/set if coding should default to strict, i.e. if the client should raise on unknown codecs
+      attr_accessor :strict_coding
+
+      # We need to set the subclass's codec registry and strict coding default
+      # because these are class instance variables, hence not inherited.
+      # @api private
+      def inherited(subclass)
+        super
+        subclass.instance_variable_set(:@codec_registry, @codec_registry.dup)
+        subclass.strict_coding = @strict_coding
+      end
+    end
+
+    # Get the codec registry for this instance
+    # @return [MessageCodecRegistry]
+    attr_reader :codec_registry
+
+    # Get/set if condig should be strict, i.e. if the client should raise on unknown codecs
+    attr_accessor :strict_coding
+
+    # @!endgroup
+    #
     def with_connection
       conn = nil
       loop do
@@ -450,6 +495,39 @@ module AMQP
       with_connection do |conn|
         conn.channel(consumer.channel_id).basic_cancel(consumer.tag)
       end
+    end
+
+    private
+
+    def serialize_and_encode_body(body, properties)
+      body = serialize_body(body, properties)
+      encode_body(body, properties)
+    end
+
+    def encode_body(body, properties)
+      ce = properties[:content_encoding]
+      coder = @codec_registry.find_coder(ce)
+
+      return coder.encode(body, properties) if coder
+
+      is_unsupported = ce && ce != ""
+      raise Error::UnsupportedContentEncoding, ce if is_unsupported && @strict_coding
+
+      body
+    end
+
+    def serialize_body(body, properties)
+      return body if body.is_a?(String)
+
+      ct = properties[:content_type]
+      parser = @codec_registry.find_parser(ct)
+
+      return parser.serialize(body, properties) if parser
+
+      is_unsupported = ct && ct != "" && ct != "text/plain"
+      raise Error::UnsupportedContentType, ct if is_unsupported && @strict_coding
+
+      body.to_s
     end
   end
 end

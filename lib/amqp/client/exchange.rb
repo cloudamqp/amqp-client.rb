@@ -13,10 +13,10 @@ module AMQP
         @name = name
       end
 
-      # Publish to the exchange
-      # @param body [String] The message body
-      # @param routing_key [String] The routing key of the message,
-      #   the exchange may use this when routing the message to bound queues (defaults to empty string)
+      # Publish to the exchange, wait for confirm
+      # @param body [Object] The message body
+      #   will be encoded if any matching codec is found in the client's codec registry
+      # @param routing_key [String] Routing key for the message
       # @option (see Client#publish)
       # @raise (see Client#publish)
       # @return [Exchange] self
