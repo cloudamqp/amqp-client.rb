@@ -376,6 +376,9 @@ module AMQP
       end
     end
 
+    # @!endgroup
+    # @!group RPC
+
     # Create a RPC server for a single method/function/procedure
     # @param queue [String] name of the queue that RPC calls will be sent to
     # @param worker_threads [Integer] number of threads that process requests
