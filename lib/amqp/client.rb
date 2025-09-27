@@ -425,14 +425,6 @@ module AMQP
 
     # @!endgroup
 
-    # @api private
-    def cancel_consumer(consumer)
-      @consumers.delete(consumer.id)
-      with_connection do |conn|
-        conn.channel(consumer.channel_id).basic_cancel(consumer.tag)
-      end
-    end
-
     def with_connection
       conn = nil
       loop do
@@ -445,6 +437,14 @@ module AMQP
         yield conn
       ensure
         @connq << conn unless conn.closed?
+      end
+    end
+
+    # @api private
+    def cancel_consumer(consumer)
+      @consumers.delete(consumer.id)
+      with_connection do |conn|
+        conn.channel(consumer.channel_id).basic_cancel(consumer.tag)
       end
     end
   end
