@@ -33,4 +33,17 @@ class RPCTest < Minitest::Test
 
     assert_equal "foo foo", result
   end
+
+  def test_rpc_call_times_out
+    assert_raises(Timeout::Error) do
+      @client.rpc_call("bar", queue: "rpc-test-method", timeout: 0.01)
+    end
+  end
+
+  def test_rpc_client_call_times_out
+    rpc_client = @client.rpc_client
+    assert_raises(Timeout::Error) do
+      rpc_client.call("bar", queue: "rpc-test-method", timeout: 0.01)
+    end
+  end
 end
