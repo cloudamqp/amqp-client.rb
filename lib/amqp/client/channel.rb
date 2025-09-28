@@ -353,19 +353,23 @@ module AMQP
 
         # Consume a single message from a queue
         # @param queue [String] Name of the queue to subscribe to
+        # @param timeout [Numeric, nil] Number of seconds to wait for a message
         # @yield [] Block in which the message will be yielded
         # @return [Message] The single message received from the queue
-        def basic_consume_once(queue, &)
+        # @raise [Timeout::Error] if no response is received within the timeout period
+        def basic_consume_once(queue, timeout: nil, &)
           tag = "consume-once-#{rand(1024)}"
           write_bytes FrameBytes.basic_consume(@id, queue, tag, true, false, true, nil)
           msg_q = ::Queue.new
           @consumers[tag] =
             ConsumeOk.new(channel_id: @id, consumer_tag: tag, worker_threads: [], msg_q:, on_cancel: nil)
           yield if block_given?
-          msg = msg_q.pop
+          msg = msg_q.pop(timeout:)
           write_bytes FrameBytes.basic_cancel(@id, tag, no_wait: true)
           consumer = @consumers.delete(tag)
           close_consumer(consumer)
+          raise Timeout::Error, "No message received in #{timeout} seconds" if timeout && msg.nil?
+
           msg
         end
 

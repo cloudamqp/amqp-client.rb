@@ -24,17 +24,25 @@ module AMQP
       # Do a RPC call, sends a messages, waits for a response
       # @param arguments [String] arguments/body to the call
       # @param queue [String] name of the queue that RPC call will be sent to
+      # @param timeout [Numeric, nil] Number of seconds to wait for a response
+      # @raise [Timeout::Error] if no response is received within the timeout period
       # @return [String] Returns the result from the call
-      def call(arguments, queue:)
+      def call(arguments, queue:, timeout: nil)
         correlation_id = @lock.synchronize { @correlation_id += 1 }.to_s(36)
         @ch.basic_publish(arguments, exchange: "", routing_key: queue,
                                      reply_to: "amq.rabbitmq.reply-to", correlation_id:)
-        loop do
-          msg = @messages.pop
-          return msg.body if msg.properties.correlation_id == correlation_id
+        Timeout.timeout(timeout) do # Timeout the whole loop if we never find the right correlation_id
+          loop do
+            msg = @messages.pop(timeout:) # Timeout individual pop to avoid blocking forever
+            raise Timeout::Error if msg.nil? && timeout
 
-          @messages.push msg
+            return msg.body if msg.properties.correlation_id == correlation_id
+
+            @messages.push msg
+          end
         end
+      rescue Timeout::Error
+        raise Timeout::Error, "No response received in #{timeout} seconds"
       end
 
       # Closes the channel used by the RPCClient
