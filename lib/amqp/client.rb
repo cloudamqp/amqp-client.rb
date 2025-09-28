@@ -380,12 +380,16 @@ module AMQP
     # Create a RPC server for a single method/function/procedure
     # @param queue [String] name of the queue that RPC calls will be sent to
     # @param worker_threads [Integer] number of threads that process requests
+    # @param durable [Boolean] If true the queue will survive broker restarts
+    # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
+    #   (it won't be deleted until at least one consumer has consumed from it)
+    # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
     # @yield Block that processes the RPC request messages
     # @yieldparam [String] The body of the request message
     # @yieldreturn [String] The response message body
     # @return (see #subscribe)
-    def rpc_server(queue:, worker_threads: 1, &_)
-      queue(queue)
+    def rpc_server(queue:, worker_threads: 1, durable: true, auto_delete: false, arguments: {}, &_)
+      queue(queue, durable:, auto_delete:, arguments:)
       subscribe(queue, prefetch: worker_threads, worker_threads:) do |msg|
         result = yield msg.body
         msg.channel.basic_publish(result, exchange: "", routing_key: msg.properties.reply_to,
