@@ -349,6 +349,8 @@ class HighLevelTest < Minitest::Test
       # If we got here without errors, the default works
       assert true, "Exchange bind/unbind default binding_key works"
     ensure
+      dest_exchange&.delete
+      source_exchange&.delete
       client.stop
     end
   end
