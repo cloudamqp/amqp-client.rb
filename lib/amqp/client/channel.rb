@@ -600,7 +600,7 @@ module AMQP
         def expect(expected_frame_type)
           frame_type, *args = @replies.pop
           raise Error::Closed.new(@id, *@closed) if frame_type.nil?
-          raise Error::UnexpectedFrame.new(expected_frame_type, frame_type) unless frame_type == expected_frame_type
+          raise Error::UnexpectedFrameType.new(expected_frame_type, frame_type) unless frame_type == expected_frame_type
 
           args
         end
