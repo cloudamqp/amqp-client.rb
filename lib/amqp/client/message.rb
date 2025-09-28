@@ -15,6 +15,7 @@ module AMQP
         @properties = nil
         @body = ""
         @ack_or_reject_sent = false
+        @parsed = nil
       end
 
       # The channel the message was deliviered to
@@ -86,18 +87,20 @@ module AMQP
       # @raise [Error::UnsupportedContentType] If the content type is not supported
       # @return [Object] The parsed message body
       def parse
+        return @parsed unless @parsed.nil?
+
         registry = @channel.client.codec_registry
         strict = @channel.client.strict_coding
         decoded = decode
         ct = @properties&.content_type
         parser = registry.find_parser(ct)
 
-        return parser.parse(decoded, @properties) if parser
+        return @parsed = parser.parse(decoded, @properties) if parser
 
         is_unsupported = ct && ct != "" && ct != "text/plain"
         raise Error::UnsupportedContentType, ct if is_unsupported && strict
 
-        decoded
+        @parsed = decoded
       end
 
       # Decode the message body based on content_encoding
