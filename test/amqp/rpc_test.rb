@@ -12,7 +12,7 @@ class RPCTest < Minitest::Test
   end
 
   def test_that_rpc_server_responds_to_rpc_calls
-    @client.rpc_server(queue: "rpc-test-method") do |request|
+    @client.rpc_server(queue: "rpc-test-method", auto_delete: true) do |request|
       "foo #{request}"
     end
     result = @client.rpc_call("bar", queue: "rpc-test-method")
@@ -21,7 +21,7 @@ class RPCTest < Minitest::Test
   end
 
   def test_rpc_client_is_reusable
-    @client.rpc_server(queue: "rpc-test-method") do |request|
+    @client.rpc_server(queue: "rpc-test-method", auto_delete: true) do |request|
       "foo #{request}"
     end
 
