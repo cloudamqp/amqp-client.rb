@@ -4,7 +4,7 @@ module AMQP
   class Client
     # Consumer abstraction
     class Consumer
-      attr_reader :queue, :id, :channel_id, :no_ack, :prefetch, :worker_threads, :arguments, :block, :on_cancel
+      attr_reader :queue, :id, :channel_id, :prefetch, :block, :basic_consume_args
 
       # @api private
       def initialize(client:, channel_id:, id:, block:, **settings)
@@ -12,12 +12,9 @@ module AMQP
         @channel_id = channel_id
         @id = id
         @queue = settings.fetch(:queue)
-        @no_ack = settings.fetch(:no_ack)
+        @basic_consume_args = settings.fetch(:basic_consume_args)
         @prefetch = settings.fetch(:prefetch)
-        @worker_threads = settings.fetch(:worker_threads)
-        @arguments = settings.fetch(:arguments) { {} }
         @consume_ok = settings.fetch(:consume_ok)
-        @on_cancel = settings.fetch(:on_cancel, nil)
         @block = block
       end
 
