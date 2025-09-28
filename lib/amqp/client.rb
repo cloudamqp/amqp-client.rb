@@ -404,11 +404,13 @@ module AMQP
     # Do a RPC call, sends a messages, waits for a response
     # @param arguments [String] arguments/body to the call
     # @param queue [String] name of the queue that RPC calls will be sent to
+    # @param timeout [Numeric, nil] Number of seconds to wait for a response
     # @return [String] Returns the result from the call
-    def rpc_call(arguments, queue:)
+    # @raise [Timeout::Error] if no response is received within the timeout period
+    def rpc_call(arguments, queue:, timeout: nil)
       ch = with_connection(&:channel)
       begin
-        msg = ch.basic_consume_once("amq.rabbitmq.reply-to") do
+        msg = ch.basic_consume_once("amq.rabbitmq.reply-to", timeout:) do
           ch.basic_publish(arguments, exchange: "", routing_key: queue,
                                       reply_to: "amq.rabbitmq.reply-to")
         end
