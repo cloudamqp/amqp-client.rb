@@ -118,7 +118,7 @@ class AMQPClientLifecycleTest < Minitest::Test
     exception = assert_raises(AMQP::Client::Error) do
       channel.queue_declare "foo", passive: true
     end
-    assert_match(/exists/, exception.message)
+    assert_match(/404/, exception.message)
   end
 
   def test_it_can_get_from_empty_queue
