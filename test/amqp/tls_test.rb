@@ -12,6 +12,8 @@ class AMQPSClientTest < Minitest::Test
       assert_equal "foobar", msg.body
       channel.basic_cancel msg.consumer_tag
     end
+  ensure
+    connection&.close
   end
 
   def test_it_can_ack_a_lot_of_msgs_on_tls
@@ -36,6 +38,7 @@ class AMQPSClientTest < Minitest::Test
     10_000.times do
       assert_equal "foo", msgs1.pop.routing_key
     end
-    connection.close
+  ensure
+    connection&.close
   end
 end

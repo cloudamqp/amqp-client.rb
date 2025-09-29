@@ -8,6 +8,8 @@ class AMQPHeartbeatTest < Minitest::Test
     sleep 1.2
 
     refute_predicate connection, :closed?, "Client should stay open while receiving heartbeats"
+  ensure
+    connection&.close
   end
 
   def test_no_heartbeat_when_disabled
@@ -18,5 +20,7 @@ class AMQPHeartbeatTest < Minitest::Test
 
       refute heartbeat_sent, "No heartbeat frames should be sent when heartbeat is disabled"
     end
+  ensure
+    connection&.close
   end
 end
