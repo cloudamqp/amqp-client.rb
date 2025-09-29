@@ -5,77 +5,46 @@ require "net/http"
 require "json"
 require "time"
 
-class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
-  def test_that_it_has_a_version_number
-    refute_nil ::AMQP::Client::VERSION
+# Specs that require @connection setup/teardown
+class AMQPClientLifecycleTest < Minitest::Test
+  def setup
+    @connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
+  end
+
+  def teardown
+    @connection&.close
   end
 
   def test_it_can_connect
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-
-    assert connection
-  end
-
-  def test_it_raises_on_connecting_to_unrelated_service
-    with_fake_server do |port|
-      client = AMQP::Client.new("amqp://guest1:guest2@#{TEST_AMQP_HOST}:#{port}")
-      assert_raises(AMQP::Client::Error) do
-        client.connect
-      end
-    end
-  end
-
-  def test_it_raises_on_bad_credentials
-    client = AMQP::Client.new("amqp://guest1:guest2@#{TEST_AMQP_HOST}")
-    assert_raises(AMQP::Client::Error) do
-      client.connect
-    end
+    assert @connection
   end
 
   def test_it_can_disconnect
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    connection.close
+    @connection.close
 
-    assert connection
-  end
-
-  def test_it_can_stop
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    client.stop
-
-    assert client
+    assert @connection
   end
 
   def test_it_can_open_channel
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
 
     assert channel
   end
 
   def test_it_can_close_channel
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.close
 
     assert channel
   end
 
   def test_it_can_publish
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.basic_publish "", exchange: "foo", routing_key: "bar"
   end
 
   def test_it_can_declare_exchange
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.exchange_declare "foo", type: "fanout"
     q = channel.queue_declare ""
     channel.queue_bind q.queue_name, exchange: "foo", binding_key: ""
@@ -85,13 +54,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_equal "foo", msg.exchange_name
   ensure
     channel&.exchange_delete "foo"
-    connection&.close
   end
 
   def test_it_can_delete_exchange
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.exchange_declare "foo", type: "fanout"
     q = channel.queue_declare ""
     channel.queue_bind q.queue_name, exchange: "foo", binding_key: ""
@@ -100,14 +66,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_raises(AMQP::Client::Error::ChannelClosed) do
       channel.basic_get q.queue_name
     end
-  ensure
-    connection&.close
   end
 
   def test_it_can_bind_exchanges
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.exchange_declare "foo", type: "fanout"
     channel.exchange_declare "bar", type: "fanout"
     q = channel.queue_declare ""
@@ -121,13 +83,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   ensure
     channel&.exchange_delete "foo"
     channel&.exchange_delete "bar"
-    connection&.close
   end
 
   def test_it_can_unbind_exchanges
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.exchange_declare "foo", type: "fanout"
     channel.exchange_declare "bar", type: "fanout"
     q = channel.queue_declare ""
@@ -141,24 +100,17 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   ensure
     channel&.exchange_delete "foo"
     channel&.exchange_delete "bar"
-    connection&.close
   end
 
   def test_it_can_declare_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     resp = channel.queue_declare "foo", exclusive: true, auto_delete: true
 
     assert_equal "foo", resp.queue_name
-  ensure
-    connection&.close
   end
 
   def test_it_can_delete_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.queue_declare "foo"
     message_count = channel.queue_delete("foo")
 
@@ -166,66 +118,46 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_raises(AMQP::Client::Error, /exists/) do
       channel.queue_declare "foo", passive: true
     end
-  ensure
-    connection&.close
   end
 
   def test_it_can_get_from_empty_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     msg = channel.basic_get q.queue_name
 
     assert_nil msg
-  ensure
-    connection&.close
   end
 
   def test_it_can_get_from_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.queue_declare "foo", exclusive: true
     channel.basic_publish "bar", exchange: "", routing_key: "foo"
     msg = channel.basic_get "foo"
 
     assert_equal "bar", msg.body
-  ensure
-    connection&.close
   end
 
   def test_it_can_get_from_transient_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_publish "foobar", exchange: "", routing_key: q.queue_name
     msg = channel.basic_get q.queue_name
 
     assert_equal "foobar", msg.body
-  ensure
-    connection&.close
   end
 
   def test_it_can_consume
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_publish "foobar", exchange: "", routing_key: q.queue_name
     channel.basic_consume(q.queue_name) do |msg|
       assert_equal "foobar", msg.body
       channel.basic_cancel msg.consumer_tag
     end
-  ensure
-    connection&.close
   end
 
   def test_it_handles_basic_cancel_from_server
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     cancelled = Queue.new
 
@@ -235,14 +167,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     channel.queue_delete q.queue_name # This will send basic.cancel to the client
 
     refute_nil cancelled.pop(timeout: 1)
-  ensure
-    connection&.close
   end
 
   def test_it_can_bind_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.queue_bind q.queue_name, exchange: "amq.direct", binding_key: "bar"
     channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
@@ -250,14 +178,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
     assert_equal "amq.direct", msg.exchange_name
     assert_equal "foo", msg.body
-  ensure
-    connection&.close
   end
 
   def test_it_can_unbind_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.queue_bind q.queue_name, exchange: "amq.direct", binding_key: "bar"
     channel.queue_unbind q.queue_name, exchange: "amq.direct", binding_key: "bar"
@@ -265,14 +189,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     msg = channel.basic_get q.queue_name
 
     assert_nil msg
-  ensure
-    connection&.close
   end
 
   def test_it_can_purge_queue
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.queue_bind q.queue_name, exchange: "amq.direct", binding_key: "bar"
     channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
@@ -280,14 +200,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     msg = channel.basic_get q.queue_name
 
     assert_nil msg
-  ensure
-    connection&.close
   end
 
   def test_it_can_qos
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_qos(1)
     channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
@@ -299,14 +215,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     sleep(0.1)
 
     assert_equal 1, i
-  ensure
-    connection&.close
   end
 
   def test_it_can_ack
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_qos 1
     channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
@@ -319,14 +231,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     sleep(0.1)
 
     assert_equal 2, i
-  ensure
-    connection&.close
   end
 
   def test_it_can_nack
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_qos 1
     channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
@@ -342,14 +250,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     sleep(0.1)
 
     assert_equal 2, i
-  ensure
-    connection&.close
   end
 
   def test_it_can_reject
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_qos 1
     channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
@@ -365,14 +269,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     sleep(0.1)
 
     assert_equal 2, i
-  ensure
-    connection&.close
   end
 
   def test_it_can_recover
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
     i = 0
@@ -386,14 +286,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     sleep(0.1)
 
     assert_equal 2, i
-  ensure
-    connection&.close
   end
 
   def test_it_can_return
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     msgs = Queue.new
     channel.on_return do |msg|
       msgs << msg
@@ -402,25 +298,17 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     msg = msgs.pop
 
     assert_equal "bar", msg.routing_key
-  ensure
-    connection&.close
   end
 
   def test_it_can_select_confirm
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     channel.confirm_select
     channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
     channel.wait_for_confirms
-  ensure
-    connection&.close
   end
 
   def test_it_can_commit_tx
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare "foo", exclusive: true
     channel.tx_select
     channel.basic_publish "foo", exchange: "", routing_key: "foo"
@@ -428,14 +316,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     msg = channel.basic_get q.queue_name
 
     assert_equal "foo", msg.body
-  ensure
-    connection&.close
   end
 
   def test_it_can_rollback_tx
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare "foo", exclusive: true
     channel.tx_select
     channel.basic_publish "bar", exchange: "", routing_key: "foo"
@@ -448,14 +332,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     msg = channel.basic_get q.queue_name
 
     assert_equal "bar", msg.body
-  ensure
-    connection&.close
   end
 
   def test_it_can_generate_tables
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-    connection = client.connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.queue_bind q.queue_name, exchange: "amq.headers", binding_key: "", arguments: { a: "b" }
     channel.basic_publish "foo", exchange: "amq.headers", routing_key: "bar", headers: { a: "b" }
@@ -463,48 +343,20 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
     assert_equal "foo", msg.body
     assert_equal({ "a" => "b" }, msg.properties.headers)
-  ensure
-    connection&.close
-  end
-
-  def test_set_connection_name
-    skip "slow, polls HTTP mgmt API"
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", connection_name: "foobar")
-    client.connect
-
-    req = Net::HTTP::Get.new("/api/connections?columns=client_properties")
-    req.basic_auth "guest", "guest"
-    http = Net::HTTP.new(TEST_AMQP_HOST, 15_672)
-    connection_names = []
-    100.times do
-      sleep 0.1
-      res = http.request(req)
-
-      assert_instance_of Net::HTTPOK, res.class
-      connection_names = JSON.parse(res.body).map! { |conn| conn.dig("client_properties", "connection_name") }
-      break if connection_names.include? "foobar"
-    end
-
-    assert_includes connection_names, "foobar"
   end
 
   def test_handle_connection_closed_by_server
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-
-    connection.with_channel do |ch|
+    @connection.with_channel do |ch|
       assert_raises(AMQP::Client::Error::ConnectionClosed, AMQP::Client::Error::ChannelClosed, /unknown exchange type/) do
         ch.exchange_declare("foobar", type: "faulty.exchange.type")
       end
     end
-  ensure
-    connection&.close
   end
 
   def test_it_can_consume_multiple_queues_on_one_channel
     msgs1 = Queue.new
     msgs2 = Queue.new
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-    channel = connection.channel
+    channel = @connection.channel
     q1 = channel.queue_declare ""
     q2 = channel.queue_declare ""
     channel.basic_consume(q1.queue_name) do |msg|
@@ -518,16 +370,13 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
     assert_equal "foo", msgs1.pop.body
     assert_equal "bar", msgs2.pop.body
-  ensure
-    connection&.close
   end
 
   def test_it_can_consume_multiple_queues_on_multiple_channel
     msgs1 = Queue.new
     msgs2 = Queue.new
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-    ch1 = connection.channel
-    ch2 = connection.channel
+    ch1 = @connection.channel
+    ch2 = @connection.channel
     q1 = ch1.queue_declare ""
     q2 = ch2.queue_declare ""
     ch1.basic_consume(q1.queue_name) do |msg|
@@ -541,14 +390,11 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
 
     assert_equal "foo", msgs1.pop.body
     assert_equal "bar", msgs2.pop.body
-  ensure
-    connection&.close
   end
 
   def test_it_can_ack_a_lot_of_msgs
     msgs1 = Queue.new
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-    ch1 = connection.channel
+    ch1 = @connection.channel
     q = ch1.queue_declare ""
     ch1.basic_qos(200)
     ch1.queue_bind(q.queue_name, exchange: "amq.topic", binding_key: "foo")
@@ -557,7 +403,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
       msgs1 << msg
     end
 
-    ch2 = connection.channel
+    ch2 = @connection.channel
     ch2.confirm_select
     10_000.times do |i|
       ch2.basic_publish "bar #{i + 1}", exchange: "amq.topic", routing_key: "foo"
@@ -567,38 +413,23 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     10_000.times do
       assert_equal "foo", msgs1.pop.routing_key
     end
-  ensure
-    connection&.close
-  end
-
-  def test_it_can_set_channel_max
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", channel_max: 1).connect
-
-    assert connection.channel
-    assert_raises(AMQP::Client::Error) do
-      connection.channel
-    end
-  ensure
-    connection&.close
   end
 
   def test_it_can_be_blocked
     skip_if_no_sudo
     begin
-      connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-      ch = connection.channel
+      ch = @connection.channel
       system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
       ch.basic_publish("body", exchange: "", routing_key: "q")
       sleep 0.01 # server blocks after first publish
 
-      assert_predicate connection, :blocked?
+      assert_predicate @connection, :blocked?
       system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
       sleep 0.01 # server blocks after first publish
 
-      refute_predicate connection, :blocked?
+      refute_predicate @connection, :blocked?
     ensure
       system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-      connection&.close
     end
   end
 
@@ -628,31 +459,26 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
       }
     )
 
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_publish_confirm "", exchange: "", routing_key: q.queue_name, **props
     msg = channel.basic_get q.queue_name
 
     assert_equal props, msg.properties
-  ensure
-    connection&.close
   end
 
   def test_blocked_handler
     skip_if_no_sudo
     begin
       q = Queue.new
-      client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}")
-      connection = client.connect
-      connection.on_blocked do |reason|
+      @connection.on_blocked do |reason|
         q << reason
       end
-      connection.on_unblocked do
+      @connection.on_unblocked do
         q << nil
       end
       system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
-      ch = connection.channel
+      ch = @connection.channel
       ch.basic_publish("", exchange: "", routing_key: "")
       reason = q.pop
 
@@ -667,8 +493,7 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
   end
 
   def test_queue_pruge_returns_msg_count
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     3.times do
       channel.basic_publish_confirm "", exchange: "", routing_key: q.queue_name
@@ -676,13 +501,10 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     msg_count = channel.queue_purge(q.queue_name)
 
     assert_equal 3, msg_count
-  ensure
-    connection&.close
   end
 
   def test_it_can_publish_with_confirm
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-    channel = connection.channel
+    channel = @connection.channel
     q = channel.queue_declare ""
     10.times do
       channel.basic_publish_confirm "foo", exchange: "", routing_key: q.queue_name
@@ -690,32 +512,25 @@ class AMQPClientTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     q = channel.queue_declare q.queue_name, passive: true
 
     assert_equal 10, q.message_count
-  ensure
-    connection&.close
   end
 
   def test_it_can_update_secret
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
-    connection.update_secret "secret", reason: "testing"
-  ensure
-    connection&.close
+    @connection.update_secret "secret", reason: "testing"
   end
 
   def test_open_closing_channels_is_thread_safe
     abort_on_exception_prev = Thread.abort_on_exception
     Thread.abort_on_exception = false
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
     Array.new(50) do
       Thread.new do
         ch = nil
         40.times do
           ch&.close
-          ch = connection.channel
+          ch = @connection.channel
         end
       end
     end.each(&:join)
   ensure
     Thread.abort_on_exception = abort_on_exception_prev
-    connection&.close
   end
 end
