@@ -10,11 +10,10 @@
 - Added: `Queue#subscribe` now handles ack and rejects automatically
 - Added: RPC API
 - Added: Support `no_wait` argument in `#basic_consume`
-- Added: `Client#started?` to check if `start` has already been called
+- Added: `Client#started?` to check if `start` has already been called and made `Clinet#start` idempotent
+- Added: Automatic message encoding/serialization for high level API (built-in JSON, Marshal etc. via codec registry)
 - Changed: Disabled nagle's algorithm
-- Changed: `Clinet#start` is now idempotent
 - Fixed: Running minitest with `--verbose` flag no longer causes TypeError
-- Updated: Documentation and examples to reflect new keyword argument API
 
 ## [1.2.1] - 2025-09-15
 
