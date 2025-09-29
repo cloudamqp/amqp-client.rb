@@ -151,7 +151,7 @@ class AMQPClientLifecycleTest < Minitest::Test
     channel = @connection.channel
     q = channel.queue_declare ""
     channel.basic_publish "foobar", exchange: "", routing_key: q.queue_name
-    channel.basic_consume(q.queue_name) do |msg|
+    channel.basic_consume(q.queue_name, worker_threads: 0) do |msg|
       assert_equal "foobar", msg.body
       channel.basic_cancel msg.consumer_tag
     end
