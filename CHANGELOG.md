@@ -14,6 +14,7 @@
 - Added: Automatic message encoding/serialization for high level API (built-in JSON, Marshal etc. via codec registry)
 - Changed: Disabled nagle's algorithm
 - Fixed: Running minitest with `--verbose` flag no longer causes TypeError
+- Fixed: `Clinet#start` is now thread-safe
 
 ## [1.2.1] - 2025-09-15
 
