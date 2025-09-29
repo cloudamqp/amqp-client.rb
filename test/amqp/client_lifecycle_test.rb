@@ -115,9 +115,10 @@ class AMQPClientLifecycleTest < Minitest::Test
     message_count = channel.queue_delete("foo")
 
     assert_equal 0, message_count
-    assert_raises(AMQP::Client::Error, /exists/) do
+    exception = assert_raises(AMQP::Client::Error) do
       channel.queue_declare "foo", passive: true
     end
+    assert_match(/exists/, exception.message)
   end
 
   def test_it_can_get_from_empty_queue
@@ -347,9 +348,10 @@ class AMQPClientLifecycleTest < Minitest::Test
 
   def test_handle_connection_closed_by_server
     @connection.with_channel do |ch|
-      assert_raises(AMQP::Client::Error::ConnectionClosed, AMQP::Client::Error::ChannelClosed, /unknown exchange type/) do
+      exception = assert_raises(AMQP::Client::Error::ConnectionClosed, AMQP::Client::Error::ChannelClosed) do
         ch.exchange_declare("foobar", type: "faulty.exchange.type")
       end
+      assert_match(/unknown exchange type/, exception.message)
     end
   end
 
