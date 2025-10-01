@@ -305,7 +305,19 @@ class AMQPClientLifecycleTest < Minitest::Test
     channel = @connection.channel
     channel.confirm_select
     channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
-    channel.wait_for_confirms
+    success = channel.wait_for_confirms
+
+    assert success, "Message was not confirmed by the server"
+  end
+
+  def test_wait_for_confirms_returns_false_on_nack
+    channel = @connection.channel
+    channel.confirm_select
+    channel.basic_publish "foo", exchange: "amq.headers", routing_key: "bar"
+    success = channel.wait_for_confirms # headers exchange with routing key "bar" will nack the message
+
+    refute_nil success, "wait_for_confirms did not return boolean"
+    refute success, "Message was not nack'ed by the server"
   end
 
   def test_it_can_commit_tx
