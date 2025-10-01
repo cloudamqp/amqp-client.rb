@@ -405,7 +405,7 @@ module AMQP
     # @!group RPC
 
     # Create a RPC server for a single method/function/procedure
-    # @param queue [String] name of the queue that RPC calls will be sent to
+    # @param method [String, Symbol] name of the RPC method to host (i.e. queue name on the server side)
     # @param worker_threads [Integer] number of threads that process requests
     # @param durable [Boolean] If true the queue will survive broker restarts
     # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
@@ -415,31 +415,32 @@ module AMQP
     # @yieldparam [String] The body of the request message
     # @yieldreturn [String] The response message body
     # @return (see #subscribe)
-    def rpc_server(queue:, worker_threads: 1, durable: true, auto_delete: false, arguments: {}, &_)
-      queue(queue, durable:, auto_delete:, arguments:)
-      subscribe(queue, prefetch: worker_threads, worker_threads:) do |msg|
-        result = yield msg.body
-        msg.channel.basic_publish(result, exchange: "", routing_key: msg.properties.reply_to,
-                                          correlation_id: msg.properties.correlation_id)
-        msg.ack
-      rescue StandardError
-        msg.reject(requeue: false)
-        raise
-      end
+    def rpc_server(method, worker_threads: 1, durable: true, auto_delete: false, arguments: {}, &_)
+      queue(method.to_s, durable:, auto_delete:, arguments:)
+        .subscribe(prefetch: worker_threads, worker_threads:) do |msg|
+          result = yield msg.body
+          msg.channel.basic_publish(result, exchange: "", routing_key: msg.properties.reply_to,
+                                            correlation_id: msg.properties.correlation_id)
+          msg.ack
+        rescue StandardError
+          msg.reject(requeue: false)
+          raise
+        end
     end
 
     # Do a RPC call, sends a messages, waits for a response
+    # @param method [String, Symbol] name of the RPC method to call (i.e. queue name on the server side)
     # @param arguments [String] arguments/body to the call
-    # @param queue [String] name of the queue that RPC calls will be sent to
     # @param timeout [Numeric, nil] Number of seconds to wait for a response
+    # @option (see Client#publish)
     # @return [String] Returns the result from the call
     # @raise [Timeout::Error] if no response is received within the timeout period
-    def rpc_call(arguments, queue:, timeout: nil)
+    def rpc_call(method, arguments, timeout: nil, **properties)
       ch = with_connection(&:channel)
       begin
         msg = ch.basic_consume_once("amq.rabbitmq.reply-to", timeout:) do
-          ch.basic_publish(arguments, exchange: "", routing_key: queue,
-                                      reply_to: "amq.rabbitmq.reply-to")
+          ch.basic_publish(arguments, exchange: "", routing_key: method.to_s,
+                                      reply_to: "amq.rabbitmq.reply-to", **properties)
         end
         msg.body
       ensure
