@@ -245,15 +245,19 @@ module AMQP
     # @param exchange [String] Name of the exchange to publish to
     # @param routing_key [String] Routing key for the message
     # @option (see Connection::Channel#basic_publish_confirm)
-    # @return (see Connection::Channel#basic_publish_confirm)
+    # @return [nil]
     # @raise (see Connection::Channel#basic_publish_confirm)
+    # @raise [Error::PublishNotConfirmed] If the message was not confirmed by the broker
     # @raise [Error::UnsupportedContentType] If content type is unsupported
     # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
     def publish(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties = { delivery_mode: 2 }.merge!(properties)
         body = serialize_and_encode_body(body, properties)
-        conn.channel(1).basic_publish_confirm(body, exchange:, routing_key:, **properties)
+        result = conn.channel(1).basic_publish_confirm(body, exchange:, routing_key:, **properties)
+        raise Error::PublishNotConfirmed unless result
+
+        nil
       end
     end
 
