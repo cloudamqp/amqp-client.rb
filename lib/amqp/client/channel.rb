@@ -25,6 +25,7 @@ module AMQP
           @unconfirmed = []
           @unconfirmed_lock = Mutex.new
           @unconfirmed_empty = ConditionVariable.new
+          @nacked = false
           @basic_gets = ::Queue.new
         end
 
@@ -462,20 +463,23 @@ module AMQP
         end
 
         # Block until all publishes messages are confirmed
-        # @return nil
+        # @return [Boolean] True if all messages were acked, false if any were nacked
         def wait_for_confirms
           @unconfirmed_lock.synchronize do
             until @unconfirmed.empty?
               @unconfirmed_empty.wait(@unconfirmed_lock)
               raise Error::Closed.new(@id, *@closed) if @closed
             end
+            result = !@nacked
+            @nacked = false # Reset for next round of publishes
+            result
           end
         end
 
         # Called by Connection when received ack/nack from broker
         # @api private
         def confirm(args)
-          _ack_or_nack, delivery_tag, multiple = *args
+          ack_or_nack, delivery_tag, multiple = *args
           @unconfirmed_lock.synchronize do
             case multiple
             when true
@@ -484,6 +488,7 @@ module AMQP
             when false
               @unconfirmed.delete(delivery_tag) || raise("Delivery tag not found")
             end
+            @nacked = true if ack_or_nack == :nack
             @unconfirmed_empty.broadcast if @unconfirmed.empty?
           end
         end

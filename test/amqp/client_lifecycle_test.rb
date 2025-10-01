@@ -313,11 +313,15 @@ class AMQPClientLifecycleTest < Minitest::Test
   def test_wait_for_confirms_returns_false_on_nack
     channel = @connection.channel
     channel.confirm_select
-    channel.basic_publish "foo", exchange: "amq.headers", routing_key: "bar"
-    success = channel.wait_for_confirms # headers exchange with routing key "bar" will nack the message
+    channel.queue_declare "ml-q", arguments: { "x-max-length": 1, "x-overflow": "reject-publish" }
+    channel.basic_publish "foo", exchange: "", routing_key: "ml-q"
+    channel.basic_publish "foo", exchange: "", routing_key: "ml-q" # Will be nack'ed due to max-length=1
+    success = channel.wait_for_confirms
 
     refute_nil success, "wait_for_confirms did not return boolean"
     refute success, "Message was not nack'ed by the server"
+  ensure
+    channel&.queue_delete "ml-q"
   end
 
   def test_it_can_commit_tx
