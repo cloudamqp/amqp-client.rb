@@ -53,7 +53,7 @@ module AMQP
     # @example
     #   connection = AMQP::Client.new("amqps://server.rmq.cloudamqp.com", connection_name: "My connection").connect
     def connect(read_loop_thread: true)
-      Connection.new(@uri, read_loop_thread:, **@options)
+      Connection.new(@uri, read_loop_thread:, codec_registry: @codec_registry, strict_coding: @strict_coding, **@options)
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first

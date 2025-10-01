@@ -4,7 +4,9 @@ require_relative "../test_helper"
 
 class RPCTest < Minitest::Test
   def setup
-    @client = AMQP::Client.new("amqp://localhost").start
+    @client = AMQP::Client.new("amqp://localhost")
+    @client.codec_registry.enable_builtin_codecs
+    @client.start
   end
 
   def teardown

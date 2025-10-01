@@ -89,11 +89,11 @@ module AMQP
       def parse
         return @parsed unless @parsed.nil?
 
-        registry = @channel.client.codec_registry
-        strict = @channel.client.strict_coding
+        registry = @channel.connection.codec_registry
+        strict = @channel.connection.strict_coding
         decoded = decode
         ct = @properties&.content_type
-        parser = registry.find_parser(ct)
+        parser = registry&.find_parser(ct)
 
         return @parsed = parser.parse(decoded, @properties) if parser
 
@@ -107,10 +107,10 @@ module AMQP
       # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
       # @return [String] The decoded message body
       def decode
-        registry = @channel.client.codec_registry
-        strict = @channel.client.strict_coding
+        registry = @channel.connection.codec_registry
+        strict = @channel.connection.strict_coding
         ce = @properties&.content_encoding
-        coder = registry.find_coder(ce)
+        coder = registry&.find_coder(ce)
 
         return coder.decode(@body, @properties) if coder
 

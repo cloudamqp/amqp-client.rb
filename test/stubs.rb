@@ -30,13 +30,23 @@ end
 DummyClient.codec_registry.enable_builtin_codecs
 
 class DummyChannel
-  attr_reader :client
+  attr_reader :connection
 
   def initialize(strict = nil)
-    @client = DummyClient.new
-    @client.strict_coding = strict unless strict.nil?
+    client = DummyClient.new
+    client.strict_coding = strict unless strict.nil?
+    @connection = DummyConnection.new(client.codec_registry, client.strict_coding)
   end
 
   def basic_ack(_tag); end
   def basic_reject(_tag, requeue:); end
+end
+
+class DummyConnection
+  attr_reader :codec_registry, :strict_coding
+
+  def initialize(codec_registry, strict_coding)
+    @codec_registry = codec_registry
+    @strict_coding = strict_coding
+  end
 end

@@ -15,6 +15,8 @@ module AMQP
       # @param uri [String] URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection
       # @param read_loop_thread [Boolean] If true run {#read_loop} in a background thread,
       #   otherwise the user have to run it explicitly, without {#read_loop} the connection won't function
+      # @param codec_registry [MessageCodecRegistry] Registry for message codecs
+      # @param strict_coding [Boolean] Whether to raise errors on unsupported codecs
       # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
       #   the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
@@ -26,7 +28,7 @@ module AMQP
       #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
       # @option options [String] keepalive (60:10:3) TCP keepalive setting, 60s idle, 10s interval between probes, 3 probes
       # @return [Connection]
-      def initialize(uri = "", read_loop_thread: true, **options)
+      def initialize(uri = "", read_loop_thread: true, codec_registry: nil, strict_coding: false, **options)
         uri = URI.parse(uri)
         tls = uri.scheme == "amqps"
         port = port_from_env || uri.port || (tls ? 5671 : 5672)
@@ -43,6 +45,8 @@ module AMQP
         @channel_max = channel_max.zero? ? 65_536 : channel_max
         @frame_max = frame_max
         @heartbeat = heartbeat
+        @codec_registry = codec_registry
+        @strict_coding = strict_coding
         @channels = {}
         @channels_lock = Mutex.new
         @closed = nil
@@ -78,6 +82,14 @@ module AMQP
       # The max frame size negotiated between the client and the broker
       # @return [Integer]
       attr_reader :frame_max
+
+      # The codec registry for message encoding/decoding
+      # @return [MessageCodecRegistry, nil]
+      attr_reader :codec_registry
+
+      # Whether to use strict coding (raise errors on unsupported codecs)
+      # @return [Boolean]
+      attr_reader :strict_coding
 
       # Custom inspect
       # @return [String]
