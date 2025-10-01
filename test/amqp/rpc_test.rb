@@ -50,4 +50,13 @@ class RPCTest < Minitest::Test
   ensure
     rpc_client.close
   end
+
+  def test_rpc_api_handles_message_coding
+    @client.rpc_server("rpc-test-method", auto_delete: true) do |request|
+      { response: "foo #{request[:key]}" }
+    end
+    result = @client.rpc_call("rpc-test-method", { key: "val" }, content_type: "application/json")
+
+    assert_equal({ response: "foo val" }, result)
+  end
 end

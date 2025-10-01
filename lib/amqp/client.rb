@@ -414,9 +414,13 @@ module AMQP
     def rpc_server(method, worker_threads: 1, durable: true, auto_delete: false, arguments: {}, &_)
       queue(method.to_s, durable:, auto_delete:, arguments:)
         .subscribe(prefetch: worker_threads, worker_threads:) do |msg|
-          result = yield msg.body
-          msg.channel.basic_publish(result, exchange: "", routing_key: msg.properties.reply_to,
-                                            correlation_id: msg.properties.correlation_id)
+          result = yield msg.parse
+          properties = { content_type: msg.properties.content_type,
+                         content_encoding: msg.properties.content_encoding }
+          result_body = serialize_and_encode_body(result, properties)
+
+          msg.channel.basic_publish(result_body, exchange: "", routing_key: msg.properties.reply_to,
+                                                 correlation_id: msg.properties.correlation_id, **properties)
           msg.ack
         rescue StandardError
           msg.reject(requeue: false)
@@ -435,10 +439,11 @@ module AMQP
       ch = with_connection(&:channel)
       begin
         msg = ch.basic_consume_once("amq.rabbitmq.reply-to", timeout:) do
-          ch.basic_publish(arguments, exchange: "", routing_key: method.to_s,
-                                      reply_to: "amq.rabbitmq.reply-to", **properties)
+          body = serialize_and_encode_body(arguments, properties)
+          ch.basic_publish(body, exchange: "", routing_key: method.to_s,
+                                 reply_to: "amq.rabbitmq.reply-to", **properties)
         end
-        msg.body
+        msg.parse
       ensure
         ch.close
       end
