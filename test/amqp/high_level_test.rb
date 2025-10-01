@@ -348,10 +348,13 @@ class HighLevelTest < Minitest::Test
   end
 
   def test_nacked_publish_should_raise
-    queue = @client.queue "ml-q", arguments: { "x-max-length": 1, "x-overflow": "reject-publish" }
+    queue_name = "ml-q-hl"
+    queue = @client.queue queue_name, arguments: { "x-max-length": 1, "x-overflow": "reject-publish" }
     queue.publish "foo"
     assert_raises(AMQP::Client::Error::PublishNotConfirmed) do
       queue.publish "foo" # Will be nack'ed due to max-length=1
     end
+  ensure
+    queue&.delete
   end
 end
