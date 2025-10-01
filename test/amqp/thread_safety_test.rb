@@ -47,6 +47,8 @@ module AMQP
 
         assert_equal qname, q_ok.queue_name
       end
+    ensure
+      @client.delete_queue(qname)
     end
 
     private
