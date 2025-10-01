@@ -47,5 +47,7 @@ class RPCTest < Minitest::Test
     assert_raises(Timeout::Error) do
       rpc_client.call("bar", queue: "rpc-test-method", timeout: 0.01)
     end
+  ensure
+    rpc_client.close
   end
 end
