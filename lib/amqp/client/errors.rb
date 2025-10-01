@@ -32,6 +32,13 @@ module AMQP
         end
       end
 
+      # Raised if a message published with confirms enabled was not confirmed (nacked)
+      class PublishNotConfirmed < Error
+        def initialize
+          super("Message was not confirmed by the broker")
+        end
+      end
+
       # Depending on close level a ConnectionClosed or ChannelClosed error is returned
       class Closed < Error
         def self.new(id, level, code, reason, classid = 0, methodid = 0)
