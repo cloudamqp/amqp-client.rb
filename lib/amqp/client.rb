@@ -134,7 +134,7 @@ module AMQP
     #   messages in the queue will only survive if they are published as persistent
     # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
     #   (it won't be deleted until at least one consumer has consumed from it)
-    # @param exclusive [Boolean] If true raise an exception if the exchange doesn't already exists
+    # @param exclusive [Boolean] If true the queue will be deleted when the connection is closed
     # @param passive [Boolean] If true an exception will be raised if the queue doesn't already exists
     # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
     # @return [Queue]
