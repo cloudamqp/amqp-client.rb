@@ -134,18 +134,19 @@ module AMQP
     #   messages in the queue will only survive if they are published as persistent
     # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
     #   (it won't be deleted until at least one consumer has consumed from it)
+    # @param exclusive [Boolean] If true the queue will be deleted when the connection is closed
     # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
     # @return [Queue]
     # @example
     #   amqp = AMQP::Client.new.start
     #   q = amqp.queue("foobar")
     #   q.publish("body")
-    def queue(name, durable: true, auto_delete: false, arguments: {})
+    def queue(name, durable: true, auto_delete: false, exclusive: false, arguments: {})
       raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
 
       @queues.fetch(name) do
         with_connection do |conn|
-          conn.channel(1).queue_declare(name, durable:, auto_delete:, arguments:)
+          conn.channel(1).queue_declare(name, durable:, auto_delete:, exclusive:, arguments:)
         end
         @queues[name] = Queue.new(self, name)
       end
