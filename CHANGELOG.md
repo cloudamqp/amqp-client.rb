@@ -12,6 +12,10 @@
 - Added: Support `no_wait` argument in `#basic_consume`
 - Added: `Client#started?` to check if `start` has already been called and made `Clinet#start` idempotent
 - Added: Automatic message encoding/serialization for high level API (built-in JSON, Marshal etc. via codec registry)
+- Added: `Queue#get` and `Client#get` methods for polling messages from queues as an alternative to subscribe
+- Added: `passive` parameter to queue declaration for checking queue existence without creating it
+- Added: `exclusive` parameter to queue method and subscribe
+- Added: `Message#delivery_info` struct for easier access to delivery metadata (exchange, routing_key, delivery_tag, redelivered, consumer_tag)
 - Changed: Disabled nagle's algorithm
 - Fixed: Running minitest with `--verbose` flag no longer causes TypeError
 - Fixed: `Clinet#start` is now thread-safe
