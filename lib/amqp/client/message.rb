@@ -18,6 +18,8 @@ module AMQP
         @parsed = nil
       end
 
+      DeliveryInfo = Struct.new(:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key, :channel)
+
       # The channel the message was deliviered to
       # @return [Connection::Channel]
       attr_reader :channel
@@ -50,6 +52,17 @@ module AMQP
       # The message body
       # @return [String]
       attr_accessor :body
+
+      def delivery_info
+        @delivery_info ||= DeliveryInfo.new(
+          consumer_tag:,
+          delivery_tag:,
+          redelivered:,
+          exchange:,
+          routing_key:,
+          channel:
+        )
+      end
 
       # Acknowledge the message
       # @return [nil]

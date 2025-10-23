@@ -41,6 +41,7 @@ module AMQP
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
       #   an exception, the message is rejected and can be optionally requeued.
       #   You can of course handle the ack/reject in the block yourself. (Default: false)
+      # @param exclusive [Boolean] When true only a single consumer can consume from the queue at a time
       # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
       # @param worker_threads [Integer] Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked
@@ -51,14 +52,22 @@ module AMQP
       # @param arguments [Hash] Custom arguments to the consumer
       # @yield [Message] Delivered message from the queue
       # @return [Consumer] The consumer object, which can be used to cancel the consumer
-      def subscribe(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, on_cancel: nil, arguments: {})
-        @client.subscribe(@name, no_ack:, prefetch:, worker_threads:, on_cancel:, arguments:) do |message|
+      def subscribe(no_ack: false, exclusive: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true,
+                    on_cancel: nil, arguments: {})
+        @client.subscribe(@name, no_ack:, exclusive:, prefetch:, worker_threads:, on_cancel:, arguments:) do |message|
           yield message
           message.ack unless no_ack
         rescue StandardError => e
           message.reject(requeue: requeue_on_reject) unless no_ack
           raise e
         end
+      end
+
+      # Get a message from the queue
+      # @param no_ack [Boolean] When false the message has to be manually acknowledged (or rejected) (default: false)
+      # @return [Message, nil] The message from the queue or nil if the queue is empty
+      def get(no_ack: false)
+        @client.get(@name, no_ack:)
       end
 
       # Bind the queue to an exchange

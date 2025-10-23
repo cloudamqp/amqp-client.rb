@@ -134,18 +134,20 @@ module AMQP
     #   messages in the queue will only survive if they are published as persistent
     # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
     #   (it won't be deleted until at least one consumer has consumed from it)
+    # @param exclusive [Boolean] If true raise an exception if the exchange doesn't already exists
+    # @param passive [Boolean] If true an exception will be raised if the queue doesn't already exists
     # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
     # @return [Queue]
     # @example
     #   amqp = AMQP::Client.new.start
     #   q = amqp.queue("foobar")
     #   q.publish("body")
-    def queue(name, durable: true, auto_delete: false, arguments: {})
+    def queue(name, durable: true, auto_delete: false, exclusive: false, passive: false, arguments: {})
       raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
 
       @queues.fetch(name) do
         with_connection do |conn|
-          conn.channel(1).queue_declare(name, durable:, auto_delete:, arguments:)
+          conn.channel(1).queue_declare(name, durable:, auto_delete:, exclusive:, passive:, arguments:)
         end
         @queues[name] = Queue.new(self, name)
       end
@@ -314,6 +316,17 @@ module AMQP
                                 queue:, consume_ok:, prefetch:, basic_consume_args:)
         @consumers[consumer_id] = consumer
         consumer
+      end
+    end
+
+    # Get a message from a queue
+    # @param queue [String] Name of the queue to get the message from
+    # @param no_ack [Boolean] When false the message has to be manually acknowledged (or rejected) (default: false)
+    # @return [Message, nil] The message from the queue or nil if the queue is empty
+    def get(queue, no_ack: false)
+      with_connection do |conn|
+        ch = conn.channel
+        ch.basic_get(queue, no_ack:)
       end
     end
 

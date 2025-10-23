@@ -357,4 +357,104 @@ class HighLevelTest < Minitest::Test
   ensure
     queue&.delete
   end
+
+  def test_queue_get_method_returns_message
+    q = @client.queue("test.get.message", auto_delete: true)
+    q.publish("test message body")
+
+    msg = q.get(no_ack: true)
+
+    assert_instance_of AMQP::Client::Message, msg
+    assert_equal "test message body", msg.body
+    assert_equal "test.get.message", msg.routing_key
+  end
+
+  def test_queue_get_returns_nil_when_empty
+    q = @client.queue("test.get.empty", auto_delete: true)
+
+    msg = q.get(no_ack: true)
+
+    assert_nil msg, "Expected get to return nil for empty queue"
+  end
+
+  def test_client_get_method
+    q = @client.queue("test.client.get", auto_delete: true)
+    q.publish("client get test")
+
+    msg = @client.get("test.client.get", no_ack: true)
+
+    assert_instance_of AMQP::Client::Message, msg
+    assert_equal "client get test", msg.body
+  end
+
+  def test_exclusive_queue_deleted_on_connection_close
+    client2 = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    q = client2.queue("test.exclusive.queue", exclusive: true)
+    q.publish("test")
+
+    client2.stop
+
+    # Try to access the queue from another connection - should fail or be empty
+    # The queue should have been deleted when the connection closed
+    sleep 0.1 # Give broker time to clean up
+
+    # Attempting to declare passive should fail if queue doesn't exist
+    assert_raises(AMQP::Client::Error::ChannelClosed) do
+      @client.queue("test.exclusive.queue", passive: true)
+    end
+  end
+
+  def test_subscribe_exclusive_consumer
+    q = @client.queue("test.exclusive.consumer", auto_delete: true)
+    msgs = Queue.new
+
+    consumer1 = q.subscribe(exclusive: true) do |msg|
+      msgs.push msg
+    end
+
+    # Try to create a second exclusive consumer on the same queue - should fail
+    assert_raises(AMQP::Client::Error::ChannelClosed) do
+      q.subscribe(exclusive: true) do |msg|
+        # This shouldn't execute
+      end
+    end
+
+    consumer1.cancel
+  end
+
+  def test_subscribe_exclusive_parameter_passed_to_client
+    q = @client.queue("test.exclusive.param", auto_delete: true)
+    msgs = Queue.new
+
+    # Subscribe with exclusive: true
+    consumer = q.subscribe(exclusive: true, no_ack: true) do |msg|
+      msgs.push msg
+    end
+
+    q.publish("exclusive test")
+    msg = msgs.pop
+
+    assert_equal "exclusive test", msg.body
+
+    consumer.cancel
+  end
+
+  def test_passive_queue_raises_if_not_exists
+    # Try to declare a queue with passive: true when it doesn't exist
+    # Should raise an error because the queue doesn't exist
+    assert_raises(AMQP::Client::Error::ChannelClosed) do
+      @client.queue("test.passive.nonexistent", passive: true)
+    end
+  end
+
+  def test_passive_queue_succeeds_if_exists
+    # Create a queue first
+    q = @client.queue("test.passive.exists", auto_delete: true)
+    q.publish("test")
+
+    # Now declare it again with passive: true - should succeed
+    q2 = @client.queue("test.passive.exists", passive: true)
+
+    assert_equal "test.passive.exists", q2.name
+  end
 end

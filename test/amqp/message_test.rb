@@ -76,4 +76,41 @@ class MessageTest < Minitest::Test
     message = build_message(body: "data", content_type: "application/xml", strict: true)
     assert_raises(AMQP::Client::Error::UnsupportedContentType) { message.parse }
   end
+
+  def test_delivery_info_returns_struct
+    msg = AMQP::Client::Message.new(DummyChannel.new, "ctag-123", 42, "amq.topic", "test.key", true)
+
+    info = msg.delivery_info
+
+    assert_instance_of AMQP::Client::Message::DeliveryInfo, info
+    assert_equal "ctag-123", info.consumer_tag
+    assert_equal 42, info.delivery_tag
+  end
+
+  def test_delivery_info_includes_all_fields
+    msg = AMQP::Client::Message.new(DummyChannel.new, "ctag", 1, "ex", "rk", true)
+
+    info = msg.delivery_info
+
+    assert info.redelivered
+    assert_equal "ex", info.exchange
+    assert_equal "rk", info.routing_key
+  end
+
+  def test_delivery_info_includes_channel
+    msg = AMQP::Client::Message.new(DummyChannel.new, "ctag", 1, "ex", "rk", false)
+
+    info = msg.delivery_info
+
+    assert_equal msg.channel, info.channel
+  end
+
+  def test_delivery_info_is_memoized
+    msg = AMQP::Client::Message.new(DummyChannel.new, "ctag", 1, "ex", "rk", false)
+
+    info1 = msg.delivery_info
+    info2 = msg.delivery_info
+
+    assert_same info1, info2, "delivery_info should return the same instance on subsequent calls"
+  end
 end
