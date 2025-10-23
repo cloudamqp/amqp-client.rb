@@ -259,7 +259,7 @@ module AMQP
     def publish(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties[:delivery_mode] ||= 2
-        apply_default_content_properties!(properties)
+        properties = default_content_properties.merge(properties)
         body = serialize_and_encode_body(body, properties)
         result = conn.channel(1).basic_publish_confirm(body, exchange:, routing_key:, **properties)
         raise Error::PublishNotConfirmed unless result
@@ -278,7 +278,7 @@ module AMQP
     def publish_and_forget(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties[:delivery_mode] ||= 2
-        apply_default_content_properties!(properties)
+        properties = default_content_properties.merge(properties)
         body = serialize_and_encode_body(body, properties)
         conn.channel(1).basic_publish(body, exchange:, routing_key:, **properties)
       end
@@ -462,7 +462,7 @@ module AMQP
       ch = with_connection(&:channel)
       begin
         msg = ch.basic_consume_once("amq.rabbitmq.reply-to", timeout:) do
-          apply_default_content_properties!(properties)
+          properties = default_content_properties.merge(properties)
           body = serialize_and_encode_body(arguments, properties)
           ch.basic_publish(body, exchange: "", routing_key: method.to_s,
                                  reply_to: "amq.rabbitmq.reply-to", **properties)
@@ -553,9 +553,11 @@ module AMQP
 
     private
 
-    def apply_default_content_properties!(properties)
-      properties[:content_type] ||= @default_content_type if @default_content_type
-      properties[:content_encoding] ||= @default_content_encoding if @default_content_encoding
+    def default_content_properties
+      {
+        content_type: @default_content_type,
+        content_encoding: @default_content_encoding
+      }.compact
     end
 
     def serialize_and_encode_body(body, properties)
