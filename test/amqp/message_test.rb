@@ -76,4 +76,39 @@ class MessageTest < Minitest::Test
     message = build_message(body: "data", content_type: "application/xml", strict: true)
     assert_raises(AMQP::Client::Error::UnsupportedContentType) { message.parse }
   end
+
+  def test_delivery_info_returns_struct_with_all_fields
+    msg = AMQP::Client::Message.new(DummyChannel.new, "ctag-123", 42, "amq.topic", "test.key", true)
+
+    info = msg.delivery_info
+
+    assert_instance_of AMQP::Client::Message::DeliveryInfo, info
+    assert_equal "ctag-123", info.consumer_tag
+    assert_equal 42, info.delivery_tag
+    assert_equal true, info.redelivered
+    assert_equal "amq.topic", info.exchange
+    assert_equal "test.key", info.routing_key
+    assert_equal msg.channel, info.channel
+  end
+
+  def test_delivery_info_is_memoized
+    msg = AMQP::Client::Message.new(DummyChannel.new, "ctag", 1, "ex", "rk", false)
+
+    info1 = msg.delivery_info
+    info2 = msg.delivery_info
+
+    assert_same info1, info2, "delivery_info should return the same instance on subsequent calls"
+  end
+
+  def test_delivery_info_reflects_message_attributes
+    msg = AMQP::Client::Message.new(DummyChannel.new, "consumer-tag", 100, "my.exchange", "my.routing.key", false)
+
+    info = msg.delivery_info
+
+    assert_equal msg.consumer_tag, info.consumer_tag
+    assert_equal msg.delivery_tag, info.delivery_tag
+    assert_equal msg.redelivered, info.redelivered
+    assert_equal msg.exchange, info.exchange
+    assert_equal msg.routing_key, info.routing_key
+  end
 end

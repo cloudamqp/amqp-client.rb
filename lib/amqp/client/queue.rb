@@ -63,6 +63,13 @@ module AMQP
         end
       end
 
+      # Get a message from the queue
+      # @param no_ack [Boolean] When false the message has to be manually acknowledged (or rejected) (default: false)
+      # @return [Message, nil] The message from the queue or nil if the queue is empty
+      def get(no_ack: false)
+        @client.get(@name, no_ack:)
+      end
+
       # Bind the queue to an exchange
       # @param exchange [String, Exchange] Name of the exchange to bind to, or the exchange object itself
       # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
