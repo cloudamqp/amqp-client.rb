@@ -18,6 +18,8 @@ module AMQP
     # Class-level defaults (not automatically inherited by subclasses)
     @codec_registry = MessageCodecRegistry.new
     @strict_coding = false
+    @default_content_encoding = nil
+    @default_content_type = nil
 
     # Create a new Client object, this won't establish a connection yet, use {#connect} or {#start} for that
     # @param uri [String] URL on the format amqp://username:password@hostname/vhost,
@@ -40,6 +42,8 @@ module AMQP
       @connq = SizedQueue.new(1)
       @codec_registry = self.class.codec_registry.dup
       @strict_coding = self.class.strict_coding
+      @default_content_encoding = self.class.default_content_encoding
+      @default_content_type = self.class.default_content_type
       @start_lock = Mutex.new
       @supervisor_started = false
       @stopped = false
@@ -254,7 +258,8 @@ module AMQP
     # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
     def publish(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
-        properties = { delivery_mode: 2 }.merge!(properties)
+        properties[:delivery_mode] ||= 2
+        apply_default_content_properties!(properties)
         body = serialize_and_encode_body(body, properties)
         result = conn.channel(1).basic_publish_confirm(body, exchange:, routing_key:, **properties)
         raise Error::PublishNotConfirmed unless result
@@ -272,7 +277,8 @@ module AMQP
     # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
     def publish_and_forget(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
-        properties = { delivery_mode: 2 }.merge!(properties)
+        properties[:delivery_mode] ||= 2
+        apply_default_content_properties!(properties)
         body = serialize_and_encode_body(body, properties)
         conn.channel(1).basic_publish(body, exchange:, routing_key:, **properties)
       end
@@ -456,6 +462,7 @@ module AMQP
       ch = with_connection(&:channel)
       begin
         msg = ch.basic_consume_once("amq.rabbitmq.reply-to", timeout:) do
+          apply_default_content_properties!(properties)
           body = serialize_and_encode_body(arguments, properties)
           ch.basic_publish(body, exchange: "", routing_key: method.to_s,
                                  reply_to: "amq.rabbitmq.reply-to", **properties)
@@ -484,6 +491,14 @@ module AMQP
       # Get/set if coding should default to strict, i.e. if the client should raise on unknown codecs
       attr_accessor :strict_coding
 
+      # Get/set the default content_type to use when publishing messages
+      # @return [String, nil]
+      attr_accessor :default_content_type
+
+      # Get/set the default content_encoding to use when publishing messages
+      # @return [String, nil]
+      attr_accessor :default_content_encoding
+
       # We need to set the subclass's codec registry and strict coding default
       # because these are class instance variables, hence not inherited.
       # @api private
@@ -491,6 +506,8 @@ module AMQP
         super
         subclass.instance_variable_set(:@codec_registry, @codec_registry.dup)
         subclass.strict_coding = @strict_coding
+        subclass.default_content_type = @default_content_type
+        subclass.default_content_encoding = @default_content_encoding
       end
     end
 
@@ -500,6 +517,14 @@ module AMQP
 
     # Get/set if condig should be strict, i.e. if the client should raise on unknown codecs
     attr_accessor :strict_coding
+
+    # Get/set the default content_type to use when publishing messages
+    # @return [String, nil]
+    attr_accessor :default_content_type
+
+    # Get/set the default content_encoding to use when publishing messages
+    # @return [String, nil]
+    attr_accessor :default_content_encoding
 
     # @!endgroup
     #
@@ -527,6 +552,11 @@ module AMQP
     end
 
     private
+
+    def apply_default_content_properties!(properties)
+      properties[:content_type] ||= @default_content_type if @default_content_type
+      properties[:content_encoding] ||= @default_content_encoding if @default_content_encoding
+    end
 
     def serialize_and_encode_body(body, properties)
       body = serialize_body(body, properties)

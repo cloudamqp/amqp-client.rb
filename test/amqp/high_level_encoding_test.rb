@@ -109,4 +109,70 @@ class HighLevelEncodingTest < Minitest::Test
       queue.publish("no encoding", content_type: "text/plain", content_encoding: "gzip2")
     end
   end
+
+  def test_default_content_type_at_class_level
+    original = DummyClient.default_content_type
+    DummyClient.default_content_type = "application/json"
+    client = DummyClient.new
+    queue = AMQP::Client::Queue.new(client, "q1")
+
+    queue.publish({ test: "data" })
+    published = client.published.last
+
+    # Verify the body was serialized to JSON
+    assert_equal({ "test" => "data" }, JSON.parse(published[:body]))
+  ensure
+    DummyClient.default_content_type = original
+  end
+
+  def test_default_content_encoding_at_class_level
+    original = DummyClient.default_content_encoding
+    DummyClient.default_content_encoding = "gzip"
+    client = DummyClient.new
+    queue = AMQP::Client::Queue.new(client, "q1")
+
+    queue.publish("test data")
+    published = client.published.last
+
+    # Verify the body was gzip encoded
+    assert_equal "test data", Zlib.gunzip(published[:body])
+  ensure
+    DummyClient.default_content_encoding = original
+  end
+
+  def test_default_content_type_at_instance_level
+    client = DummyClient.new
+    client.default_content_type = "application/json"
+    queue = AMQP::Client::Queue.new(client, "q1")
+
+    queue.publish({ key: "value" })
+    published = client.published.last
+
+    # Verify the body was serialized to JSON
+    assert_equal({ "key" => "value" }, JSON.parse(published[:body]))
+  end
+
+  def test_properties_override_default_content_type
+    client = DummyClient.new
+    client.default_content_type = "application/json"
+    queue = AMQP::Client::Queue.new(client, "q1")
+
+    queue.publish("plain text", content_type: "text/plain")
+    published = client.published.last
+
+    assert_equal "text/plain", published[:properties][:content_type]
+    assert_equal "plain text", published[:body]
+  end
+
+  def test_properties_override_default_content_encoding
+    client = DummyClient.new
+    client.default_content_encoding = "gzip"
+    queue = AMQP::Client::Queue.new(client, "q1")
+
+    queue.publish("data", content_encoding: "deflate")
+    published = client.published.last
+
+    assert_equal "deflate", published[:properties][:content_encoding]
+    assert_equal "data", Zlib::Inflate.inflate(published[:body])
+  end
 end
