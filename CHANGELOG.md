@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [2.0.0] - 2025-10-27
+
 - **BREAKING CHANGE**: Refactored public API to use keyword arguments for improved clarity and consistency
   - All methods now use keyword arguments instead of positional arguments (e.g., `publish(body, exchange:, routing_key:)`)
 - **BREAKING CHANGE**: `Channel#basic_subscribe` methods now return `Connection::Channel::ConsumeOk` for better consumer response handling
