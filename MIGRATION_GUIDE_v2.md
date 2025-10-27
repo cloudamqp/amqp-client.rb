@@ -89,18 +89,6 @@ channel.exchange_declare("my.exchange", "topic", durable: true)
 channel.exchange_declare("my.exchange", type: "topic", durable: true)
 ```
 
-**Queue Declaration:**
-
-```ruby
-# v1.x
-channel.queue_declare("my.queue", durable: true)
-
-# v2.0
-channel.queue_declare(name: "my.queue", durable: true)
-# Or for temporary queues:
-channel.queue_declare
-```
-
 ### 2. Exchange Convenience Methods Renamed
 
 **Impact: Code using convenience methods for exchange types**
@@ -123,23 +111,24 @@ amqp.headers_exchange("my.exchange")
 
 ### 3. Direct Exchange Default Name
 
-**Impact: Code relying on the direct exchange default name**
+**Impact: Code relying on the direct exchange method to get the default exchange**
 
-The default name for the direct exchange has changed from an empty string to `"amq.direct"` for API consistency:
+The default name for the direct exchange has changed from an empty string (the default exchange) to `"amq.direct"` for API consistency:
 
 ```ruby
 # v1.x
-amqp.direct()         # Returns exchange with name ""
-amqp.direct("")       # Returns exchange with name ""
+amqp.direct()         # Returns the default exchange
+amqp.direct("")       # Returns the default exchange
 
 # v2.0
 amqp.direct_exchange()        # Returns exchange with name "amq.direct"
-amqp.direct_exchange("")      # Returns exchange with name ""
+amqp.direct_exchange("")      # Returns the default exchange
 ```
 
 **Migration:**
+
 - If you were relying on `direct()` to return the default exchange (empty string), use `direct_exchange("")` explicitly
-- For the AMQP default direct exchange, the empty string still works with the low-level API
+- You should probably use `default_exchange` rather than `direct_exchange("")`.*
 
 ### 4. Subscribe Methods Return Consumer
 
@@ -164,6 +153,7 @@ consumer.cancel
 ```
 
 **Migration:**
+
 - If you don't need to cancel subscriptions, you can ignore the return value
 - To cancel a subscription, store the returned `Consumer` object and call `cancel` on it
 
@@ -188,6 +178,7 @@ end
 ```
 
 **Migration:**
+
 - If you weren't using the return value, no changes needed
 - If you were using it, update to use the `ConsumeOk` structure
 
@@ -208,6 +199,7 @@ queue_ok.queue_name = "something else"  # Error: Data objects are immutable
 ```
 
 **Migration:**
+
 - If you were only reading fields, no changes needed
 - If you were modifying the structure, you'll need to create new instances instead
 
@@ -232,6 +224,7 @@ end
 ```
 
 **Supported formats:**
+
 - `application/json` - JSON encoding/decoding
 - `gzip` - Gzip compression
 - `deflate` - Deflate compression
@@ -307,6 +300,7 @@ end
 ```
 
 **New parameters:**
+
 - `passive` - Check if queue exists without creating it
 - `exclusive` - Queue will be deleted when connection closes
 
