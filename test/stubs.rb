@@ -27,7 +27,7 @@ class DummyClient < AMQP::Client
 end
 
 # Ensure built-in codecs are available for these unit tests
-DummyClient.codec_registry.enable_builtin_codecs
+DummyClient.configure(&:enable_builtin_codecs)
 
 class DummyChannel
   attr_reader :connection

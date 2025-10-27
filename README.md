@@ -74,6 +74,35 @@ amqp.publish("an event", exchange: "amq.topic", routing_key: "my.event", content
 * gzip
 * deflate
 
+#### Configuration
+
+You can configure class-level defaults using the `configure` method:
+
+```ruby
+AMQP::Client.configure do |config|
+  config.enable_builtin_codecs  # Enable automatic JSON, gzip, and deflate handling
+  config.default_content_type = "application/json"
+  config.default_content_encoding = "gzip"
+  config.strict_coding = true  # Raise errors on unknown codecs
+end
+```
+
+You can also register custom parsers and coders:
+
+```ruby
+AMQP::Client.configure do |config|
+  config.register_parser(content_type: "application/msgpack", parser: MsgPackParser)
+  config.register_coder(content_encoding: "lz4", coder: LZ4Coder)
+end
+```
+
+These settings will be used as defaults for all client instances, but can be overridden per-instance:
+
+```ruby
+client = AMQP::Client.new("amqp://localhost")
+client.default_content_type = "text/plain"  # Override for this instance
+```
+
 ### Low level API
 
 This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn't handle reconnects.
