@@ -162,7 +162,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#bind-instance_method" title="#bind (instance method)">#<strong>bind</strong>(exchange, binding_key, arguments: {})  &#x21d2; self </a>
+      <a href="#bind-instance_method" title="#bind (instance method)">#<strong>bind</strong>(exchange, binding_key: &quot;&quot;, arguments: {})  &#x21d2; self </a>
     
 
     
@@ -210,7 +210,31 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#publish-instance_method" title="#publish (instance method)">#<strong>publish</strong>(body, **properties)  &#x21d2; self </a>
+      <a href="#get-instance_method" title="#get (instance method)">#<strong>get</strong>(no_ack: false)  &#x21d2; Message<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get a message from the queue.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#publish-instance_method" title="#publish (instance method)">#<strong>publish</strong>(body, **properties)  &#x21d2; Queue </a>
     
 
     
@@ -226,6 +250,30 @@
   
     <span class="summary_desc"><div class='inline'>
 <p>Publish to the queue, wait for confirm.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#publish_and_forget-instance_method" title="#publish_and_forget (instance method)">#<strong>publish_and_forget</strong>(body, **properties)  &#x21d2; Queue </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Publish to the queue, without waiting for confirm.</p>
 </div></span>
   
 </li>
@@ -258,7 +306,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#subscribe-instance_method" title="#subscribe (instance method)">#<strong>subscribe</strong>(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, arguments: {}) {|Message| ... } &#x21d2; self </a>
+      <a href="#subscribe-instance_method" title="#subscribe (instance method)">#<strong>subscribe</strong>(no_ack: false, exclusive: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, on_cancel: nil, arguments: {}) {|Message| ... } &#x21d2; Consumer </a>
     
 
     
@@ -282,7 +330,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#unbind-instance_method" title="#unbind (instance method)">#<strong>unbind</strong>(exchange, binding_key, arguments: {})  &#x21d2; self </a>
+      <a href="#unbind-instance_method" title="#unbind (instance method)">#<strong>unbind</strong>(exchange, binding_key: &quot;&quot;, arguments: {})  &#x21d2; self </a>
     
 
     
@@ -338,12 +386,12 @@
       <pre class="lines">
 
 
-7
-8
-9</pre>
+9
+10
+11</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 7</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 9</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
   <span class='ivar'>@name</span>
@@ -363,7 +411,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="bind-instance_method">
   
-    #<strong>bind</strong>(exchange, binding_key, arguments: {})  &#x21d2; <tt>self</tt> 
+    #<strong>bind</strong>(exchange, binding_key: &quot;&quot;, arguments: {})  &#x21d2; <tt>self</tt> 
   
 
   
@@ -404,6 +452,8 @@
       
         <span class='type'>(<tt>String</tt>)</span>
       
+      
+        <em class="default">(defaults to: <tt>&quot;&quot;</tt>)</em>
       
       
         &mdash;
@@ -453,18 +503,18 @@
       <pre class="lines">
 
 
-54
-55
-56
-57
-58</pre>
+78
+79
+80
+81
+82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 78</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span> <span class='op'>=</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='kw'>unless</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
-  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='label'>queue:</span> <span class='ivar'>@name</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>binding_key:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -511,13 +561,13 @@
       <pre class="lines">
 
 
-80
-81
-82
-83</pre>
+104
+105
+106
+107</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 80</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 104</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete'>delete</span>
   <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_delete_queue'>delete_queue</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='rparen'>)</span>
@@ -529,9 +579,90 @@
 </div>
     
       <div class="method_details ">
+  <h3 class="signature " id="get-instance_method">
+  
+    #<strong>get</strong>(no_ack: false)  &#x21d2; <tt><span class='object_link'><a href="Message.html" title="AMQP::Client::Message (class)">Message</a></span></tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get a message from the queue</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>no_ack</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>When false the message has to be manually acknowledged (or rejected) (default: false)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Message.html" title="AMQP::Client::Message (class)">Message</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The message from the queue or nil if the queue is empty</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+69
+70
+71</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 69</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span><span class='lparen'>(</span><span class='label'>no_ack:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_get'>get</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='label'>no_ack:</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
   <h3 class="signature " id="publish-instance_method">
   
-    #<strong>publish</strong>(body, **properties)  &#x21d2; <tt>self</tt> 
+    #<strong>publish</strong>(body, **properties)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Queue (class)">Queue</a></span></tt> 
   
 
   
@@ -554,57 +685,14 @@
         <span class='name'>body</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>Object</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>The body, can be a string or a byte array</p>
+<p>The message body will be encoded if any matching codec is found in the client’s codec registry</p>
 </div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>exchange</span>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>Name of the exchange to publish to</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>routing_key</span>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>The routing key that the exchange might use to route the message to a queue</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>properties</span>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Properties.html" title="AMQP::Client::Properties (class)">Properties</a></span></tt>)</span>
-      
-      
       
     </li>
   
@@ -822,9 +910,60 @@
     <li>
       
       
-        <span class='type'>(<tt>self</tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="" title="AMQP::Client::Queue (class)">Queue</a></span></tt>)</span>
       
       
+      
+        &mdash;
+        <div class='inline'>
+<p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Error/PublishNotConfirmed.html" title="AMQP::Client::Error::PublishNotConfirmed (class)">Error::PublishNotConfirmed</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>If the message was not confirmed by the broker</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Error/UnsupportedContentType.html" title="AMQP::Client::Error::UnsupportedContentType (class)">Error::UnsupportedContentType</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>If content type is unsupported</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Error/UnsupportedContentEncoding.html" title="AMQP::Client::Error::UnsupportedContentEncoding (class)">Error::UnsupportedContentEncoding</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>If content encoding is unsupported</p>
+</div>
       
     </li>
   
@@ -836,16 +975,349 @@
       <pre class="lines">
 
 
-21
-22
-23
-24</pre>
+24
+25
+26
+27</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 21</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
-  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='ivar'>@name</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='label'>exchange:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>routing_key:</span> <span class='ivar'>@name</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="publish_and_forget-instance_method">
+  
+    #<strong>publish_and_forget</strong>(body, **properties)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Queue (class)">Queue</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Publish to the queue, without waiting for confirm</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>body</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The message body will be encoded if any matching codec is found in the client’s codec registry</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**properties</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">mandatory</span>
+          <span class="type">(<tt>Boolean</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>The message will be returned if the message can’t be routed to a queue</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">persistent</span>
+          <span class="type">(<tt>Boolean</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Same as delivery_mode: 2</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">content_type</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Content type of the message body</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">content_encoding</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Content encoding of the body</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">headers</span>
+          <span class="type">(<tt>Hash&lt;String, Object&gt;</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Custom headers</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">delivery_mode</span>
+          <span class="type">(<tt>Integer</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>2 for persisted message, transient messages for all other values</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">priority</span>
+          <span class="type">(<tt>Integer</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>A priority of the message (between 0 and 255)</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">correlation_id</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>A correlation id, most often used used for RPC communication</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">reply_to</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Queue to reply RPC responses to</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">expiration</span>
+          <span class="type">(<tt>Integer</tt>, <tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Number of seconds the message will stay in the queue</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">message_id</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Can be used to uniquely identify the message, e.g. for deduplication</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">timestamp</span>
+          <span class="type">(<tt>Date</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Often used for the time the message was originally generated</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">type</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Can indicate what kind of message this is</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">user_id</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Can be used to verify that this is the user that published the message</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">app_id</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Can be used to indicates which app that generated the message</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="AMQP::Client::Queue (class)">Queue</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Error/PublishNotConfirmed.html" title="AMQP::Client::Error::PublishNotConfirmed (class)">Error::PublishNotConfirmed</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>If the message was not confirmed by the broker</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Error/UnsupportedContentType.html" title="AMQP::Client::Error::UnsupportedContentType (class)">Error::UnsupportedContentType</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>If content type is unsupported</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Error/UnsupportedContentEncoding.html" title="AMQP::Client::Error::UnsupportedContentEncoding (class)">Error::UnsupportedContentEncoding</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>If content encoding is unsupported</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36
+37</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_publish_and_forget'>publish_and_forget</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_publish_and_forget'>publish_and_forget</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='label'>exchange:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>routing_key:</span> <span class='ivar'>@name</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -892,13 +1364,13 @@
       <pre class="lines">
 
 
-73
-74
-75
-76</pre>
+97
+98
+99
+100</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 73</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 97</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_purge'>purge</span>
   <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_purge'>purge</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='rparen'>)</span>
@@ -912,7 +1384,7 @@
       <div class="method_details ">
   <h3 class="signature " id="subscribe-instance_method">
   
-    #<strong>subscribe</strong>(no_ack: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, arguments: {}) {|Message| ... } &#x21d2; <tt>self</tt> 
+    #<strong>subscribe</strong>(no_ack: false, exclusive: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true, on_cancel: nil, arguments: {}) {|Message| ... } &#x21d2; <tt><span class='object_link'><a href="Consumer.html" title="AMQP::Client::Consumer (class)">Consumer</a></span></tt> 
   
 
   
@@ -943,7 +1415,25 @@
       
         &mdash;
         <div class='inline'>
-<p>If true, messages are automatically acknowledged by the server upon delivery. If false, messages are acknowledged only after the block completes successfully; if the block raises an exception, the message is rejected and can be optionally requeued. (Default: false)</p>
+<p>If true, messages are automatically acknowledged by the server upon delivery. If false, messages are acknowledged only after the block completes successfully; if the block raises an exception, the message is rejected and can be optionally requeued. You can of course handle the ack/reject in the block yourself. (Default: false)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>exclusive</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>When true only a single consumer can consume from the queue at a time</p>
 </div>
       
     </li>
@@ -1004,6 +1494,24 @@
   
     <li>
       
+        <span class='name'>on_cancel</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Optional proc that will be called if the consumer is cancelled by the broker The proc will be called with the consumer tag as the only argument</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
         <span class='name'>arguments</span>
       
       
@@ -1046,9 +1554,14 @@
     <li>
       
       
-        <span class='type'>(<tt>self</tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="Consumer.html" title="AMQP::Client::Consumer (class)">Consumer</a></span></tt>)</span>
       
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The consumer object, which can be used to cancel the consumer</p>
+</div>
       
     </li>
   
@@ -1060,29 +1573,29 @@
       <pre class="lines">
 
 
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47</pre>
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 55</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='label'>no_ack:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>prefetch:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>requeue_on_reject:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
-  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='label'>no_ack:</span><span class='comma'>,</span> <span class='label'>prefetch:</span><span class='comma'>,</span> <span class='label'>worker_threads:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='label'>no_ack:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>exclusive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>prefetch:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>requeue_on_reject:</span> <span class='kw'>true</span><span class='comma'>,</span>
+              <span class='label'>on_cancel:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='label'>no_ack:</span><span class='comma'>,</span> <span class='label'>exclusive:</span><span class='comma'>,</span> <span class='label'>prefetch:</span><span class='comma'>,</span> <span class='label'>worker_threads:</span><span class='comma'>,</span> <span class='label'>on_cancel:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span>
     <span class='kw'>yield</span> <span class='id identifier rubyid_message'>message</span>
     <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_ack'>ack</span> <span class='kw'>unless</span> <span class='id identifier rubyid_no_ack'>no_ack</span>
   <span class='kw'>rescue</span> <span class='const'>StandardError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
     <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='label'>requeue:</span> <span class='id identifier rubyid_requeue_on_reject'>requeue_on_reject</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_no_ack'>no_ack</span>
     <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_e'>e</span>
   <span class='kw'>end</span>
-  <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1092,7 +1605,7 @@
       <div class="method_details ">
   <h3 class="signature " id="unbind-instance_method">
   
-    #<strong>unbind</strong>(exchange, binding_key, arguments: {})  &#x21d2; <tt>self</tt> 
+    #<strong>unbind</strong>(exchange, binding_key: &quot;&quot;, arguments: {})  &#x21d2; <tt>self</tt> 
   
 
   
@@ -1133,6 +1646,8 @@
       
         <span class='type'>(<tt>String</tt>)</span>
       
+      
+        <em class="default">(defaults to: <tt>&quot;&quot;</tt>)</em>
       
       
         &mdash;
@@ -1182,18 +1697,18 @@
       <pre class="lines">
 
 
-65
-66
-67
-68
-69</pre>
+89
+90
+91
+92
+93</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 65</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/queue.rb', line 89</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span> <span class='op'>=</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='kw'>unless</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
-  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='ivar'>@name</span><span class='comma'>,</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='comma'>,</span> <span class='id identifier rubyid_binding_key'>binding_key</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
+  <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='label'>queue:</span> <span class='ivar'>@name</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>binding_key:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -1206,9 +1721,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Sep 19 15:42:59 2025 by
+  Generated on Mon Oct 27 14:48:54 2025 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.6).
+  0.9.37 (ruby-3.4.7).
 </div>
 
     </div>

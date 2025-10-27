@@ -60,6 +60,53 @@
       <div id="content"><div id='filecontents'>
 <h2 id="label-5BUnreleased-5D">[Unreleased]</h2>
 
+<h2 id="label-5B2.0.0-5D+-+2025-10-27">[2.0.0] - 2025-10-27</h2>
+<ul><li>
+<p><strong>BREAKING CHANGE</strong>: Refactored public API to use keyword arguments for improved clarity and consistency</p>
+</li><li>
+<p>All methods now use keyword arguments instead of positional arguments (e.g., <code>publish(body, exchange:, routing_key:)</code>)</p>
+</li><li>
+<p><strong>BREAKING CHANGE</strong>: <code>Channel#basic_subscribe</code> methods now return <code>Connection::Channel::ConsumeOk</code> for better consumer response handling</p>
+</li><li>
+<p><strong>BREAKING CHANGE</strong>: <code>Connection::Channel::QueueOk</code> converted from <code>Struct</code> to <code>Data</code> class</p>
+</li><li>
+<p><strong>BREAKING CHANGE</strong>: Direct exchange default name changed from empty string to “amq.direct” for API consistency</p>
+</li><li>
+<p><strong>BREAKING CHANGE</strong>: Client exchange convenience methods renamed to <code>$type_exchange</code>, e.g. <code>direct_exchange</code> for improved clarity</p>
+</li><li>
+<p><strong>BREAKING_CHANGE</strong>: <code>Client#subscribe</code> and <code>Queue#subscribe</code> now return a <code>Consumer</code> which can be cancelled.</p>
+</li><li>
+<p>Added: <code>Queue#subscribe</code> now handles ack and rejects automatically</p>
+</li><li>
+<p>Added: RPC API</p>
+</li><li>
+<p>Added: Support <code>no_wait</code> argument in <code>#basic_consume</code></p>
+</li><li>
+<p>Added: <code>Client#started?</code> to check if <code>start</code> has already been called and made <code>Clinet#start</code> idempotent</p>
+</li><li>
+<p>Added: Automatic message encoding/serialization for high level API (built-in JSON, Marshal etc. via codec registry)</p>
+</li><li>
+<p>Added: Support for default <code>content_type</code> and <code>content_encoding</code> at class and instance level (automatically applied to published messages unless explicitly overridden)</p>
+</li><li>
+<p>Added: <code>AMQP::Client.configure</code> block pattern for unified class-level configuration</p>
+</li><li>
+<p>Added: <code>Queue#get</code> and <code>Client#get</code> methods for polling messages from queues as an alternative to subscribe</p>
+</li><li>
+<p>Added: <code>passive</code> parameter to queue declaration for checking queue existence without creating it</p>
+</li><li>
+<p>Added: <code>exclusive</code> parameter to queue method and subscribe</p>
+</li><li>
+<p>Added: <code>Message#delivery_info</code> struct for easier access to delivery metadata (exchange, routing_key, delivery_tag, redelivered, consumer_tag)</p>
+</li><li>
+<p>Changed: Disabled nagle’s algorithm</p>
+</li><li>
+<p>Fixed: Running minitest with <code>--verbose</code> flag no longer causes TypeError</p>
+</li><li>
+<p>Fixed: <code>Clinet#start</code> is now thread-safe</p>
+</li><li>
+<p>Fixed: <code>wait_for_confirms</code> handles NACKs and actually returns the promised success bool</p>
+</li></ul>
+
 <h2 id="label-5B1.2.1-5D+-+2025-09-15">[1.2.1] - 2025-09-15</h2>
 <ul><li>
 <p>Added: Convenience methods for creating exchange types: <code>fanout()</code>, <code>direct()</code>, <code>topic()</code>, and <code>headers()</code></p>
@@ -233,9 +280,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Fri Sep 19 15:42:59 2025 by
+  Generated on Mon Oct 27 14:48:53 2025 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.6).
+  0.9.37 (ruby-3.4.7).
 </div>
 
     </div>

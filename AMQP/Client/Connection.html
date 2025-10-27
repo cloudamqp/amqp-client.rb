@@ -132,6 +132,35 @@
       <li class="public ">
   <span class="summary_signature">
     
+      <a href="#codec_registry-instance_method" title="#codec_registry (instance method)">#<strong>codec_registry</strong>  &#x21d2; MessageCodecRegistry<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>The codec registry for message encoding/decoding.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#frame_max-instance_method" title="#frame_max (instance method)">#<strong>frame_max</strong>  &#x21d2; Integer </a>
     
 
@@ -153,6 +182,35 @@
   
     <span class="summary_desc"><div class='inline'>
 <p>The max frame size negotiated between the client and the broker.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#strict_coding-instance_method" title="#strict_coding (instance method)">#<strong>strict_coding</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Whether to use strict coding (raise errors on unsupported codecs).</p>
 </div></span>
   
 </li>
@@ -358,7 +416,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(uri = &quot;&quot;, read_loop_thread: true, **options)  &#x21d2; Connection </a>
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(uri = &quot;&quot;, read_loop_thread: true, codec_registry: nil, strict_coding: false, **options)  &#x21d2; Connection </a>
     
 
     
@@ -408,7 +466,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#update_secret-instance_method" title="#update_secret (instance method)">#<strong>update_secret</strong>(secret, reason)  &#x21d2; nil </a>
+      <a href="#update_secret-instance_method" title="#update_secret (instance method)">#<strong>update_secret</strong>(secret, reason:)  &#x21d2; nil </a>
     
 
     
@@ -462,7 +520,7 @@
     <div class="method_details first">
   <h3 class="signature first" id="initialize-instance_method">
   
-    #<strong>initialize</strong>(uri = &quot;&quot;, read_loop_thread: true, **options)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Connection (class)">Connection</a></span></tt> 
+    #<strong>initialize</strong>(uri = &quot;&quot;, read_loop_thread: true, codec_registry: nil, strict_coding: false, **options)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client::Connection (class)">Connection</a></span></tt> 
   
 
   
@@ -518,6 +576,42 @@
   
     <li>
       
+        <span class='name'>codec_registry</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="MessageCodecRegistry.html" title="AMQP::Client::MessageCodecRegistry (class)">MessageCodecRegistry</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Registry for message codecs</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>strict_coding</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Whether to raise errors on unsupported codecs</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
         <span class='name'>options</span>
       
       
@@ -535,6 +629,10 @@
 </ul>
 
   
+    
+    
+    
+    
     
     
     
@@ -666,8 +764,6 @@
       <pre class="lines">
 
 
-29
-30
 31
 32
 33
@@ -696,12 +792,16 @@
 56
 57
 58
-59</pre>
+59
+60
+61
+62
+63</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 29</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 31</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>codec_registry:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>strict_coding:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_uri'>uri</span> <span class='op'>=</span> <span class='const'>URI</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_tls'>tls</span> <span class='op'>=</span> <span class='id identifier rubyid_uri'>uri</span><span class='period'>.</span><span class='id identifier rubyid_scheme'>scheme</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amqps</span><span class='tstring_end'>&quot;</span></span>
   <span class='id identifier rubyid_port'>port</span> <span class='op'>=</span> <span class='id identifier rubyid_port_from_env'>port_from_env</span> <span class='op'>||</span> <span class='id identifier rubyid_uri'>uri</span><span class='period'>.</span><span class='id identifier rubyid_port'>port</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_tls'>tls</span> <span class='op'>?</span> <span class='int'>5671</span> <span class='op'>:</span> <span class='int'>5672</span><span class='rparen'>)</span>
@@ -718,6 +818,8 @@
   <span class='ivar'>@channel_max</span> <span class='op'>=</span> <span class='id identifier rubyid_channel_max'>channel_max</span><span class='period'>.</span><span class='id identifier rubyid_zero?'>zero?</span> <span class='op'>?</span> <span class='int'>65_536</span> <span class='op'>:</span> <span class='id identifier rubyid_channel_max'>channel_max</span>
   <span class='ivar'>@frame_max</span> <span class='op'>=</span> <span class='id identifier rubyid_frame_max'>frame_max</span>
   <span class='ivar'>@heartbeat</span> <span class='op'>=</span> <span class='id identifier rubyid_heartbeat'>heartbeat</span>
+  <span class='ivar'>@codec_registry</span> <span class='op'>=</span> <span class='id identifier rubyid_codec_registry'>codec_registry</span>
+  <span class='ivar'>@strict_coding</span> <span class='op'>=</span> <span class='id identifier rubyid_strict_coding'>strict_coding</span>
   <span class='ivar'>@channels</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
   <span class='ivar'>@channels_lock</span> <span class='op'>=</span> <span class='const'>Mutex</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
   <span class='ivar'>@closed</span> <span class='op'>=</span> <span class='kw'>nil</span>
@@ -745,7 +847,63 @@
       
       <span id=""></span>
       <div class="method_details first">
-  <h3 class="signature first" id="frame_max-instance_method">
+  <h3 class="signature first" id="codec_registry-instance_method">
+  
+    #<strong>codec_registry</strong>  &#x21d2; <tt><span class='object_link'><a href="MessageCodecRegistry.html" title="AMQP::Client::MessageCodecRegistry (class)">MessageCodecRegistry</a></span></tt><sup>?</sup>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>The codec registry for message encoding/decoding</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="MessageCodecRegistry.html" title="AMQP::Client::MessageCodecRegistry (class)">MessageCodecRegistry</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 88</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_codec_registry'>codec_registry</span>
+  <span class='ivar'>@codec_registry</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="frame_max-instance_method">
   
     #<strong>frame_max</strong>  &#x21d2; <tt>Integer</tt>  <span class="extras">(readonly)</span>
   
@@ -783,15 +941,71 @@
       <pre class="lines">
 
 
-80
-81
-82</pre>
+84
+85
+86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 80</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 84</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_frame_max'>frame_max</span>
   <span class='ivar'>@frame_max</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="strict_coding-instance_method">
+  
+    #<strong>strict_coding</strong>  &#x21d2; <tt>Boolean</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Whether to use strict coding (raise errors on unsupported codecs)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_strict_coding'>strict_coding</span>
+  <span class='ivar'>@strict_coding</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -839,12 +1053,12 @@
       <pre class="lines">
 
 
-74
-75
-76</pre>
+78
+79
+80</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 74</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -908,12 +1122,12 @@
       <pre class="lines">
 
 
-67
-68
-69</pre>
+71
+72
+73</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 67</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 71</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_blocked?'>blocked?</span>
   <span class='op'>!</span><span class='ivar'>@blocked</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
@@ -997,28 +1211,28 @@
       <pre class="lines">
 
 
-92
-93
-94
-95
-96
-97
-98
-99
-100
-101
-102
-103
 104
 105
 106
 107
 108
 109
-110</pre>
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 92</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 104</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_channel'>channel</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Channel ID cannot be 0</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_id'>id</span><span class='op'>&amp;.</span><span class='id identifier rubyid_zero?'>zero?</span>
@@ -1118,22 +1332,22 @@
       <pre class="lines">
 
 
-128
-129
-130
-131
-132
-133
-134
-135
-136
-137
-138
-139
-140</pre>
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 128</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 140</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_close'>close</span><span class='lparen'>(</span><span class='label'>reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>code:</span> <span class='int'>200</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@closed</span>
@@ -1192,12 +1406,12 @@
       <pre class="lines">
 
 
-154
-155
-156</pre>
+166
+167
+168</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 154</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 166</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_closed?'>closed?</span>
   <span class='op'>!</span><span class='ivar'>@closed</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
@@ -1264,13 +1478,13 @@
       <pre class="lines">
 
 
-163
-164
-165
-166</pre>
+175
+176
+177
+178</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 163</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 175</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_blocked'>on_blocked</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
   <span class='ivar'>@on_blocked</span> <span class='op'>=</span> <span class='id identifier rubyid_blk'>blk</span>
@@ -1333,13 +1547,13 @@
       <pre class="lines">
 
 
-171
-172
-173
-174</pre>
+183
+184
+185
+186</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 171</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 183</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_unblocked'>on_unblocked</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
   <span class='ivar'>@on_unblocked</span> <span class='op'>=</span> <span class='id identifier rubyid_blk'>blk</span>
@@ -1389,18 +1603,6 @@
       <pre class="lines">
 
 
-196
-197
-198
-199
-200
-201
-202
-203
-204
-205
-206
-207
 208
 209
 210
@@ -1431,10 +1633,22 @@
 235
 236
 237
-238</pre>
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 196</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 208</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_read_loop'>read_loop</span>
   <span class='comment'># read more often than write so that channel errors crop up early
@@ -1454,7 +1668,7 @@
 
     <span class='comment'># make sure that the frame end is correct
 </span>    <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='op'>=</span> <span class='id identifier rubyid_socket'>socket</span><span class='period'>.</span><span class='id identifier rubyid_readchar'>readchar</span><span class='period'>.</span><span class='id identifier rubyid_ord'>ord</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Error.html" title="AMQP::Client::Error (class)">Error</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Error/UnexpectedFrameEnd.html" title="AMQP::Client::Error::UnexpectedFrameEnd (class)">UnexpectedFrameEnd</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='kw'>if</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='op'>!=</span> <span class='int'>206</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Error.html" title="AMQP::Client::Error (class)">Error</a></span></span><span class='op'>::</span><span class='const'>UnexpectedFrameTypeEnd</span><span class='comma'>,</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='kw'>if</span> <span class='id identifier rubyid_frame_end'>frame_end</span> <span class='op'>!=</span> <span class='int'>206</span>
 
     <span class='comment'># parse the frame, will return false if a close frame was received
 </span>    <span class='id identifier rubyid_parse_frame'>parse_frame</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_channel_id'>channel_id</span><span class='comma'>,</span> <span class='id identifier rubyid_frame_buffer'>frame_buffer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='kw'>return</span>
@@ -1487,7 +1701,7 @@
       <div class="method_details ">
   <h3 class="signature " id="update_secret-instance_method">
   
-    #<strong>update_secret</strong>(secret, reason)  &#x21d2; <tt>nil</tt> 
+    #<strong>update_secret</strong>(secret, reason:)  &#x21d2; <tt>nil</tt> 
   
 
   
@@ -1559,16 +1773,16 @@
       <pre class="lines">
 
 
-146
-147
-148
-149
-150</pre>
+158
+159
+160
+161
+162</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 146</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 158</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_update_secret'>update_secret</span><span class='lparen'>(</span><span class='id identifier rubyid_secret'>secret</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_update_secret'>update_secret</span><span class='lparen'>(</span><span class='id identifier rubyid_secret'>secret</span><span class='comma'>,</span> <span class='label'>reason:</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_write_bytes'>write_bytes</span> <span class='const'>FrameBytes</span><span class='period'>.</span><span class='id identifier rubyid_update_secret'>update_secret</span><span class='lparen'>(</span><span class='id identifier rubyid_secret'>secret</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_expect'>expect</span><span class='lparen'>(</span><span class='symbol'>:update_secret_ok</span><span class='rparen'>)</span>
   <span class='kw'>nil</span>
@@ -1635,17 +1849,17 @@
       <pre class="lines">
 
 
-115
-116
-117
-118
-119
-120
-121
-122</pre>
+127
+128
+129
+130
+131
+132
+133
+134</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 115</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client/connection.rb', line 127</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_channel'>with_channel</span>
   <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_channel'>channel</span>
@@ -1665,9 +1879,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Sep 19 15:43:00 2025 by
+  Generated on Mon Oct 27 14:48:54 2025 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.6).
+  0.9.37 (ruby-3.4.7).
 </div>
 
     </div>
