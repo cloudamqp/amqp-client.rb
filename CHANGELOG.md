@@ -13,6 +13,8 @@
 - Added: `Client#started?` to check if `start` has already been called and made `Clinet#start` idempotent
 - Added: Automatic message encoding/serialization for high level API (built-in JSON, Marshal etc. via codec registry)
 - Added: Support for default `content_type` and `content_encoding` at class and instance level (automatically applied to published messages unless explicitly overridden)
+- Added: `AMQP::Client.configure` block pattern for unified class-level configuration (replaces require-based codec setup)
+- Removed: `lib/amqp-client/enable_builtin_*.rb` files - use `config.enable_builtin_codecs` in configure block instead
 - Added: `Queue#get` and `Client#get` methods for polling messages from queues as an alternative to subscribe
 - Added: `passive` parameter to queue declaration for checking queue existence without creating it
 - Added: `exclusive` parameter to queue method and subscribe

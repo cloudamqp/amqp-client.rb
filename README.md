@@ -68,17 +68,9 @@ ex.publish("my message", routing_key: "topic.foo", headers: { foo: "bar" })
 amqp.publish("an event", exchange: "amq.topic", routing_key: "my.event", content_encoding: "gzip")
 ```
 
-#### Supported Content Types and Encodings
-
-`Queue#publish`, `Exchange#publish` and `Message.parse` will automatically handle:
-
-* application/json
-* gzip
-* deflate
-
 #### Configuration
 
-You can configure class-level defaults using the `configure` method:
+Configure class-level defaults and enable built-in codecs using the `configure` method:
 
 ```ruby
 AMQP::Client.configure do |config|
@@ -97,6 +89,11 @@ AMQP::Client.configure do |config|
   config.register_coder(content_encoding: "lz4", coder: LZ4Coder)
 end
 ```
+
+**Built-in codecs** support these formats:
+- `application/json` - JSON encoding/decoding
+- `gzip` - Gzip compression
+- `deflate` - Deflate compression
 
 These settings will be used as defaults for all client instances, but can be overridden per-instance:
 

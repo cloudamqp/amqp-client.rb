@@ -207,6 +207,24 @@ queue_ok.queue_name = "something else"  # Error: Data objects are immutable
 
 While not breaking changes, these new features may allow you to simplify your code:
 
+### Configure Block Pattern
+
+A new unified configuration API has been introduced:
+
+```ruby
+AMQP::Client.configure do |config|
+  config.enable_builtin_codecs
+  config.default_content_type = "application/json"
+  config.default_content_encoding = "gzip"
+  config.strict_coding = true
+
+  # Can also register custom parsers/coders
+  config.register_parser(content_type: "application/msgpack", parser: MsgPackParser)
+end
+```
+
+**Note:** The old `require "amqp-client/enable_builtin_codecs"` approach has been removed. Use the configure block instead.
+
 ### Automatic Message Encoding/Serialization
 
 The high-level API now supports automatic message encoding and serialization:
@@ -234,7 +252,7 @@ end
 
 ### Default Content Type and Encoding
 
-You can now set default `content_type` and `content_encoding` using the configure block:
+You can set default `content_type` and `content_encoding` in the configure block:
 
 ```ruby
 # Class-level defaults via configure block
@@ -318,9 +336,10 @@ end
 5. [ ] Review uses of `direct()` with no arguments - may need to explicitly pass `""`
 6. [ ] If cancelling subscriptions, store the returned `Consumer` object
 7. [ ] Update any code that was mutating `QueueOk` structures
-8. [ ] Consider using automatic message encoding for JSON/gzip/deflate
-9. [ ] Consider using automatic ack/reject in `Queue#subscribe`
-10. [ ] Review and test all queue bindings to use the new syntax
+8. [ ] Replace `require "amqp-client/enable_builtin_codecs"` with configure block
+9. [ ] Consider using automatic message encoding for JSON/gzip/deflate
+10. [ ] Consider using automatic ack/reject in `Queue#subscribe`
+11. [ ] Review and test all queue bindings to use the new syntax
 
 ## Getting Help
 
