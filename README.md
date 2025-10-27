@@ -24,9 +24,11 @@ The library provides a high-level API that manages channels, content-types, enco
 
 ```ruby
 require "amqp-client"
-require "amqp-client/enable_builtin_codecs" # Auto-code gzip, deflate and json
-require "json"
-require "zlib"
+
+# Configure built-in codecs for automatic JSON, gzip, and deflate handling
+AMQP::Client.configure do |config|
+  config.enable_builtin_codecs
+end
 
 # Start the client, it will connect and once connected it will reconnect if that connection is lost
 # Operation pending when the connection is lost will raise an exception (not timeout)

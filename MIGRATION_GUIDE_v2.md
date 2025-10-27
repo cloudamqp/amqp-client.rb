@@ -212,7 +212,10 @@ While not breaking changes, these new features may allow you to simplify your co
 The high-level API now supports automatic message encoding and serialization:
 
 ```ruby
-require "amqp-client/enable_builtin_codecs"
+# Enable built-in codecs via configure block
+AMQP::Client.configure do |config|
+  config.enable_builtin_codecs
+end
 
 # Automatically serializes to JSON
 queue.publish({ foo: "bar" }, content_type: "application/json")
@@ -231,16 +234,18 @@ end
 
 ### Default Content Type and Encoding
 
-You can now set default `content_type` and `content_encoding` at class or instance level:
+You can now set default `content_type` and `content_encoding` using the configure block:
 
 ```ruby
-# Class-level default
-AMQP::Client.default_content_type = "application/json"
-AMQP::Client.default_content_encoding = "gzip"
+# Class-level defaults via configure block
+AMQP::Client.configure do |config|
+  config.default_content_type = "application/json"
+  config.default_content_encoding = "gzip"
+end
 
-# Instance-level default
+# Instance-level override
 amqp = AMQP::Client.new("amqp://localhost")
-amqp.default_content_type = "application/json"
+amqp.default_content_type = "text/plain"
 
 # These will be applied automatically unless explicitly overridden
 queue.publish({ foo: "bar" })  # Automatically uses application/json
