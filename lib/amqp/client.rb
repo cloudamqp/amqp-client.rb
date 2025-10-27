@@ -8,6 +8,7 @@ require_relative "client/consumer"
 require_relative "client/rpc_client"
 require_relative "client/message_codecs"
 require_relative "client/message_codec_registry"
+require_relative "client/configuration"
 
 # AMQP 0-9-1 Protocol, this library only implements the Client
 # @see Client
@@ -15,11 +16,10 @@ module AMQP
   # AMQP 0-9-1 Client
   # @see Connection
   class Client
-    # Class-level defaults (not automatically inherited by subclasses)
+    # Class-level codec registry
     @codec_registry = MessageCodecRegistry.new
-    @strict_coding = false
-    @default_content_encoding = nil
-    @default_content_type = nil
+    # Class-level configuration
+    @config = Configuration.new(@codec_registry)
 
     # Create a new Client object, this won't establish a connection yet, use {#connect} or {#start} for that
     # @param uri [String] URL on the format amqp://username:password@hostname/vhost,
@@ -41,9 +41,9 @@ module AMQP
       @next_consumer_id = 0
       @connq = SizedQueue.new(1)
       @codec_registry = self.class.codec_registry.dup
-      @strict_coding = self.class.strict_coding
-      @default_content_encoding = self.class.default_content_encoding
-      @default_content_type = self.class.default_content_type
+      @strict_coding = self.class.config.strict_coding
+      @default_content_encoding = self.class.config.default_content_encoding
+      @default_content_type = self.class.config.default_content_type
       @start_lock = Mutex.new
       @supervisor_started = false
       @stopped = false
@@ -484,30 +484,39 @@ module AMQP
     # @!group Message coding
 
     class << self
-      # Get the default codec registry
+      # Configure the AMQP::Client class-level settings
+      # @yield [Configuration] Yields the configuration object for modification
+      # @return [Configuration] The configuration object
+      # @example
+      #   AMQP::Client.configure do |config|
+      #     config.default_content_type = "application/json"
+      #     config.strict_coding = true
+      #   end
+      def configure
+        yield @config if block_given?
+        @config
+      end
+
+      # Get the class-level configuration
+      # @return [Configuration]
+      attr_reader :config
+
+      # Get the class-level codec registry
       # @return [MessageCodecRegistry]
       attr_reader :codec_registry
 
-      # Get/set if coding should default to strict, i.e. if the client should raise on unknown codecs
-      attr_accessor :strict_coding
-
-      # Get/set the default content_type to use when publishing messages
-      # @return [String, nil]
-      attr_accessor :default_content_type
-
-      # Get/set the default content_encoding to use when publishing messages
-      # @return [String, nil]
-      attr_accessor :default_content_encoding
-
-      # We need to set the subclass's codec registry and strict coding default
+      # We need to set the subclass's configuration and codec registry
       # because these are class instance variables, hence not inherited.
       # @api private
       def inherited(subclass)
         super
-        subclass.instance_variable_set(:@codec_registry, @codec_registry.dup)
-        subclass.strict_coding = @strict_coding
-        subclass.default_content_type = @default_content_type
-        subclass.default_content_encoding = @default_content_encoding
+        subclass_codec_registry = @codec_registry.dup
+        subclass.instance_variable_set(:@codec_registry, subclass_codec_registry)
+        subclass.instance_variable_set(:@config, Configuration.new(subclass_codec_registry))
+        # Copy configuration settings from parent
+        subclass.config.strict_coding = @config.strict_coding
+        subclass.config.default_content_type = @config.default_content_type
+        subclass.config.default_content_encoding = @config.default_content_encoding
       end
     end
 

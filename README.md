@@ -24,9 +24,11 @@ The library provides a high-level API that manages channels, content-types, enco
 
 ```ruby
 require "amqp-client"
-require "amqp-client/enable_builtin_codecs" # Auto-code gzip, deflate and json
-require "json"
-require "zlib"
+
+# Configure built-in codecs for automatic JSON, gzip, and deflate handling
+AMQP::Client.configure do |config|
+  config.enable_builtin_codecs
+end
 
 # Start the client, it will connect and once connected it will reconnect if that connection is lost
 # Operation pending when the connection is lost will raise an exception (not timeout)
@@ -66,13 +68,39 @@ ex.publish("my message", routing_key: "topic.foo", headers: { foo: "bar" })
 amqp.publish("an event", exchange: "amq.topic", routing_key: "my.event", content_encoding: "gzip")
 ```
 
-#### Supported Content Types and Encodings
+#### Configuration
 
-`Queue#publish`, `Exchange#publish` and `Message.parse` will automatically handle:
+Configure class-level defaults and enable built-in codecs using the `configure` method:
 
-* application/json
-* gzip
-* deflate
+```ruby
+AMQP::Client.configure do |config|
+  config.enable_builtin_codecs  # Enable automatic JSON, gzip, and deflate handling
+  config.default_content_type = "application/json"
+  config.default_content_encoding = "gzip"
+  config.strict_coding = true  # Raise errors on unknown codecs
+end
+```
+
+You can also register custom parsers and coders:
+
+```ruby
+AMQP::Client.configure do |config|
+  config.register_parser(content_type: "application/msgpack", parser: MsgPackParser)
+  config.register_coder(content_encoding: "lz4", coder: LZ4Coder)
+end
+```
+
+**Built-in codecs** support these formats:
+- `application/json` - JSON encoding/decoding
+- `gzip` - Gzip compression
+- `deflate` - Deflate compression
+
+These settings will be used as defaults for all client instances, but can be overridden per-instance:
+
+```ruby
+client = AMQP::Client.new("amqp://localhost")
+client.default_content_type = "text/plain"  # Override for this instance
+```
 
 ### Low level API
 

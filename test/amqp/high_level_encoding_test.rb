@@ -111,8 +111,8 @@ class HighLevelEncodingTest < Minitest::Test
   end
 
   def test_default_content_type_at_class_level
-    original = DummyClient.default_content_type
-    DummyClient.default_content_type = "application/json"
+    original = DummyClient.config.default_content_type
+    DummyClient.config.default_content_type = "application/json"
     client = DummyClient.new
     queue = AMQP::Client::Queue.new(client, "q1")
 
@@ -122,12 +122,12 @@ class HighLevelEncodingTest < Minitest::Test
     # Verify the body was serialized to JSON
     assert_equal({ "test" => "data" }, JSON.parse(published[:body]))
   ensure
-    DummyClient.default_content_type = original
+    DummyClient.config.default_content_type = original
   end
 
   def test_default_content_encoding_at_class_level
-    original = DummyClient.default_content_encoding
-    DummyClient.default_content_encoding = "gzip"
+    original = DummyClient.config.default_content_encoding
+    DummyClient.config.default_content_encoding = "gzip"
     client = DummyClient.new
     queue = AMQP::Client::Queue.new(client, "q1")
 
@@ -137,7 +137,7 @@ class HighLevelEncodingTest < Minitest::Test
     # Verify the body was gzip encoded
     assert_equal "test data", Zlib.gunzip(published[:body])
   ensure
-    DummyClient.default_content_encoding = original
+    DummyClient.config.default_content_encoding = original
   end
 
   def test_default_content_type_at_instance_level
