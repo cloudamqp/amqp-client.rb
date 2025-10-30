@@ -223,8 +223,6 @@ AMQP::Client.configure do |config|
 end
 ```
 
-**Note:** The old `require "amqp-client/enable_builtin_codecs"` approach has been removed. Use the configure block instead.
-
 ### Automatic Message Encoding/Serialization
 
 The high-level API now supports automatic message encoding and serialization:
