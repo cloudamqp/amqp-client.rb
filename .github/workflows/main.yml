@@ -26,14 +26,8 @@ jobs:
           - { ruby: jruby, allow-failure: false, sudo: false }
           - { ruby: truffleruby, allow-failure: false, sudo: false }
     steps:
-    - name: Configure dpkg to skip building man pages
-      run: |
-        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-    - name: Install RabbitMQ
-      run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
-    - name: Verify RabbitMQ started correctly
-      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+    - name: Start LavinMQ
+      uses: cloudamqp/lavinmq-action@v1
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
@@ -63,14 +57,6 @@ jobs:
           - "jruby"
           - "truffleruby"
     steps:
-    - name: Configure dpkg to skip building man pages
-      run: |
-        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-    - name: Install RabbitMQ
-      run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
-    - name: Stop RabbitMQ
-      run: sudo systemctl stop rabbitmq-server
     - name: Set up Homebrew
       uses: Homebrew/actions/setup-homebrew@master
     - name: Install github.com/FiloSottile/mkcert
@@ -83,16 +69,13 @@ jobs:
         sudo chmod +r /etc/rabbitmq/localhost-key.pem
     - name: Create RabbitMQ config
       run: |
-        sudo tee /etc/rabbitmq/rabbitmq.conf <<'EOF'
-        listeners.ssl.default  = 5671
-        ssl_options.cacertfile = /etc/rabbitmq/rootCA.pem
-        ssl_options.certfile   = /etc/rabbitmq/localhost.pem
-        ssl_options.keyfile    = /etc/rabbitmq/localhost-key.pem
+        sudo tee /etc/lavinmq/lavinmq.ini <<'EOF'
+        [main]
+        tls_cert = /etc/rabbitmq/localhost.pem
+        tls_key = /etc/rabbitmq/localhost-key.pem
         EOF
-    - name: Start RabbitMQ
-      run: sudo systemctl start rabbitmq-server
-    - name: Verify RabbitMQ started correctly
-      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+    - name: Start LavinMQ with TLS
+      uses: cloudamqp/lavinmq-action@v1
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
@@ -120,10 +103,8 @@ jobs:
         ruby: # enough to test one Ruby on macOS
           - "ruby" # latest stable release
     steps:
-    - name: Install RabbitMQ
-      run: brew install rabbitmq
-    - name: Start RabbitMQ
-      run: brew services start rabbitmq
+    - name: Start LavinMQ
+      uses: cloudamqp/lavinmq-action@v1
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
