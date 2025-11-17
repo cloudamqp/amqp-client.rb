@@ -331,8 +331,9 @@ module AMQP
     # @return [Message, nil] The message from the queue or nil if the queue is empty
     def get(queue, no_ack: false)
       with_connection do |conn|
-        ch = conn.channel
-        ch.basic_get(queue, no_ack:)
+        conn.with_channel do |ch|
+          ch.basic_get(queue, no_ack:)
+        end
       end
     end
 
