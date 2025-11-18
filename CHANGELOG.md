@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [2.0.1] - 2025-11-18
+
+- Fixed: Ensure closing channels on basic get high level api (#73)
+- Improved: Clean up migration guide
+- Added: GitHub release notes for v2.0.0
+
 ## [2.0.0] - 2025-10-27
 
 - **BREAKING CHANGE**: Refactored public API to use keyword arguments for improved clarity and consistency
