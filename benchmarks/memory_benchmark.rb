@@ -32,11 +32,10 @@ class MemoryThroughputBenchmark
     :minor_gc_count,
     :major_gc_count,
     :allocated_size_bytes,
-    :wall_time,
-    keyword_init: true
+    :wall_time
   )
 
-  APIResult = Struct.new(:publish, :consume, keyword_init: true)
+  APIResult = Struct.new(:publish, :consume)
 
   def initialize(message_count:, message_size_bytes:, amqp_uri:, with_bunny:, json_path: nil, warmup: true)
     @amqp_uri = amqp_uri
