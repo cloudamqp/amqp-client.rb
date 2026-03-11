@@ -10,22 +10,35 @@ on:
 
 jobs:
   tests:
-    name: ${{ matrix.ruby }}
+    name: ${{ matrix.ruby }} (${{ matrix.broker }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
+        broker: [lavinmq, rabbitmq]
         ruby:
           - "3.2"
           - "3.3"
           - "3.4"
         include:
-          - { ruby: jruby, allow-failure: false }
-          - { ruby: truffleruby, allow-failure: false }
+          - { ruby: jruby, broker: lavinmq, allow-failure: false }
+          - { ruby: truffleruby, broker: lavinmq, allow-failure: false }
     steps:
     - name: Install LavinMQ
+      if: matrix.broker == 'lavinmq'
       uses: cloudamqp/lavinmq-action@v1
+    - name: Configure dpkg to skip building man pages
+      if: matrix.broker == 'rabbitmq'
+      run: |
+        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+    - name: Install RabbitMQ
+      if: matrix.broker == 'rabbitmq'
+      run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
+    - name: Verify RabbitMQ started correctly
+      if: matrix.broker == 'rabbitmq'
+      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
