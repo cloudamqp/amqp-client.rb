@@ -32,12 +32,6 @@ module TimeoutEveryTestCase
   end
 end
 
-module SkipSudoTestCase
-  def skip_if_no_sudo
-    skip "requires sudo" unless %w[1 true].include?(ENV["RUN_SUDO_TESTS"])
-  end
-end
-
 require "socket"
 module FakeServer
   def with_fake_server(host: "127.0.0.1")
@@ -63,5 +57,4 @@ end
 $VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase
-Minitest::Test.prepend SkipSudoTestCase
 Minitest::Test.prepend FakeServer

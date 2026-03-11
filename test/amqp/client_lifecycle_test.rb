@@ -434,24 +434,6 @@ class AMQPClientLifecycleTest < Minitest::Test
     end
   end
 
-  def test_it_can_be_blocked
-    skip_if_no_sudo
-    begin
-      ch = @connection.channel
-      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
-      ch.basic_publish("body", exchange: "", routing_key: "q")
-      sleep 0.01 # server blocks after first publish
-
-      assert_predicate @connection, :blocked?
-      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-      sleep 0.01 # server blocks after first publish
-
-      refute_predicate @connection, :blocked?
-    ensure
-      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-    end
-  end
-
   def test_it_will_publish_and_consume_properties
     props = AMQP::Client::Properties.new(
       delivery_mode: 2,
@@ -484,31 +466,6 @@ class AMQPClientLifecycleTest < Minitest::Test
     msg = channel.basic_get q.queue_name
 
     assert_equal props, msg.properties
-  end
-
-  def test_blocked_handler
-    skip_if_no_sudo
-    begin
-      q = Queue.new
-      @connection.on_blocked do |reason|
-        q << reason
-      end
-      @connection.on_unblocked do
-        q << nil
-      end
-      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
-      ch = @connection.channel
-      ch.basic_publish("", exchange: "", routing_key: "")
-      reason = q.pop
-
-      assert_equal "low on memory", reason
-      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-      unblocked = q.pop
-
-      assert_nil unblocked
-    ensure
-      system("sudo rabbitmqctl set_vm_memory_high_watermark 0.4")
-    end
   end
 
   def test_queue_pruge_returns_msg_count

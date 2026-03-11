@@ -3,15 +3,20 @@
 require "rake/testtask"
 
 Rake::TestTask.new(:test) do |t|
-  t.description = "Run all but TLS tests"
+  t.description = "Run all but TLS and RabbitMQ-specific tests"
   t.options = "--exclude=/_tls$/"
-  t.pattern = "test/**/*_test.rb"
+  t.test_files = FileList["test/**/*_test.rb"].exclude("test/rabbitmq/**/*_test.rb")
 end
 
 namespace :test do
   Rake::TestTask.new(:all) do |t|
     t.description = "Run all tests"
     t.pattern = "test/**/*_test.rb"
+  end
+
+  Rake::TestTask.new(:rabbitmq) do |t|
+    t.description = "Run RabbitMQ-specific tests (requires rabbitmqctl with sudo)"
+    t.pattern = "test/rabbitmq/**/*_test.rb"
   end
 end
 

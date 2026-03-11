@@ -10,30 +10,22 @@ on:
 
 jobs:
   tests:
-    name: >-
-      ${{ matrix.ruby }} (sudo: ${{ matrix.sudo }})
+    name: ${{ matrix.ruby }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        sudo: [true]
         ruby:
           - "3.2"
           - "3.3"
           - "3.4"
         include:
-          - { ruby: jruby, allow-failure: false, sudo: false }
-          - { ruby: truffleruby, allow-failure: false, sudo: false }
+          - { ruby: jruby, allow-failure: false }
+          - { ruby: truffleruby, allow-failure: false }
     steps:
-    - name: Configure dpkg to skip building man pages
-      run: |
-        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-    - name: Install RabbitMQ
-      run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
-    - name: Verify RabbitMQ started correctly
-      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+    - name: Install LavinMQ
+      uses: cloudamqp/lavinmq-action@v1
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
@@ -49,8 +41,6 @@ jobs:
       if: ${{ matrix.ruby != 'jruby' }}
       continue-on-error: ${{ matrix.allow-failure || false }}
       run: bundle exec rake
-      env:
-        RUN_SUDO_TESTS: ${{ matrix.sudo }}
 
   tls:
     runs-on: ubuntu-latest
@@ -63,36 +53,33 @@ jobs:
           - "jruby"
           - "truffleruby"
     steps:
-    - name: Configure dpkg to skip building man pages
-      run: |
-        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
-    - name: Install RabbitMQ
-      run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
-    - name: Stop RabbitMQ
-      run: sudo systemctl stop rabbitmq-server
+    - name: Install LavinMQ
+      uses: cloudamqp/lavinmq-action@v1
+    - name: Stop LavinMQ
+      run: sudo systemctl stop lavinmq
     - name: Set up Homebrew
       uses: Homebrew/actions/setup-homebrew@master
     - name: Install github.com/FiloSottile/mkcert
       run: brew install mkcert
     - name: Create local CA
-      run: sudo CAROOT=/etc/rabbitmq $(brew --prefix)/bin/mkcert -install
+      run: sudo CAROOT=/etc/lavinmq $(brew --prefix)/bin/mkcert -install
     - name: Create certificate
       run: |
-        sudo $(brew --prefix)/bin/mkcert -key-file /etc/rabbitmq/localhost-key.pem -cert-file /etc/rabbitmq/localhost.pem localhost
-        sudo chmod +r /etc/rabbitmq/localhost-key.pem
-    - name: Create RabbitMQ config
+        sudo $(brew --prefix)/bin/mkcert -key-file /etc/lavinmq/localhost-key.pem -cert-file /etc/lavinmq/localhost.pem localhost
+        sudo chmod +r /etc/lavinmq/localhost-key.pem
+    - name: Create LavinMQ config
       run: |
-        sudo tee /etc/rabbitmq/rabbitmq.conf <<'EOF'
-        listeners.ssl.default  = 5671
-        ssl_options.cacertfile = /etc/rabbitmq/rootCA.pem
-        ssl_options.certfile   = /etc/rabbitmq/localhost.pem
-        ssl_options.keyfile    = /etc/rabbitmq/localhost-key.pem
+        sudo tee /etc/lavinmq/lavinmq.ini <<'EOF'
+        [main]
+        data_dir = /var/lib/lavinmq
+        tls_cert = /etc/lavinmq/localhost.pem
+        tls_key = /etc/lavinmq/localhost-key.pem
+
+        [amqp]
+        tls_port = 5671
         EOF
-    - name: Start RabbitMQ
-      run: sudo systemctl start rabbitmq-server
-    - name: Verify RabbitMQ started correctly
-      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+    - name: Start LavinMQ
+      run: sudo systemctl start lavinmq
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
@@ -111,6 +98,27 @@ jobs:
       env:
         TESTOPTS: --name=/_tls$/
 
+  rabbitmq-sudo-tests:
+    name: RabbitMQ sudo tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Configure dpkg to skip building man pages
+      run: |
+        echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+        echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+    - name: Install RabbitMQ
+      run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
+    - name: Verify RabbitMQ started correctly
+      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+    - uses: actions/checkout@v5
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby-version: ruby
+    - name: Run blocked connection tests
+      run: bundle exec rake test:rabbitmq
+
   macos:
     runs-on: macos-latest
     timeout-minutes: 10
@@ -120,17 +128,15 @@ jobs:
         ruby: # enough to test one Ruby on macOS
           - "ruby" # latest stable release
     steps:
-    - name: Install RabbitMQ
-      run: brew install rabbitmq
-    - name: Start RabbitMQ
-      run: brew services start rabbitmq
+    - name: Install LavinMQ
+      run: brew install cloudamqp/cloudamqp/lavinmq
+    - name: Start LavinMQ
+      run: brew services start lavinmq
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
-    - name: Verify RabbitMQ started correctly
-      run: while true; do rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
     - name: Run tests (excluding TLS tests)
       run: bundle exec rake
 
