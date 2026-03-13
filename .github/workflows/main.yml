@@ -22,8 +22,8 @@ jobs:
           - "3.3"
           - "3.4"
         include:
-          - { ruby: jruby, broker: lavinmq, allow-failure: false }
-          - { ruby: truffleruby, broker: lavinmq, allow-failure: false }
+          - { ruby: jruby, broker: rabbitmq, allow-failure: false }
+          - { ruby: truffleruby, broker: rabbitmq, allow-failure: false }
     steps:
     - name: Install LavinMQ
       if: matrix.broker == 'lavinmq'
@@ -141,15 +141,17 @@ jobs:
         ruby: # enough to test one Ruby on macOS
           - "ruby" # latest stable release
     steps:
-    - name: Install LavinMQ
-      run: brew install cloudamqp/cloudamqp/lavinmq
-    - name: Start LavinMQ
-      run: brew services start lavinmq
+    - name: Install RabbitMQ
+      run: brew install rabbitmq
+    - name: Start RabbitMQ
+      run: brew services start rabbitmq
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
+    - name: Verify RabbitMQ started correctly
+      run: while true; do rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
     - name: Run tests (excluding TLS tests)
       run: bundle exec rake
 
