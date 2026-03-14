@@ -1,0 +1,118 @@
+name: Tests - LavinMQ
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "3.2"
+          - "3.3"
+          - "3.4"
+        include:
+          - { ruby: jruby }
+          - { ruby: truffleruby }
+    steps:
+    - name: Install LavinMQ
+      uses: cloudamqp/lavinmq-action@v1
+    - uses: actions/checkout@v6
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby-version: ${{ matrix.ruby }}
+    - name: Run tests (excluding TLS tests) (JRuby)
+      if: ${{ matrix.ruby == 'jruby' }}
+      run: bundle exec rake
+      env:
+        JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+    - name: Run tests (excluding TLS tests)
+      if: ${{ matrix.ruby != 'jruby' }}
+      run: bundle exec rake
+
+  tls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "ruby"
+          - "jruby"
+          - "truffleruby"
+    steps:
+    - name: Install LavinMQ
+      uses: cloudamqp/lavinmq-action@v1
+    - name: Stop LavinMQ
+      run: sudo systemctl stop lavinmq
+    - name: Set up Homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+    - name: Install github.com/FiloSottile/mkcert
+      run: brew install mkcert
+    - name: Create local CA
+      run: sudo CAROOT=/etc/lavinmq $(brew --prefix)/bin/mkcert -install
+    - name: Create certificate
+      run: |
+        sudo $(brew --prefix)/bin/mkcert -key-file /etc/lavinmq/localhost-key.pem -cert-file /etc/lavinmq/localhost.pem localhost
+        sudo chmod +r /etc/lavinmq/localhost-key.pem
+    - name: Create LavinMQ config
+      run: |
+        sudo tee /etc/lavinmq/lavinmq.ini <<'EOF'
+        [main]
+        data_dir = /var/lib/lavinmq
+        tls_cert = /etc/lavinmq/localhost.pem
+        tls_key = /etc/lavinmq/localhost-key.pem
+
+        [amqp]
+        tls_port = 5671
+        EOF
+    - name: Start LavinMQ
+      run: sudo systemctl start lavinmq
+    - uses: actions/checkout@v6
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby-version: ${{ matrix.ruby }}
+    - name: Run TLS tests (JRuby)
+      if: ${{ matrix.ruby == 'jruby' }}
+      run: bundle exec rake
+      env:
+        JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+        TEST_AMQP_HOST: "localhost"
+        TESTOPTS: --name=/_tls$/
+    - name: Run TLS tests
+      if: ${{ matrix.ruby != 'jruby' }}
+      run: bundle exec rake
+      env:
+        TESTOPTS: --name=/_tls$/
+
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "ruby"
+    steps:
+    - name: Install LavinMQ
+      run: brew install cloudamqp/cloudamqp/lavinmq
+    - name: Start LavinMQ
+      run: brew services start lavinmq
+    - uses: actions/checkout@v6
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby-version: ${{ matrix.ruby }}
+    - name: Run tests (excluding TLS tests)
+      run: bundle exec rake
