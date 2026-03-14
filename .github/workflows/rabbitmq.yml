@@ -1,4 +1,4 @@
-name: Ruby
+name: Tests - RabbitMQ
 
 on:
   push:
