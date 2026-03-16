@@ -13,6 +13,8 @@ class AMQPClientLifecycleTest < Minitest::Test
 
   def teardown
     @connection&.close
+  rescue AMQP::Client::Error::ConnectionClosed
+    nil
   end
 
   def test_it_can_connect
