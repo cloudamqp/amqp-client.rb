@@ -370,7 +370,9 @@ class AMQPClientLifecycleTest < Minitest::Test
       exception = assert_raises(AMQP::Client::Error::ConnectionClosed, AMQP::Client::Error::ChannelClosed) do
         ch.exchange_declare("foobar", type: "faulty.exchange.type")
       end
-      assert_match(/unknown exchange type/, exception.message)
+      # LavinMQ uses "invalid exchange type" instead of "unknown exchange type",
+      # will be aligned with RabbitMQ in cloudamqp/lavinmq#1811
+      assert_match(/unknown exchange type|invalid exchange type/, exception.message)
     end
   end
 
@@ -537,6 +539,10 @@ class AMQPClientLifecycleTest < Minitest::Test
 
   def test_it_can_update_secret
     @connection.update_secret "secret", reason: "testing"
+  rescue AMQP::Client::Error::ConnectionClosed => e
+    # LavinMQ does not currently implement the update-secret AMQP method
+    skip "Broker does not support update-secret" if e.message.include?("UNEXPECTED_FRAME")
+    raise
   end
 
   def test_open_closing_channels_is_thread_safe
