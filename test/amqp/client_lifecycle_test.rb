@@ -540,8 +540,8 @@ class AMQPClientLifecycleTest < Minitest::Test
   def test_it_can_update_secret
     @connection.update_secret "secret", reason: "testing"
   rescue AMQP::Client::Error::ConnectionClosed => e
-    # LavinMQ does not currently implement the update-secret AMQP method
-    skip "Broker does not support update-secret" if e.message.include?("UNEXPECTED_FRAME")
+    # LavinMQ only supports update-secret with the OAuth2 authentication mechanism
+    skip "Broker requires OAuth2 for update-secret" if e.message.include?("update-secret not supported")
     raise
   end
 
