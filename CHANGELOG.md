@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Fixed: `Consumer#cancel` now closes the dedicated channel opened by `subscribe`, preventing a channel leak on long-lived connections that subscribe/cancel repeatedly (#81)
+
 ## [2.0.1] - 2025-11-18
 
 - Fixed: Ensure closing channels on basic get high level api (#73)

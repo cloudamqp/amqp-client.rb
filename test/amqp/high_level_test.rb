@@ -138,6 +138,24 @@ class HighLevelTest < Minitest::Test
     }, "Consumer was not removed after basic.cancel"
   end
 
+  def test_consumer_cancel_closes_dedicated_channel
+    q = @client.queue("test.cancel.leak")
+
+    20.times do
+      consumer = q.subscribe { |_msg| nil }
+      consumer.cancel
+    end
+
+    @client.with_connection do |conn|
+      open_channels = conn.instance_variable_get(:@channels).keys
+
+      # Only the shared channel 1 (used for queue declarations) should remain.
+      assert_equal [1], open_channels, "consumer.cancel leaked channels: #{open_channels.inspect}"
+    end
+  ensure
+    q&.delete
+  end
+
   def test_default_direct_exchange
     direct = @client.direct_exchange("amq.direct")
 
