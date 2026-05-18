@@ -107,7 +107,9 @@ jobs:
           - "ruby"
     steps:
     - name: Install LavinMQ
-      run: brew install lavinmq
+      run: |
+        brew update
+        brew install lavinmq
     - name: Start LavinMQ
       run: brew services start lavinmq
     - uses: actions/checkout@v6
