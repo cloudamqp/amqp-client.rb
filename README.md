@@ -128,6 +128,19 @@ msg = ch.basic_get(q.queue_name)
 puts msg.body
 ```
 
+### Thread naming
+
+The library spawns several threads (a read loop, optional heartbeat sender, consumer workers, a supervisor when using `Client#start`, ...). Each one gets a descriptive `Thread#name`, which shows up in `Thread.list`, stack dumps and most introspection tools.
+
+Pass `name:` to override the default prefix - useful when another library or app wraps `amqp-client.rb` and wants its threads to be easy to identify:
+
+```ruby
+AMQP::Client.new("amqp://localhost", name: "myapp").start
+# threads named "myapp.supervisor", "myapp.read_loop localhost:5672", etc.
+```
+
+The default prefix is `amqp` (kept short so e.g. `amqp.read_loop` still fits in the 15-char `/proc/<pid>/task/*/comm` field used by `ps -L` and `top -H`). Format is `"<prefix>.<role> <host>:<port>[ <detail>]"`. The full name is always visible via Ruby (`Thread.list.map(&:name)`, stack traces, debuggers); only the OS-level `comm` field is truncated.
+
 ## Supported Ruby versions
 
 All maintained Ruby versions are supported.

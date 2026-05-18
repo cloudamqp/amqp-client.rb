@@ -34,6 +34,7 @@ module AMQP
     #   Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.
     def initialize(uri = "", **options)
       @uri = uri
+      @name = options.delete(:name) || "amqp"
       @options = options
       @queues = {}
       @exchanges = {}
@@ -57,8 +58,13 @@ module AMQP
     # @example
     #   connection = AMQP::Client.new("amqps://server.rmq.cloudamqp.com", connection_name: "My connection").connect
     def connect(read_loop_thread: true)
-      Connection.new(@uri, read_loop_thread:, codec_registry: @codec_registry, strict_coding: @strict_coding, **@options)
+      Connection.new(@uri, read_loop_thread:, name: @name,
+                           codec_registry: @codec_registry, strict_coding: @strict_coding, **@options)
     end
+
+    # Thread name prefix used for threads spawned by this client.
+    # @return [String]
+    attr_reader :name
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first
     # @return [self]
@@ -74,14 +80,14 @@ module AMQP
 
         @supervisor_started = true
         @stopped = false
-        Thread.new(connect(read_loop_thread: false)) do |conn|
+        supervisor = Thread.new(connect(read_loop_thread: false)) do |conn| # rubocop:disable Metrics/BlockLength
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
           loop do
             break if @stopped
 
             conn ||= connect(read_loop_thread: false)
 
-            Thread.new do
+            setup = Thread.new do
               # restore connection in another thread, read_loop have to run
               conn.channel(1) # reserve channel 1 for publishes
               @consumers.each_value do |consumer|
@@ -97,6 +103,7 @@ module AMQP
               # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
               @consumers.delete_if { |_, c| c.closed? }
             end
+            setup.name = "#{@name}.reconnect_setup"
             conn.read_loop # blocks until connection is closed, then reconnect
           rescue Error => e
             warn "AMQP-Client reconnect error: #{e.inspect}"
@@ -106,6 +113,7 @@ module AMQP
             conn = nil
           end
         end
+        supervisor.name = "#{@name}.supervisor"
       end
       self
     end
