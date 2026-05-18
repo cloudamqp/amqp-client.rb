@@ -557,7 +557,12 @@ module AMQP
     def cancel_consumer(consumer)
       @consumers.delete(consumer.id)
       with_connection do |conn|
-        conn.channel(consumer.channel_id).basic_cancel(consumer.tag)
+        ch = conn.channel(consumer.channel_id)
+        begin
+          ch.basic_cancel(consumer.tag)
+        ensure
+          ch.close
+        end
       end
     end
 
