@@ -350,7 +350,7 @@ module AMQP
           else
             threads = Array.new(worker_threads) do |i|
               t = Thread.new { consume_loop(msg_q, consumer_tag, &blk) }
-              t.name = @connection.thread_name("consumer", "ch=#{@id} tag=#{consumer_tag} ##{i + 1}")
+              t.name = @connection.thread_name(role: "consumer", detail: "ch=#{@id} tag=#{consumer_tag} ##{i + 1}")
               t
             end
             @consumers[consumer_tag] =
@@ -592,7 +592,7 @@ module AMQP
           if next_msg.is_a? ReturnMessage
             if @on_return
               t = Thread.new { @on_return.call(next_msg) }
-              t.name = @connection.thread_name("on_return", "ch=#{@id}")
+              t.name = @connection.thread_name(role: "on_return", detail: "ch=#{@id}")
             else
               warn "AMQP-Client message returned: #{next_msg.inspect}"
             end

@@ -70,7 +70,7 @@ module AMQP
         return unless read_loop_thread
 
         t = Thread.new { read_loop }
-        t.name = thread_name("read_loop")
+        t.name = thread_name(role: "read_loop")
       end
 
       # Prefix used for naming threads spawned by this connection.
@@ -80,7 +80,7 @@ module AMQP
       # Build a thread name for a role attached to this connection.
       # Format: "<prefix>.<role> <host>:<port>[ <detail>]"
       # @api private
-      def thread_name(role, detail = nil)
+      def thread_name(role:, detail: nil)
         base = "#{@thread_name_prefix}.#{role} #{@host}:#{@port}"
         detail ? "#{base} #{detail}" : base
       end
@@ -494,7 +494,7 @@ module AMQP
             end
           end
         end
-        t.name = thread_name("heartbeat")
+        t.name = thread_name(role: "heartbeat")
       end
 
       def send_heartbeat
