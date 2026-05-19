@@ -132,10 +132,10 @@ puts msg.body
 
 The library spawns several threads (a read loop, optional heartbeat sender, consumer workers, a supervisor when using `Client#start`, ...). Each one gets a descriptive `Thread#name`, which shows up in `Thread.list`, stack dumps and most introspection tools.
 
-Pass `name:` to override the default prefix - useful when another library or app wraps `amqp-client.rb` and wants its threads to be easy to identify:
+Pass `thread_name_prefix:` to override the default prefix - useful when another library or app wraps `amqp-client.rb` and wants its threads to be easy to identify:
 
 ```ruby
-AMQP::Client.new("amqp://localhost", name: "myapp").start
+AMQP::Client.new("amqp://localhost", thread_name_prefix: "myapp").start
 # threads named "myapp.supervisor", "myapp.read_loop localhost:5672", etc.
 ```
 

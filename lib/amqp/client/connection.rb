@@ -15,7 +15,7 @@ module AMQP
       # @param uri [String] URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection
       # @param read_loop_thread [Boolean] If true run {#read_loop} in a background thread,
       #   otherwise the user have to run it explicitly, without {#read_loop} the connection won't function
-      # @param name [String] Prefix used when naming threads spawned by this connection
+      # @param thread_name_prefix [String] Prefix used when naming threads spawned by this connection
       #   (read_loop, heartbeat, consumers, ...). Wrapper libraries can pass their own prefix
       #   to make their threads easy to identify in introspection tools.
       # @param codec_registry [MessageCodecRegistry] Registry for message codecs
@@ -31,7 +31,7 @@ module AMQP
       #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
       # @option options [String] keepalive (60:10:3) TCP keepalive setting, 60s idle, 10s interval between probes, 3 probes
       # @return [Connection]
-      def initialize(uri = "", read_loop_thread: true, name: "amqp",
+      def initialize(uri = "", read_loop_thread: true, thread_name_prefix: "amqp",
                      codec_registry: nil, strict_coding: false, **options)
         uri = URI.parse(uri)
         tls = uri.scheme == "amqps"
@@ -42,7 +42,7 @@ module AMQP
         vhost = URI.decode_www_form_component(uri.path[1..] || "/")
         options = URI.decode_www_form(uri.query || "").map! { |k, v| [k.to_sym, v] }.to_h.merge(options)
 
-        @name = name
+        @thread_name_prefix = thread_name_prefix
         @host = host
         @port = port
 
@@ -73,15 +73,15 @@ module AMQP
         t.name = thread_name("read_loop")
       end
 
-      # Thread name prefix used for threads spawned by this connection.
+      # Prefix used for naming threads spawned by this connection.
       # @return [String]
-      attr_reader :name
+      attr_reader :thread_name_prefix
 
       # Build a thread name for a role attached to this connection.
       # Format: "<prefix>.<role> <host>:<port>[ <detail>]"
       # @api private
       def thread_name(role, detail = nil)
-        base = "#{@name}.#{role} #{@host}:#{@port}"
+        base = "#{@thread_name_prefix}.#{role} #{@host}:#{@port}"
         detail ? "#{base} #{detail}" : base
       end
 

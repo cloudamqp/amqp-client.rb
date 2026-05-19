@@ -34,7 +34,7 @@ module AMQP
     #   Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.
     def initialize(uri = "", **options)
       @uri = uri
-      @name = options.delete(:name) || "amqp"
+      @thread_name_prefix = options.delete(:thread_name_prefix) || "amqp"
       @options = options
       @queues = {}
       @exchanges = {}
@@ -58,13 +58,13 @@ module AMQP
     # @example
     #   connection = AMQP::Client.new("amqps://server.rmq.cloudamqp.com", connection_name: "My connection").connect
     def connect(read_loop_thread: true)
-      Connection.new(@uri, read_loop_thread:, name: @name,
+      Connection.new(@uri, read_loop_thread:, thread_name_prefix: @thread_name_prefix,
                            codec_registry: @codec_registry, strict_coding: @strict_coding, **@options)
     end
 
-    # Thread name prefix used for threads spawned by this client.
+    # Prefix used for naming threads spawned by this client.
     # @return [String]
-    attr_reader :name
+    attr_reader :thread_name_prefix
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first
     # @return [self]
@@ -103,7 +103,7 @@ module AMQP
               # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
               @consumers.delete_if { |_, c| c.closed? }
             end
-            setup.name = "#{@name}.reconnect_setup"
+            setup.name = "#{@thread_name_prefix}.reconnect_setup"
             conn.read_loop # blocks until connection is closed, then reconnect
           rescue Error => e
             warn "AMQP-Client reconnect error: #{e.inspect}"
@@ -113,7 +113,7 @@ module AMQP
             conn = nil
           end
         end
-        supervisor.name = "#{@name}.supervisor"
+        supervisor.name = "#{@thread_name_prefix}.supervisor"
       end
       self
     end

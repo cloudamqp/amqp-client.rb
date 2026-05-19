@@ -14,7 +14,7 @@ class AMQPThreadNamesTest < Minitest::Test
   end
 
   def test_custom_prefix_flows_through
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", name: "myapp").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", thread_name_prefix: "myapp").connect
     names = Thread.list.map(&:name)
 
     assert(names.any? { |n| n&.start_with?("myapp.read_loop ") },
