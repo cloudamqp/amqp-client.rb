@@ -39,10 +39,18 @@ module AMQP
         def decode(data, _properties) = Zlib.inflate(data)
       end.new
 
-      # Raw DEFLATE (RFC 1951): no zlib header, no Adler-32 checksum.
-      # Use when peers send Content-Encoding: deflate the HTTP-ambiguous way
-      # (e.g. Node's zlib.deflateRaw). Not registered by default; opt in by
-      # registering it under the desired content_encoding.
+      # Raw DEFLATE coder (RFC 1951 -- no zlib header, no Adler-32 checksum).
+      # Not registered by default. Use to interoperate with producers that emit
+      # raw DEFLATE under content_encoding "deflate", the same ambiguity HTTP
+      # has carried for decades and that Zlib::Deflate.new(level, -MAX_WBITS)
+      # exists for.
+      #
+      # @example Override the built-in deflate coder
+      #   AMQP::Client.configure do |config|
+      #     config.enable_builtin_codecs
+      #     config.register_coder(content_encoding: "deflate",
+      #                           coder: AMQP::Client::Coders::DeflateRaw)
+      #   end
       DeflateRaw = Class.new do
         def encode(data, _properties)
           return data if data.encoding == Encoding::BINARY

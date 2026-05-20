@@ -61,25 +61,35 @@ class HighLevelEncodingTest < Minitest::Test
     assert_equal "deflate me", inflated
   end
 
-  def test_deflate_raw_round_trip
+  def test_deflate_raw_round_trips_when_registered_as_deflate_override
     client = DummyClient.new
     client.codec_registry.enable_builtin_codecs
-    client.codec_registry.register_coder(content_encoding: "deflate-raw",
+    client.codec_registry.register_coder(content_encoding: "deflate",
                                          coder: AMQP::Client::Coders::DeflateRaw)
     exchange = AMQP::Client::Exchange.new(client, "ex1")
 
-    exchange.publish("raw deflate", routing_key: "rk", content_encoding: "deflate-raw")
+    exchange.publish("raw deflate test", routing_key: "rk", content_encoding: "deflate")
     published = client.published.last
-    inflated = Zlib::Inflate.new(-Zlib::MAX_WBITS).inflate(published[:body])
+    inflated = AMQP::Client::Coders::DeflateRaw.decode(published[:body], nil)
 
-    assert_equal "raw deflate", inflated
-    refute_equal Zlib.deflate("raw deflate"), published[:body]
+    assert_equal "raw deflate test", inflated
   end
 
-  def test_deflate_raw_decode_matches_zlib_deflate_raw_input
-    raw = Zlib::Deflate.new(Zlib::DEFAULT_COMPRESSION, -Zlib::MAX_WBITS).deflate("hello", Zlib::FINISH)
+  def test_deflate_raw_output_is_not_zlib_wrapped
+    # RFC 1950 (zlib-wrapped) output begins with 0x78. Raw DEFLATE doesn't.
+    wrapped = AMQP::Client::Coders::Deflate.encode("hello", nil)
+    raw = AMQP::Client::Coders::DeflateRaw.encode("hello", nil)
 
-    assert_equal "hello", AMQP::Client::Coders::DeflateRaw.decode(raw, nil)
+    assert_equal 0x78, wrapped.bytes.first
+    refute_equal 0x78, raw.bytes.first
+  end
+
+  def test_deflate_raw_output_is_not_decodable_by_deflate_coder
+    raw = AMQP::Client::Coders::DeflateRaw.encode("hello", nil)
+
+    assert_raises(Zlib::DataError) do
+      AMQP::Client::Coders::Deflate.decode(raw, nil)
+    end
   end
 
   def test_handles_already_deflated_body
