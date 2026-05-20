@@ -32,9 +32,14 @@ module AMQP
     #    the smallest of the client's and the broker's values will be used
     # @option options [Integer] channel_max (2048) Maximum number of channels the client will be allowed to have open.
     #   Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.
+    # @option options [#info, #warn, #error] logger (nil) Logger for {#start} lifecycle events
+    #   (connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
+    #   written to stderr via Kernel#warn for backwards compatibility.
     def initialize(uri = "", **options)
       @uri = uri
       @options = options
+      @logger = options[:logger]
+      @name = parse_name(uri)
       @queues = {}
       @exchanges = {}
       @consumers = {}
@@ -74,12 +79,17 @@ module AMQP
 
         @supervisor_started = true
         @stopped = false
-        Thread.new(connect(read_loop_thread: false)) do |conn|
+        initial_conn = connect(read_loop_thread: false)
+        log_lifecycle(:info, "connected")
+        Thread.new(initial_conn) do |conn| # rubocop:disable Metrics/BlockLength
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
-          loop do
+          loop do # rubocop:disable Metrics/BlockLength
             break if @stopped
 
-            conn ||= connect(read_loop_thread: false)
+            unless conn
+              conn = connect(read_loop_thread: false)
+              log_lifecycle(:info, "reconnected")
+            end
 
             Thread.new do
               # restore connection in another thread, read_loop have to run
@@ -98,8 +108,9 @@ module AMQP
               @consumers.delete_if { |_, c| c.closed? }
             end
             conn.read_loop # blocks until connection is closed, then reconnect
+            log_lifecycle(:warn, "disconnected")
           rescue Error => e
-            warn "AMQP-Client reconnect error: #{e.inspect}"
+            log_reconnect_error(e)
             sleep @options[:reconnect_interval] || 1
           ensure
             @connq.clear
@@ -567,6 +578,36 @@ module AMQP
     end
 
     private
+
+    def parse_name(uri)
+      return nil if uri.nil? || uri.empty?
+
+      query = URI.parse(uri).query
+      return nil unless query
+
+      URI.decode_www_form(query).each { |k, v| return v if k == "name" }
+      nil
+    rescue URI::InvalidURIError
+      nil
+    end
+
+    def log_lifecycle(level, event)
+      return unless @logger
+
+      @logger.public_send(level, "#{lifecycle_prefix}: #{event}")
+    end
+
+    def log_reconnect_error(err)
+      if @logger
+        @logger.warn("#{lifecycle_prefix}: reconnect error: #{err.inspect}")
+      else
+        warn "AMQP-Client reconnect error: #{err.inspect}"
+      end
+    end
+
+    def lifecycle_prefix
+      @name ? "AMQP::Client[#{@name}]" : "AMQP::Client"
+    end
 
     def default_content_properties
       {
