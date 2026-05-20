@@ -93,7 +93,15 @@ end
 **Built-in codecs** support these formats:
 - `application/json` - JSON encoding/decoding
 - `gzip` - Gzip compression
-- `deflate` - Deflate compression
+- `deflate` - Deflate compression (RFC 1950, zlib-wrapped)
+
+The `AMQP::Client::Coders::DeflateRaw` coder is shipped but not registered by default. It produces raw DEFLATE (RFC 1951, no zlib header or Adler-32 checksum), matching what Node's `zlib.deflateRaw` emits. Opt in by registering it under whichever content_encoding you want, e.g.:
+
+```ruby
+AMQP::Client.configure do |config|
+  config.register_coder(content_encoding: "deflate", coder: AMQP::Client::Coders::DeflateRaw)
+end
+```
 
 These settings will be used as defaults for all client instances, but can be overridden per-instance:
 

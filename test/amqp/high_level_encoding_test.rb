@@ -61,6 +61,27 @@ class HighLevelEncodingTest < Minitest::Test
     assert_equal "deflate me", inflated
   end
 
+  def test_deflate_raw_round_trip
+    client = DummyClient.new
+    client.codec_registry.enable_builtin_codecs
+    client.codec_registry.register_coder(content_encoding: "deflate-raw",
+                                         coder: AMQP::Client::Coders::DeflateRaw)
+    exchange = AMQP::Client::Exchange.new(client, "ex1")
+
+    exchange.publish("raw deflate", routing_key: "rk", content_encoding: "deflate-raw")
+    published = client.published.last
+    inflated = Zlib::Inflate.new(-Zlib::MAX_WBITS).inflate(published[:body])
+
+    assert_equal "raw deflate", inflated
+    refute_equal Zlib.deflate("raw deflate"), published[:body]
+  end
+
+  def test_deflate_raw_decode_matches_zlib_deflate_raw_input
+    raw = Zlib::Deflate.new(Zlib::DEFAULT_COMPRESSION, -Zlib::MAX_WBITS).deflate("hello", Zlib::FINISH)
+
+    assert_equal "hello", AMQP::Client::Coders::DeflateRaw.decode(raw, nil)
+  end
+
   def test_handles_already_deflated_body
     message = "deflate me"
     body = Zlib::Deflate.deflate(message)
