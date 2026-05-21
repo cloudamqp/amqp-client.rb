@@ -14,7 +14,7 @@ class AMQPThreadNamesTest < Minitest::Test
   end
 
   def test_name_from_uri_appears_in_read_loop_thread_name
-    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}/?name=worker-1").connect
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}?name=worker-1").connect
     names = Thread.list.map(&:name)
 
     assert(names.any? { |n| n&.start_with?("amqp.read_loop[worker-1] ") },
@@ -48,7 +48,7 @@ class AMQPThreadNamesTest < Minitest::Test
   end
 
   def test_supervisor_thread_name_when_named
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}/?name=worker-2").start
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}?name=worker-2").start
     client.with_connection { _1 } # wait until supervisor's read_loop is engaged
     names = Thread.list.map(&:name)
 
