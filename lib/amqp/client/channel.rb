@@ -348,8 +348,10 @@ module AMQP
             consume_loop(msg_q, consumer_tag, &blk)
             nil
           else
-            threads = Array.new(worker_threads) do
-              Thread.new { consume_loop(msg_q, consumer_tag, &blk) }
+            threads = Array.new(worker_threads) do |i|
+              t = Thread.new { consume_loop(msg_q, consumer_tag, &blk) }
+              t.name = @connection.thread_name(role: "consumer", detail: "ch=#{@id} tag=#{consumer_tag} ##{i + 1}")
+              t
             end
             @consumers[consumer_tag] =
               ConsumeOk.new(channel_id: @id, consumer_tag:, worker_threads: threads, msg_q:, on_cancel:)
@@ -589,7 +591,8 @@ module AMQP
           next_msg = @next_msg
           if next_msg.is_a? ReturnMessage
             if @on_return
-              Thread.new { @on_return.call(next_msg) }
+              t = Thread.new { @on_return.call(next_msg) }
+              t.name = @connection.thread_name(role: "on_return", detail: "ch=#{@id}")
             else
               warn "AMQP-Client message returned: #{next_msg.inspect}"
             end

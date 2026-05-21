@@ -17,6 +17,9 @@ module AMQP
       #   otherwise the user have to run it explicitly, without {#read_loop} the connection won't function
       # @param codec_registry [MessageCodecRegistry] Registry for message codecs
       # @param strict_coding [Boolean] Whether to raise errors on unsupported codecs
+      # @param name [String, nil] Instance identifier embedded in thread names
+      #   (e.g. "amqp.read_loop[name] host:port") and lifecycle log prefixes.
+      #   Usually sourced from the URL's `?name=` query param by {Client}.
       # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
       #   the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
@@ -28,7 +31,7 @@ module AMQP
       #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
       # @option options [String] keepalive (60:10:3) TCP keepalive setting, 60s idle, 10s interval between probes, 3 probes
       # @return [Connection]
-      def initialize(uri = "", read_loop_thread: true, codec_registry: nil, strict_coding: false, **options)
+      def initialize(uri = "", read_loop_thread: true, codec_registry: nil, strict_coding: false, name: nil, **options)
         uri = URI.parse(uri)
         tls = uri.scheme == "amqps"
         port = port_from_env || uri.port || (tls ? 5671 : 5672)
@@ -37,6 +40,10 @@ module AMQP
         password = uri.password || "guest"
         vhost = URI.decode_www_form_component(uri.path[1..] || "/")
         options = URI.decode_www_form(uri.query || "").map! { |k, v| [k.to_sym, v] }.to_h.merge(options)
+
+        @host = host
+        @port = port
+        @name = name
 
         socket = open_socket(host, port, tls, options)
         channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, options)
@@ -59,7 +66,20 @@ module AMQP
         # Only used with heartbeats
         @last_activity_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-        Thread.new { read_loop } if read_loop_thread
+        return unless read_loop_thread
+
+        t = Thread.new { read_loop }
+        t.name = thread_name(role: "read_loop")
+      end
+
+      # Build a thread name for a role attached to this connection.
+      # Format: "amqp.<role>[<name>] <host>:<port>[ <detail>]" — the `[<name>]`
+      # segment is only present when the connection has a `name:`.
+      # @api private
+      def thread_name(role:, detail: nil)
+        suffix = @name ? "[#{@name}]" : ""
+        base = "amqp.#{role}#{suffix} #{@host}:#{@port}"
+        detail ? "#{base} #{detail}" : base
       end
 
       # Indicates that the server is blocking publishes.
@@ -451,7 +471,7 @@ module AMQP
 
       # Start the heartbeat background thread (called from connection#tune)
       def start_heartbeats(period)
-        Thread.new do
+        t = Thread.new do
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
           interval = period / 2.0
           loop do
@@ -471,6 +491,7 @@ module AMQP
             end
           end
         end
+        t.name = thread_name(role: "heartbeat")
       end
 
       def send_heartbeat
