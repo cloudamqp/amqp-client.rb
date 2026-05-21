@@ -93,7 +93,7 @@ class AMQPClientLifecycleTest < Minitest::Test
     logger = Logger.new(io)
     logger.formatter = ->(severity, _time, _progname, msg) { "#{severity} #{msg}\n" }
 
-    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}/?name=my-worker", logger:).start
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}?name=my-worker", logger:).start
     client.with_connection { _1 }
     client.stop
 

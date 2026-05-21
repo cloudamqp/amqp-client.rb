@@ -109,7 +109,7 @@ Pass `?name=` in the connection URL to identify a client instance. The same iden
 ```ruby
 require "logger"
 
-client = AMQP::Client.new("amqp://broker/?name=worker-1", logger: Logger.new($stdout))
+client = AMQP::Client.new("amqp://broker?name=worker-1", logger: Logger.new($stdout))
 client.start
 # => INFO -- : AMQP::Client[worker-1]: connected
 # Thread.list now includes:
