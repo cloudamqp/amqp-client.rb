@@ -62,7 +62,8 @@ module AMQP
     # @example
     #   connection = AMQP::Client.new("amqps://server.rmq.cloudamqp.com", connection_name: "My connection").connect
     def connect(read_loop_thread: true)
-      Connection.new(@uri, read_loop_thread:, codec_registry: @codec_registry, strict_coding: @strict_coding, **@options)
+      Connection.new(@uri, read_loop_thread:, name: @name,
+                           codec_registry: @codec_registry, strict_coding: @strict_coding, **@options)
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first
@@ -81,7 +82,7 @@ module AMQP
         @stopped = false
         initial_conn = connect(read_loop_thread: false)
         log_lifecycle(:info, "connected")
-        Thread.new(initial_conn) do |conn| # rubocop:disable Metrics/BlockLength
+        supervisor = Thread.new(initial_conn) do |conn| # rubocop:disable Metrics/BlockLength
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
           loop do # rubocop:disable Metrics/BlockLength
             break if @stopped
@@ -91,7 +92,7 @@ module AMQP
               log_lifecycle(:info, "reconnected")
             end
 
-            Thread.new do
+            setup = Thread.new do
               # restore connection in another thread, read_loop have to run
               conn.channel(1) # reserve channel 1 for publishes
               @consumers.each_value do |consumer|
@@ -107,6 +108,7 @@ module AMQP
               # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
               @consumers.delete_if { |_, c| c.closed? }
             end
+            setup.name = thread_name("reconnect_setup")
             conn.read_loop # blocks until connection is closed, then reconnect
             log_lifecycle(:warn, "disconnected")
           rescue Error => e
@@ -117,6 +119,7 @@ module AMQP
             conn = nil
           end
         end
+        supervisor.name = thread_name("supervisor")
       end
       self
     end
@@ -603,6 +606,10 @@ module AMQP
       else
         warn "AMQP-Client reconnect error: #{err.inspect}"
       end
+    end
+
+    def thread_name(role)
+      @name ? "amqp.#{role}[#{@name}]" : "amqp.#{role}"
     end
 
     def lifecycle_prefix

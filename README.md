@@ -110,6 +110,26 @@ client = AMQP::Client.new("amqp://localhost")
 client.default_content_type = "text/plain"  # Override for this instance
 ```
 
+#### Lifecycle logging and thread names
+
+Pass `?name=` in the connection URL to identify a client instance. The same identifier appears in both lifecycle log lines and `Thread#name` for every thread the library spawns:
+
+```ruby
+require "logger"
+
+client = AMQP::Client.new("amqp://broker/?name=worker-1", logger: Logger.new($stdout))
+client.start
+# => INFO -- : AMQP::Client[worker-1]: connected
+# Thread.list now includes:
+#   "amqp.supervisor[worker-1]"
+#   "amqp.read_loop[worker-1] broker:5672"
+#   "amqp.heartbeat[worker-1] broker:5672"  (when heartbeat > 0)
+```
+
+Without `?name=`, threads use the shorter form (`amqp.read_loop broker:5672`) and the log prefix is plain `AMQP::Client:`. The `amqp` segment is kept short so `amqp.read_loop` (14 chars) still fits the 15-char `comm` field used by `ps -L` and `top -H`.
+
+When `logger:` is not set, reconnect errors still go to stderr via `Kernel#warn` so existing behavior is preserved.
+
 ### Low level API
 
 This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn't handle reconnects.
