@@ -35,9 +35,14 @@ module AMQP
     # @option options [#info, #warn, #error] logger (nil) Logger for {#start} lifecycle events
     #   (connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
     #   written to stderr via Kernel#warn for backwards compatibility.
-    def initialize(uri = "", **options)
+    # @param on_connect [Proc, nil] Optional callback invoked with the client after each successful
+    #   (re)connection — both the initial connect and every reconnect after consumer recovery.
+    #   The supervisor calls it synchronously; if it raises, the exception is logged and the
+    #   supervisor continues — handle failures inside the block if you need different behavior.
+    def initialize(uri = "", on_connect: nil, **options)
       @uri = uri
       @options = options
+      @on_connect = on_connect
       @logger = options[:logger]
       @name = parse_name(uri)
       @queues = {}
@@ -82,9 +87,9 @@ module AMQP
         @stopped = false
         initial_conn = connect(read_loop_thread: false)
         log_lifecycle(:info, "connected")
-        supervisor = Thread.new(initial_conn) do |conn| # rubocop:disable Metrics/BlockLength
+        supervisor = Thread.new(initial_conn) do |conn|
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
-          loop do # rubocop:disable Metrics/BlockLength
+          loop do
             break if @stopped
 
             unless conn
@@ -92,22 +97,7 @@ module AMQP
               log_lifecycle(:info, "reconnected")
             end
 
-            setup = Thread.new do
-              # restore connection in another thread, read_loop have to run
-              conn.channel(1) # reserve channel 1 for publishes
-              @consumers.each_value do |consumer|
-                ch = conn.channel
-                ch.basic_qos(consumer.prefetch)
-                consume_ok = ch.basic_consume(consumer.queue,
-                                              **consumer.basic_consume_args,
-                                              &consumer.block)
-                # Update the consumer with new channel and consume_ok metadata
-                consumer.update_consume_ok(consume_ok)
-              end
-              @connq << conn
-              # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
-              @consumers.delete_if { |_, c| c.closed? }
-            end
+            setup = Thread.new { restore_connection(conn) }
             setup.name = thread_name("reconnect_setup")
             conn.read_loop # blocks until connection is closed, then reconnect
             log_lifecycle(:warn, "disconnected")
@@ -147,12 +137,18 @@ module AMQP
     # @!group High level objects
 
     # Declare a queue
-    # @param name [String] Name of the queue
+    # @param name [String] Name of the queue. Pass "" for a server-named (anonymous) queue;
+    #   the broker assigns a name and it's returned via {Queue#name}. Anonymous queues are
+    #   not redeclared by the supervisor; use the `on_connect:` constructor option to
+    #   redeclare and rebind them on each connection.
     # @param durable [Boolean] If true the queue will survive broker restarts,
-    #   messages in the queue will only survive if they are published as persistent
+    #   messages in the queue will only survive if they are published as persistent.
+    #   Forced to false for server-named queues.
     # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
-    #   (it won't be deleted until at least one consumer has consumed from it)
-    # @param exclusive [Boolean] If true the queue will be deleted when the connection is closed
+    #   (it won't be deleted until at least one consumer has consumed from it).
+    #   Forced to true for server-named queues.
+    # @param exclusive [Boolean] If true the queue will be deleted when the connection is closed.
+    #   Forced to true for server-named queues.
     # @param passive [Boolean] If true an exception will be raised if the queue doesn't already exists
     # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
     # @return [Queue]
@@ -160,8 +156,19 @@ module AMQP
     #   amqp = AMQP::Client.new.start
     #   q = amqp.queue("foobar")
     #   q.publish("body")
+    # @example Server-named queue inside `on_connect` (redeclared on every reconnect)
+    #   AMQP::Client.new(url, on_connect: ->(c) {
+    #     q = c.queue("", exclusive: true, auto_delete: true)
+    #     q.bind("amq.fanout")
+    #     q.subscribe { |msg| handle(msg) }
+    #   }).start
     def queue(name, durable: true, auto_delete: false, exclusive: false, passive: false, arguments: {})
-      raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
+      if name.empty?
+        server_name = with_connection do |conn|
+          conn.channel(1).queue_declare("", arguments:).queue_name
+        end
+        return Queue.new(self, server_name)
+      end
 
       @queues.fetch(name) do
         with_connection do |conn|
@@ -614,6 +621,38 @@ module AMQP
 
     def lifecycle_prefix
       @name ? "AMQP::Client[#{@name}]" : "AMQP::Client"
+    end
+
+    # Restore high-level state on a freshly opened connection: reserve channel 1
+    # for publishes, resubscribe consumers (best-effort — a consumer whose
+    # queue is gone, e.g. a server-named one from a previous connect, is
+    # dropped rather than crashing recovery), publish the connection to the
+    # pool, then invoke the user's on_connect hook. If on_connect raises,
+    # the exception is logged and the supervisor continues.
+    def restore_connection(conn)
+      conn.channel(1)
+      @consumers.delete_if do |_, consumer|
+        ch = conn.channel
+        ch.basic_qos(consumer.prefetch)
+        consume_ok = ch.basic_consume(consumer.queue,
+                                      **consumer.basic_consume_args,
+                                      &consumer.block)
+        consumer.update_consume_ok(consume_ok)
+        consumer.closed?
+      rescue Error::ChannelClosed => e
+        warn "#{lifecycle_prefix}: failed to resubscribe consumer for #{consumer.queue}: #{e.message}"
+        true
+      end
+      @connq << conn
+      run_on_connect_hook
+    end
+
+    def run_on_connect_hook
+      return unless @on_connect
+
+      @on_connect.call(self)
+    rescue StandardError => e
+      warn "#{lifecycle_prefix}: on_connect raised: #{e.inspect}"
     end
 
     def default_content_properties

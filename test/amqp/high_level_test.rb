@@ -103,6 +103,92 @@ class HighLevelTest < Minitest::Test
     q&.delete
   end
 
+  def test_server_named_queue_gets_broker_assigned_name
+    q = @client.queue("")
+
+    refute_empty q.name
+    assert_match(/\Aamq\.gen-/, q.name)
+  ensure
+    q&.delete
+  end
+
+  def test_server_named_queue_publish_subscribe
+    msgs = Queue.new
+    q = @client.queue("", exclusive: true, auto_delete: true)
+    q.subscribe { |msg| msgs << msg }
+
+    q.publish("hello")
+    msg = msgs.pop
+
+    assert_equal "hello", msg.body
+    assert_equal q.name, msg.routing_key
+  ensure
+    q&.delete
+  end
+
+  def test_on_connect_fires_on_initial_connect
+    fired = Queue.new
+    @client&.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", on_connect: ->(c) { fired << c }).start
+
+    assert_same @client, fired.pop(timeout: 2)
+  end
+
+  def test_on_connect_fires_on_every_reconnect
+    @client&.stop
+    counts = Queue.new
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", on_connect: ->(_c) { counts << :tick }).start
+
+    assert_equal :tick, counts.pop(timeout: 2)
+
+    @client.with_connection(&:close)
+
+    # Second tick blocks until the supervisor has reconnected and re-run on_connect
+    assert_equal :tick, counts.pop(timeout: 5)
+  end
+
+  def test_on_connect_redeclares_server_named_queue_after_reconnect
+    msgs = Queue.new
+    fanout_name = "test.on_connect.fanout"
+    names = Queue.new
+    @client&.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", on_connect: lambda { |c|
+      c.fanout_exchange(fanout_name)
+      q = c.queue("", exclusive: true, auto_delete: true)
+      q.bind(fanout_name)
+      q.subscribe { |msg| msgs << msg }
+      names << q.name
+    }).start
+
+    first_name = names.pop(timeout: 2)
+    @client.with_connection(&:close)
+    second_name = names.pop(timeout: 5)
+
+    @client.publish("after-reconnect", exchange: fanout_name)
+    msg = msgs.pop(timeout: 5)
+
+    refute_equal first_name, second_name
+    assert_equal "after-reconnect", msg.body
+  ensure
+    @client&.delete_exchange("test.on_connect.fanout")
+  end
+
+  def test_on_connect_raise_is_logged_and_connection_stays_usable
+    @client&.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}",
+                               on_connect: ->(_c) { raise "forced setup failure" }).start
+
+    # No retry, no close: connection is still usable. A trivial publish/declare succeeds.
+    q = @client.queue("test.on_connect.raise.usable", auto_delete: true)
+    q.publish("ping")
+
+    msg = q.get(no_ack: true)
+
+    assert_equal "ping", msg.body
+  ensure
+    q&.delete
+  end
+
   def test_it_can_resubscribe_on_reconnect
     msgs = Queue.new
     q = @client.queue("foo#{rand}")
