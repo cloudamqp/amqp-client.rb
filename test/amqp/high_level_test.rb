@@ -457,6 +457,24 @@ class HighLevelTest < Minitest::Test
     consumer.cancel
   end
 
+  def test_subscribe_with_explicit_consumer_tag
+    q = @client.queue("test.consumer.tag", auto_delete: true)
+    msgs = Queue.new
+
+    consumer = q.subscribe(no_ack: true, consumer_tag: "my-named-consumer") do |msg|
+      msgs.push msg
+    end
+
+    assert_equal "my-named-consumer", consumer.tag
+
+    q.publish("hi")
+    msg = msgs.pop
+
+    assert_equal "my-named-consumer", msg.delivery_info.consumer_tag
+  ensure
+    consumer&.cancel
+  end
+
   def test_passive_queue_raises_if_not_exists
     # Try to declare a queue with passive: true when it doesn't exist
     # Should raise an error because the queue doesn't exist

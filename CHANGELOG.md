@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Added: `consumer_tag:` keyword argument on `Client#subscribe` and `Queue#subscribe` for setting a custom consumer tag. Defaults to broker-assigned.
 - Fixed: `Consumer#cancel` now closes the dedicated channel opened by `subscribe`, preventing a channel leak on long-lived connections that subscribe/cancel repeatedly (#81)
 
 ## [2.0.1] - 2025-11-18
