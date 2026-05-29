@@ -316,10 +316,11 @@ module AMQP
     # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
     #   The proc will be called with the consumer tag as the only argument
     # @param arguments [Hash] Custom arguments to the consumer
+    # @param consumer_tag [String, nil] Custom consumer tag. When nil the broker auto-assigns one (default: nil)
     # @yield [Message] Delivered message from the queue
     # @return [Consumer] The consumer object, which can be used to cancel the consumer
     def subscribe(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1,
-                  on_cancel: nil, arguments: {}, &blk)
+                  on_cancel: nil, arguments: {}, consumer_tag: nil, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 
       with_connection do |conn|
@@ -330,7 +331,8 @@ module AMQP
           @consumers.delete(consumer_id)
           on_cancel&.call(tag)
         end
-        basic_consume_args = { exclusive:, no_ack:, worker_threads:, on_cancel: on_cancel_proc, arguments: }
+        basic_consume_args = { tag: consumer_tag || "", exclusive:, no_ack:, worker_threads:,
+                               on_cancel: on_cancel_proc, arguments: }
         consume_ok = ch.basic_consume(queue, **basic_consume_args, &blk)
         consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, block: blk,
                                 queue:, consume_ok:, prefetch:, basic_consume_args:)

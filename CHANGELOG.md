@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Added: `consumer_tag:` keyword argument on `Client#subscribe` and `Queue#subscribe` for setting a custom consumer tag. Defaults to broker-assigned.
 - Fixed: `Consumer#cancel` now closes the dedicated channel opened by `subscribe`, preventing a channel leak on long-lived connections that subscribe/cancel repeatedly (#81)
 - Added: `logger:` option on `AMQP::Client.new` that emits info/warn lifecycle messages for connect, reconnect, and disconnect in the supervised `#start` loop. The prefix uses `?name=` from the URL when present.
 - Added: Every thread the library spawns (read_loop, heartbeat, consumer workers, on_return, supervisor, reconnect_setup) now gets a descriptive `Thread#name`. When the URL includes `?name=`, that identifier is embedded in each thread's name too, matching the lifecycle log prefix.
