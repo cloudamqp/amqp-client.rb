@@ -462,7 +462,10 @@ class AMQPClientLifecycleTest < Minitest::Test
     end
   end
 
+  # RabbitMQ-only: exercises Connection.Blocked. LavinMQ doesn't implement it
+  # (its low-resource back-pressure is a 406 channel error instead).
   def test_it_can_be_blocked
+    skip_unless_rabbitmqctl
     skip_if_no_sudo
     begin
       ch = @connection.channel
@@ -514,7 +517,9 @@ class AMQPClientLifecycleTest < Minitest::Test
     assert_equal props, msg.properties
   end
 
+  # RabbitMQ-only: exercises the Connection.Blocked/Unblocked callbacks.
   def test_blocked_handler
+    skip_unless_rabbitmqctl
     skip_if_no_sudo
     begin
       q = Queue.new

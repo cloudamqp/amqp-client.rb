@@ -55,7 +55,26 @@ module SkipSudoTestCase
   end
 end
 
+# For tests that exercise RabbitMQ-only broker behaviour (e.g. Connection.Blocked,
+# which LavinMQ doesn't implement). rabbitmqctl on PATH is the signal that we're
+# running against RabbitMQ; its apt package installs it under /usr/sbin.
+module SkipRabbitMQTestCase
+  def skip_unless_rabbitmqctl
+    return if rabbitmqctl?
+
+    skip "requires RabbitMQ; rabbitmqctl not found (LavinMQ doesn't send Connection.Blocked)"
+  end
+
+  def rabbitmqctl?
+    search = ENV["PATH"].to_s.split(File::PATH_SEPARATOR) + %w[/usr/sbin /usr/local/sbin /sbin]
+    search.any? { |dir| File.executable?(File.join(dir, "rabbitmqctl")) }
+  end
+end
+
 require "socket"
+require "tmpdir"
+require "fileutils"
+
 module FakeServer
   def with_fake_server(host: "127.0.0.1")
     server = TCPServer.new(host, 0)
@@ -122,6 +141,82 @@ module ReadLoopHelpers
   end
 end
 
+# Boots a throwaway LavinMQ instance for tests that need broker behaviour we
+# can't toggle on the shared server. Requires the `lavinmq` executable on PATH;
+# the test is skipped otherwise (e.g. when running against RabbitMQ).
+module LavinMQServer
+  # Yields the AMQP port of a private LavinMQ that believes it is out of disk
+  # space (free_disk_min above any real free space), so it applies flow control
+  # and rejects publishes/declarations with PRECONDITION_FAILED.
+  def with_low_disk_lavinmq(&)
+    exe = lavinmq_executable
+    skip "lavinmq executable not found" unless exe
+
+    boot_low_disk_lavinmq(exe, &)
+  end
+
+  private
+
+  # Spawn a private LavinMQ with free_disk_min above real free space, yield its
+  # AMQP port, then tear it down.
+  def boot_low_disk_lavinmq(exe)
+    dir = Dir.mktmpdir("lavinmq-lowdisk")
+    amqp_port, http_port, mqtt_port, metrics_port = free_tcp_ports(4)
+    File.write(File.join(dir, "lavinmq.ini"),
+               "[main]\ndata_dir = #{dir}/data\nfree_disk_min = 1000000000000000\n")
+    pid = spawn(exe, "--config", File.join(dir, "lavinmq.ini"),
+                "--amqp-port", amqp_port.to_s, "--http-port", http_port.to_s,
+                "--mqtt-port", mqtt_port.to_s, "--metrics-http-port", metrics_port.to_s,
+                "--bind", "127.0.0.1", out: File::NULL, err: File::NULL)
+    wait_for_tcp("127.0.0.1", amqp_port)
+    yield amqp_port
+  ensure
+    stop_process(pid)
+    FileUtils.remove_entry(dir) if dir
+  end
+
+  def lavinmq_executable
+    ENV["PATH"].to_s.split(File::PATH_SEPARATOR).each do |dir|
+      exe = File.join(dir, "lavinmq")
+      return exe if File.executable?(exe)
+    end
+    nil
+  end
+
+  # Reserve `count` distinct free ports by holding all the sockets open at once.
+  def free_tcp_ports(count)
+    servers = Array.new(count) { TCPServer.new("127.0.0.1", 0) }
+    servers.map { |s| s.addr[1] }
+  ensure
+    servers&.each(&:close)
+  end
+
+  def wait_for_tcp(host, port, timeout: 10)
+    deadline = monotonic_now + timeout
+    loop do
+      Socket.tcp(host, port, connect_timeout: 1).close
+      return
+    rescue SystemCallError
+      raise "lavinmq did not start on #{host}:#{port}" if monotonic_now > deadline
+
+      sleep 0.1
+    end
+  end
+
+  def monotonic_now
+    Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  end
+
+  def stop_process(pid)
+    return unless pid
+
+    Process.kill("TERM", pid)
+    Process.wait(pid)
+  rescue Errno::ESRCH, Errno::ECHILD
+    nil
+  end
+end
+
 # Socket stand-in that hands out preset byte chunks across successive reads,
 # so tests can drive the handshake parser deterministically (no real network,
 # no timing). Used to reproduce frame headers that arrive split across reads.
@@ -145,6 +240,8 @@ $VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase
 Minitest::Test.prepend SkipSudoTestCase
+Minitest::Test.prepend SkipRabbitMQTestCase
 Minitest::Test.prepend FakeServer
 Minitest::Test.prepend ThreadHelpers
 Minitest::Test.prepend ReadLoopHelpers
+Minitest::Test.prepend LavinMQServer
