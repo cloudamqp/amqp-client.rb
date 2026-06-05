@@ -5,9 +5,9 @@ require_relative "../test_helper"
 # Unit tests for Connection::Channel that drive its threading contract
 # directly, without a live broker.
 class ChannelTest < Minitest::Test
-  # Minimal Connection double. #wait_for_confirms, #closed!, #confirm_select
-  # and #basic_publish only ever call #frame_max and #write_bytes on their
-  # connection, so a no-op writer is enough to exercise them.
+  # Minimal Connection double. #confirm, #confirm_select, #basic_publish,
+  # #wait_for_confirms and #closed! only ever call #frame_max and #write_bytes
+  # on their connection, so a no-op writer is enough to exercise them.
   class FakeConnection
     def frame_max = 131_072
     def write_bytes(*); end
@@ -82,5 +82,26 @@ class ChannelTest < Minitest::Test
         channel.wait_for_confirms
       end
     end
+  end
+
+  # Regression test: a confirm (ack/nack) for a delivery tag we're not tracking
+  # — a duplicate, out-of-order, or broker quirk — must NOT raise. #confirm runs
+  # on the read_loop thread, where a bare RuntimeError would tear down the whole
+  # connection (and abort the process under the high-level supervisor, whose
+  # rescue only catches AMQP::Client::Error).
+  def test_confirm_ignores_unknown_delivery_tag
+    channel = AMQP::Client::Connection::Channel.new(FakeConnection.new, 1)
+    channel.confirm_select(no_wait: true)
+    channel.basic_publish("msg", exchange: "x", routing_key: "rk") # tracks tag 1
+
+    # None of these tags are tracked; each must be a silent no-op, not a raise.
+    channel.confirm([:ack, 999, false])  # unknown single ack
+    channel.confirm([:nack, 999, false]) # unknown single nack (must not set @nacked)
+    channel.confirm([:ack, 999, true])   # unknown multiple ack
+
+    # The genuinely outstanding publish still confirms cleanly afterwards.
+    channel.confirm([:ack, 1, false])
+
+    assert channel.wait_for_confirms, "outstanding publish should still confirm successfully"
   end
 end
