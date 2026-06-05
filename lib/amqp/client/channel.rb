@@ -469,8 +469,12 @@ module AMQP
         def wait_for_confirms
           @unconfirmed_lock.synchronize do
             until @unconfirmed.empty?
-              @unconfirmed_empty.wait(@unconfirmed_lock)
+              # Check before waiting: if the channel was closed (and the
+              # @unconfirmed_empty broadcast from #closed! fired) before we got
+              # here, the wakeup is already gone and #wait would block forever.
               raise Error::Closed.new(@id, *@closed) if @closed
+
+              @unconfirmed_empty.wait(@unconfirmed_lock)
             end
             result = !@nacked
             @nacked = false # Reset for next round of publishes
