@@ -327,6 +327,38 @@ class AMQPClientLifecycleTest < Minitest::Test
     channel&.queue_delete(queue_name)
   end
 
+  # Regression test: when the read loop exits on an abrupt socket drop (no
+  # channel/connection close frame from the broker), it must still notify open
+  # channels so callers blocked in #wait_for_confirms (or #expect) wake up and
+  # raise instead of hanging forever.
+  def test_read_loop_exit_wakes_channels_blocked_in_wait_for_confirms
+    channel = @connection.channel
+    # Stage an outstanding confirm the broker will never resolve. (A real publish
+    # would be acked at once, so inject the unconfirmed delivery tag directly.)
+    channel.instance_variable_get(:@unconfirmed).push(1)
+
+    result = Queue.new
+    waiter = Thread.new do
+      channel.wait_for_confirms
+      result.push(:returned)
+    rescue StandardError => e
+      result.push(e)
+    end
+    Thread.pass until waiter.status == "sleep" # parked on the condition variable
+
+    # Simulate an abrupt TCP drop so read_loop's blocked socket read hits EOF and
+    # runs its ensure. shutdown (not close) is used because closing a socket from
+    # another thread doesn't reliably wake a blocked reader on truffleruby, while
+    # shutdown makes the read return on every engine. Without the ensure marking
+    # channels closed, the waiter would hang forever.
+    @connection.instance_variable_get(:@socket).shutdown(Socket::SHUT_RDWR)
+
+    outcome = result.pop(timeout: 5)
+
+    refute_nil outcome, "wait_for_confirms hung after the read loop exited"
+    assert_kind_of AMQP::Client::Error::ConnectionClosed, outcome
+  end
+
   def test_it_can_commit_tx
     channel = @connection.channel
     q = channel.queue_declare "foo", exclusive: true

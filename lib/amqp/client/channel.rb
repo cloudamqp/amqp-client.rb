@@ -78,6 +78,8 @@ module AMQP
         # @return [nil]
         # @api private
         def closed!(level, code, reason, classid, methodid)
+          return if @closed
+
           @closed = [level, code, reason, classid, methodid]
           @replies.close
           @basic_gets.close
