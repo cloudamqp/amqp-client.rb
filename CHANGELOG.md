@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Fixed: `Channel#wait_for_confirms` no longer hangs when the broker closes the channel (e.g. a publish to a missing exchange) right before the publishing thread starts waiting. The closed-channel check now runs before the condition-variable wait, so the wakeup from `#closed!` can't be lost. This resolves a flaky `ChannelClosed`-expected timeout that surfaced on truffleruby, whose threads run truly in parallel.
 - Fixed: `Consumer#cancel` now closes the dedicated channel opened by `subscribe`, preventing a channel leak on long-lived connections that subscribe/cancel repeatedly (#81)
 - Added: `logger:` option on `AMQP::Client.new` that emits info/warn lifecycle messages for connect, reconnect, and disconnect in the supervised `#start` loop. The prefix uses `?name=` from the URL when present.
 - Added: Every thread the library spawns (read_loop, heartbeat, consumer workers, on_return, supervisor, reconnect_setup) now gets a descriptive `Thread#name`. When the URL includes `?name=`, that identifier is embedded in each thread's name too, matching the lifecycle log prefix.
