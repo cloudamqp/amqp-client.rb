@@ -336,15 +336,7 @@ class AMQPClientLifecycleTest < Minitest::Test
     # Stage an outstanding confirm the broker will never resolve. (A real publish
     # would be acked at once, so inject the unconfirmed delivery tag directly.)
     channel.instance_variable_get(:@unconfirmed).push(1)
-
-    result = Queue.new
-    waiter = Thread.new do
-      channel.wait_for_confirms
-      result.push(:returned)
-    rescue StandardError => e
-      result.push(e)
-    end
-    Thread.pass until waiter.status == "sleep" # parked on the condition variable
+    waiter, mailbox = blocked_thread { channel.wait_for_confirms }
 
     # Simulate an abrupt TCP drop so read_loop's blocked socket read hits EOF and
     # runs its ensure. shutdown (not close) is used because closing a socket from
@@ -353,10 +345,12 @@ class AMQPClientLifecycleTest < Minitest::Test
     # channels closed, the waiter would hang forever.
     @connection.instance_variable_get(:@socket).shutdown(Socket::SHUT_RDWR)
 
-    outcome = result.pop(timeout: 5)
+    outcome = mailbox.pop(timeout: 5)
 
     refute_nil outcome, "wait_for_confirms hung after the read loop exited"
     assert_kind_of AMQP::Client::Error::ConnectionClosed, outcome
+  ensure
+    waiter&.kill&.join # don't leak the waiter if a regression left it blocked
   end
 
   def test_it_can_commit_tx
