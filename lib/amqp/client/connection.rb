@@ -256,6 +256,10 @@ module AMQP
       ensure
         @closed ||= [400, "unknown"]
         @replies.close
+        # Wake channels still blocked in #expect / #wait_for_confirms: an abrupt
+        # socket close means no channel/connection close frame ever reached them.
+        code, reason = @closed.first(2)
+        @channels_lock.synchronize { @channels.values }.each { |ch| ch.closed!(:connection, code, reason, 0, 0) }
         begin
           if @write_lock.owned? # if connection is blocked
             @socket.close

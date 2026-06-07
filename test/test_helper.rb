@@ -60,8 +60,33 @@ module FakeServer
   end
 end
 
+module ThreadHelpers
+  # Run the block in a thread that records its outcome — the return value, or
+  # any rescued StandardError — into a Queue, then wait until that thread is
+  # parked (status "sleep") or finished. The wait is bounded by `timeout` so a
+  # thread that finishes early or never parks can't spin the suite forever.
+  # Returns [thread, queue]; the caller triggers whatever unblocks it, pops the
+  # queue, and must clean the thread up (e.g. `thread&.kill&.join` in an ensure).
+  def blocked_thread(timeout: 5)
+    mailbox = Queue.new
+    thread = Thread.new do
+      mailbox.push(yield)
+    rescue StandardError => e
+      mailbox.push(e)
+    end
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
+    while thread.alive? && thread.status != "sleep"
+      break if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+
+      sleep 0.01
+    end
+    [thread, mailbox]
+  end
+end
+
 $VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase
 Minitest::Test.prepend SkipSudoTestCase
 Minitest::Test.prepend FakeServer
+Minitest::Test.prepend ThreadHelpers
