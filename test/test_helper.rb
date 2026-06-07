@@ -84,6 +84,25 @@ module ThreadHelpers
   end
 end
 
+# Socket stand-in that hands out preset byte chunks across successive reads,
+# so tests can drive the handshake parser deterministically (no real network,
+# no timing). Used to reproduce frame headers that arrive split across reads.
+class ChunkedSocket
+  def initialize(*chunks)
+    @chunks = chunks
+  end
+
+  def setsockopt(*); end
+  def write(*); end
+  def close; end
+
+  def readpartial(_maxlen, outbuf = +"")
+    raise EOFError, "end of file reached" if @chunks.empty?
+
+    outbuf.replace(@chunks.shift)
+  end
+end
+
 $VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase

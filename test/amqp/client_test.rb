@@ -30,6 +30,16 @@ class AMQPClientLifecycleTest < Minitest::Test
     end
   end
 
+  def test_it_raises_unexpected_frame_end_when_frame_header_arrives_split
+    socket = ChunkedSocket.new("foo", "bar\n") # 7-byte non-AMQP header, split in two
+    Socket.stub(:tcp, socket) do
+      error = assert_raises(AMQP::Client::Error) do
+        AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
+      end
+      assert_instance_of AMQP::Client::Error::UnexpectedFrameEnd, error.cause
+    end
+  end
+
   def test_it_raises_on_bad_credentials
     client = AMQP::Client.new("amqp://guest1:guest2@#{TEST_AMQP_HOST}")
     assert_raises(AMQP::Client::Error) do
