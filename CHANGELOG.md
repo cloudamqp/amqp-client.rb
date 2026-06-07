@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 - Fixed: A malformed frame end during the connection handshake (e.g. connecting to a non-AMQP service) now raises the intended `Error::UnexpectedFrameEnd` instead of a `NameError` from a mistyped constant, which previously surfaced as a confusing `invalid handshake (uninitialized constant AMQP::Client::Error::UnexpectedFrameTypeEnd)` message
+- Fixed: The handshake now buffers the full 7-byte frame header before parsing it. On JRuby the header could arrive split across reads, leaving `frame_size` nil and raising `NoMethodError` ("undefined method '+' for nil") instead of `UnexpectedFrameEnd` when connecting to a non-AMQP service
 - Fixed: `Channel#wait_for_confirms` no longer hangs when the broker closes the channel (e.g. a publish to a missing exchange) right before the publishing thread starts waiting. The closed-channel check now runs before the condition-variable wait, so the wakeup from `#closed!` can't be lost. This resolves a flaky `ChannelClosed`-expected timeout that surfaced on truffleruby, whose threads run truly in parallel.
 - Fixed: When the read loop exits on an abrupt socket close (no channel/connection close frame from the broker), open channels are now marked closed, so callers blocked in `#wait_for_confirms` or awaiting a broker reply raise `ConnectionClosed` instead of hanging forever.
 - Fixed: `Consumer#cancel` now closes the dedicated channel opened by `subscribe`, preventing a channel leak on long-lived connections that subscribe/cancel repeatedly (#81)

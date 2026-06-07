@@ -551,6 +551,9 @@ module AMQP
         loop do # rubocop:disable Metrics/BlockLength
           begin
             socket.readpartial(4096, buf)
+            # The 7-byte frame header may arrive split across reads (seen on JRuby); buffer it
+            # fully before unpacking, else frame_size is nil and frame_end below fails on nil.
+            buf << socket.readpartial(4096) while buf.bytesize < 7
           rescue *READ_EXCEPTIONS => e
             raise Error, "Could not establish AMQP connection: #{e.message}"
           end
