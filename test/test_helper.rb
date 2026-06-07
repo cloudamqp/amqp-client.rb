@@ -16,6 +16,16 @@ TEST_AMQP_HOST = ENV.fetch("TEST_AMQP_HOST") do
   RUBY_ENGINE == "jruby" ? "127.0.0.1" : "localhost"
 end
 
+# Almost every test connects to a broker on TEST_AMQP_HOST. Verify one is
+# reachable up front so the suite aborts immediately with a clear message
+# instead of every test hanging until its 60s timeout.
+begin
+  AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", connect_timeout: 3).connect.close
+rescue StandardError => e
+  abort "No AMQP broker reachable at amqp://#{TEST_AMQP_HOST} (#{e.class}: #{e.message}). " \
+        "Start a broker or set TEST_AMQP_HOST."
+end
+
 require "timeout"
 module TimeoutEveryTestCase
   # our own subclass so we never confused different timeouts
