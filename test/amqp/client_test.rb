@@ -23,9 +23,10 @@ class AMQPClientLifecycleTest < Minitest::Test
   def test_it_raises_on_connecting_to_unrelated_service
     with_fake_server do |port|
       client = AMQP::Client.new("amqp://guest1:guest2@#{TEST_AMQP_HOST}:#{port}")
-      assert_raises(AMQP::Client::Error) do
+      error = assert_raises(AMQP::Client::Error) do
         client.connect
       end
+      assert_instance_of AMQP::Client::Error::UnexpectedFrameEnd, error.cause
     end
   end
 
