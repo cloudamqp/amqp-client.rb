@@ -26,7 +26,6 @@ class AMQPClientLifecycleTest < Minitest::Test
       error = assert_raises(AMQP::Client::Error) do
         client.connect
       end
-      # The unexpected frame end must surface as the intended error
       assert_instance_of AMQP::Client::Error::UnexpectedFrameEnd, error.cause
     end
   end
