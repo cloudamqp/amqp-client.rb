@@ -85,23 +85,40 @@ class ChannelTest < Minitest::Test
   end
 
   # Regression test: a confirm (ack/nack) for a delivery tag we're not tracking
-  # — a duplicate, out-of-order, or broker quirk — must NOT raise. #confirm runs
-  # on the read_loop thread, where a bare RuntimeError would tear down the whole
-  # connection (and abort the process under the high-level supervisor, whose
-  # rescue only catches AMQP::Client::Error).
-  def test_confirm_ignores_unknown_delivery_tag
+  # — a duplicate, out-of-order, or broker quirk — is logged and ignored, never
+  # raised. #confirm runs on the read_loop thread, where a bare RuntimeError
+  # would tear down the whole connection (and abort the process under the
+  # high-level supervisor, whose rescue only catches AMQP::Client::Error).
+  def test_confirm_warns_and_ignores_unknown_delivery_tag
     channel = AMQP::Client::Connection::Channel.new(FakeConnection.new, 1)
     channel.confirm_select(no_wait: true)
     channel.basic_publish("msg", exchange: "x", routing_key: "rk") # tracks tag 1
 
-    # None of these tags are tracked; each must be a silent no-op, not a raise.
-    channel.confirm([:ack, 999, false])  # unknown single ack
-    channel.confirm([:nack, 999, false]) # unknown single nack (must not set @nacked)
-    channel.confirm([:ack, 999, true])   # unknown multiple ack
+    # None of these tags are tracked; each must be warned about and skipped, not
+    # raised. The unknown nack must also not set @nacked.
+    warnings = capture_warnings do
+      channel.confirm([:ack, 999, false])  # unknown single ack
+      channel.confirm([:nack, 999, false]) # unknown single nack
+      channel.confirm([:ack, 999, true])   # unknown multiple ack
+    end
+
+    assert_match(/unknown delivery tag 999/, warnings)
 
     # The genuinely outstanding publish still confirms cleanly afterwards.
     channel.confirm([:ack, 1, false])
 
     assert channel.wait_for_confirms, "outstanding publish should still confirm successfully"
+  end
+
+  private
+
+  # #warn is silenced by the test helper's $VERBOSE = nil; re-enable warnings so
+  # the message is emitted, capture $stderr, and restore the previous setting.
+  def capture_warnings(&)
+    original_verbose = $VERBOSE
+    $VERBOSE = false
+    capture_io(&).last
+  ensure
+    $VERBOSE = original_verbose
   end
 end
