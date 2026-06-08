@@ -339,11 +339,9 @@ class AMQPClientLifecycleTest < Minitest::Test
     waiter, mailbox = blocked_thread { channel.wait_for_confirms }
 
     # Simulate an abrupt TCP drop so read_loop's blocked socket read hits EOF and
-    # runs its ensure. shutdown (not close) is used because closing a socket from
-    # another thread doesn't reliably wake a blocked reader on truffleruby, while
-    # shutdown makes the read return on every engine. Without the ensure marking
-    # channels closed, the waiter would hang forever.
-    @connection.instance_variable_get(:@socket).shutdown(Socket::SHUT_RDWR)
+    # runs its ensure, which must mark channels closed — otherwise the waiter
+    # would hang forever. See #shutdown_read_loop for why shutdown (not close).
+    shutdown_read_loop(@connection)
 
     outcome = mailbox.pop(timeout: 5)
 
