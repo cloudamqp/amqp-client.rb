@@ -631,6 +631,11 @@ module AMQP
           while (msg = queue.pop)
             begin
               yield msg
+            rescue Error::ConnectionClosed, Error::ChannelClosed
+              # The connection or channel closed while the message was being processed (e.g. an
+              # ack/reject/publish from the consumer raced a shutdown). The worker can't make
+              # progress and there's no bug to surface, so stop quietly instead of crashing it.
+              return
             rescue StandardError # cancel the consumer if an uncaught exception is raised
               begin
                 close("Unexpected exception in consumer #{tag} thread", 500)
