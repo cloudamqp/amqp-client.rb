@@ -34,8 +34,11 @@ CERT_DIR="${CERT_DIR:-/tmp/amqp-tls}"
 CERT="$CERT_DIR/cert.pem"
 KEY="$CERT_DIR/key.pem"
 
-amqp_port="${TEST_AMQP_PORT:-25672}"
-amqps_port="${TEST_AMQPS_PORT:-25671}"
+# Private ports clear of both brokers' defaults. NB: avoid 25672 — that is
+# RabbitMQ's Erlang inter-node (distribution) port (amqp + 20000), which a
+# system RabbitMQ holds and would collide with.
+amqp_port="${TEST_AMQP_PORT:-21672}"
+amqps_port="${TEST_AMQPS_PORT:-21671}"
 
 SUDO=""
 [ "$(id -u)" -eq 0 ] || SUDO="sudo"
@@ -177,12 +180,14 @@ ensure_rabbitmq_installed() {
 start_lavinmq() {
   broker_kind=lavinmq
   work_dir="$(mktemp -d)"
-  : > "$work_dir/lavinmq.ini" # empty config so /etc/lavinmq/lavinmq.ini is ignored
+  : >"$work_dir/lavinmq.ini" # empty config so /etc/lavinmq/lavinmq.ini is ignored
+  # Move *every* listener to a private port (LavinMQ aborts if any one can't
+  # bind), so we never clash with a LavinMQ already running on the defaults.
   lavinmq -c "$work_dir/lavinmq.ini" -D "$work_dir/data" --bind 127.0.0.1 \
     --amqp-port "$amqp_port" --amqps-port "$amqps_port" \
-    --http-port=-1 --https-port=-1 --metrics-http-port=-1 \
-    --mqtt-port=-1 --mqtts-port=-1 \
-    --cert "$CERT" --key "$KEY" >"$work_dir/log" 2>&1 &
+    --http-port 21673 --https-port 21674 --metrics-http-port 21675 \
+    --mqtt-port 21676 --mqtts-port 21677 \
+    --cert "$CERT" --key "$KEY" >"$work_dir/broker.log" 2>&1 &
   broker_pid=$!
 }
 
@@ -190,7 +195,7 @@ start_rabbitmq() {
   broker_kind=rabbitmq
   work_dir="$(mktemp -d)"
   node_name="amqpclienttls@localhost"
-  epmd_port=25670
+  epmd_port=21670
   rmq_sbin="$(dirname "$(readlink -f /usr/lib/rabbitmq/bin/rabbitmq-server)")"
 
   cat >"$work_dir/rabbitmq.conf" <<EOF
@@ -206,7 +211,7 @@ EOF
   # and every directory/port is private, so we never touch a real RabbitMQ.
   env HOME="$work_dir" \
     RABBITMQ_NODENAME="$node_name" \
-    RABBITMQ_DIST_PORT=25675 \
+    RABBITMQ_DIST_PORT=21679 \
     ERL_EPMD_PORT="$epmd_port" \
     RABBITMQ_MNESIA_BASE="$work_dir/mnesia" \
     RABBITMQ_LOG_BASE="$work_dir/log" \
@@ -214,22 +219,33 @@ EOF
     RABBITMQ_CONF_ENV_FILE="$work_dir/env.conf" \
     RABBITMQ_ENABLED_PLUGINS_FILE="$work_dir/enabled_plugins" \
     RABBITMQ_PID_FILE="$work_dir/pid" \
-    "$rmq_sbin/rabbitmq-server" >"$work_dir/log.out" 2>&1 &
+    "$rmq_sbin/rabbitmq-server" >"$work_dir/broker.log" 2>&1 &
   broker_pid=$!
 }
 
 wait_for_tls() {
   log "Waiting for TLS listener on 127.0.0.1:$amqps_port"
-  for _ in $(seq 1 60); do
-    if echo | openssl s_client -connect "127.0.0.1:$amqps_port" >/dev/null 2>&1; then
+  local deadline=$((SECONDS + 60))
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    # A TCP connect is enough to know the listener is up; the tests then drive
+    # the actual TLS handshake (and surface any TLS error with a clear message).
+    # Probe with Ruby (always present) rather than openssl s_client, whose exit
+    # status on an AMQP TLS port varies by OpenSSL build, or bash's /dev/tcp,
+    # which isn't available in every shell.
+    if ruby -rsocket -e "TCPSocket.new('127.0.0.1', $amqps_port).close" 2>/dev/null; then
       log "TLS listener is up"
       return
     fi
-    kill -0 "$broker_pid" 2>/dev/null || break
+    kill -0 "$broker_pid" 2>/dev/null || { log "broker process exited during startup"; break; }
     sleep 1
   done
-  echo "Broker did not start a TLS listener on 127.0.0.1:$amqps_port" >&2
-  tail -n 20 "$work_dir"/log* 2>/dev/null >&2 || true
+  {
+    echo "Broker ($broker_kind) did not open 127.0.0.1:$amqps_port"
+    echo "broker pid=$broker_pid alive=$(kill -0 "$broker_pid" 2>/dev/null && echo yes || echo no)"
+    echo "----- broker.log (last 60 lines) -----"
+    tail -n 60 "$work_dir/broker.log" 2>/dev/null || echo "(no broker.log under $work_dir)"
+    echo "----------------------------------------"
+  } >&2
   exit 1
 }
 
