@@ -70,30 +70,6 @@ jobs:
         echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
     - name: Install RabbitMQ
       run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
-    - name: Stop RabbitMQ
-      run: sudo systemctl stop rabbitmq-server
-    - name: Set up Homebrew
-      uses: Homebrew/actions/setup-homebrew@master
-    - name: Install github.com/FiloSottile/mkcert
-      run: brew install mkcert
-    - name: Create local CA
-      run: sudo CAROOT=/etc/rabbitmq $(brew --prefix)/bin/mkcert -install
-    - name: Create certificate
-      run: |
-        sudo $(brew --prefix)/bin/mkcert -key-file /etc/rabbitmq/localhost-key.pem -cert-file /etc/rabbitmq/localhost.pem localhost
-        sudo chmod +r /etc/rabbitmq/localhost-key.pem
-    - name: Create RabbitMQ config
-      run: |
-        sudo tee /etc/rabbitmq/rabbitmq.conf <<'EOF'
-        listeners.ssl.default  = 5671
-        ssl_options.cacertfile = /etc/rabbitmq/rootCA.pem
-        ssl_options.certfile   = /etc/rabbitmq/localhost.pem
-        ssl_options.keyfile    = /etc/rabbitmq/localhost-key.pem
-        EOF
-    - name: Start RabbitMQ
-      run: sudo systemctl start rabbitmq-server
-    - name: Verify RabbitMQ started correctly
-      run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
     - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
@@ -101,16 +77,13 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
     - name: Run TLS tests (JRuby)
       if: ${{ matrix.ruby == 'jruby' }}
-      run: bundle exec rake
+      run: bin/test-tls rabbitmq
       env:
         JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
         TEST_AMQP_HOST: "localhost"
-        TESTOPTS: --name=/_tls$/
     - name: Run TLS tests
       if: ${{ matrix.ruby != 'jruby' }}
-      run: bundle exec rake
-      env:
-        TESTOPTS: --name=/_tls$/
+      run: bin/test-tls rabbitmq
 
   macos:
     runs-on: macos-latest

@@ -188,6 +188,17 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`.
 
+### TLS tests
+
+`rake test` excludes the TLS tests because they need a broker listening on `amqps://localhost:5671`. Run them with `bin/test-tls`, which generates a self-signed localhost certificate, points the broker at it and runs the tests. With no argument it tests both brokers in turn:
+
+```bash
+bin/test-tls            # both brokers
+bin/test-tls lavinmq    # or a single broker: lavinmq or rabbitmq
+```
+
+The certificate is written to a user-owned directory (`/tmp/amqp-tls` by default; set `CERT_DIR` to override) rather than under `/etc`. Both brokers use ports 5671/5672, so the script stops one before starting the other; RabbitMQ is installed if missing. It requires a Linux host with systemd and uses `sudo` for the broker when not run as root. The `tls` jobs in `.github/workflows/` call this same script, so CI exercises it too.
+
 ### Release Process
 
 The gem uses rake tasks to automate the release preparation process. The actual gem building and publishing is handled automatically by GitHub Actions when a tag is pushed.
