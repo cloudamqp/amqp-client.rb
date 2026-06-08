@@ -181,6 +181,12 @@ start_lavinmq() {
   broker_kind=lavinmq
   work_dir="$(mktemp -d)"
   : >"$work_dir/lavinmq.ini" # empty config so /etc/lavinmq/lavinmq.ini is ignored
+  # LavinMQ hardcodes its control socket at /tmp/lavinmqctl.sock and aborts at
+  # startup if it can't (re)create it. A LavinMQ already running as another user
+  # owns it, and sticky /tmp won't let us delete it -- so clear it first, using
+  # sudo only if a foreign owner forces it. A running instance keeps its open
+  # socket (only its path-based lavinmqctl is affected), so this doesn't stop it.
+  rm -f /tmp/lavinmqctl.sock 2>/dev/null || $SUDO rm -f /tmp/lavinmqctl.sock 2>/dev/null || true
   # Move *every* listener to a private port (LavinMQ aborts if any one can't
   # bind), so we never clash with a LavinMQ already running on the defaults.
   lavinmq -c "$work_dir/lavinmq.ini" -D "$work_dir/data" --bind 127.0.0.1 \
@@ -262,6 +268,8 @@ stop_broker() {
   if [ "$broker_kind" = rabbitmq ]; then
     ERL_EPMD_PORT="$epmd_port" epmd -kill >/dev/null 2>&1 || true
   fi
+  # Remove the control socket we created (see start_lavinmq).
+  [ "$broker_kind" = lavinmq ] && rm -f /tmp/lavinmqctl.sock 2>/dev/null || true
   broker_pid=""
   [ -n "$work_dir" ] && rm -rf "$work_dir"
   work_dir=""
