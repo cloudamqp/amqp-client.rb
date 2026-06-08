@@ -8,7 +8,11 @@ class AMQPSClientTest < Minitest::Test
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_publish "foobar", exchange: "", routing_key: q.queue_name
-    channel.basic_consume(q.queue_name) do |msg|
+    # worker_threads: 0 consumes in this thread so basic_cancel completes before
+    # the ensure closes the connection. A background worker thread races the
+    # close, and on JRuby/TruffleRuby basic_cancel then writes to an already
+    # closed connection and raises ConnectionClosed. (Matches test_it_can_consume.)
+    channel.basic_consume(q.queue_name, worker_threads: 0) do |msg|
       assert_equal "foobar", msg.body
       channel.basic_cancel msg.consumer_tag
     end
