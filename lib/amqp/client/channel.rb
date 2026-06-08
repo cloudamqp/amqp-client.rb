@@ -489,15 +489,22 @@ module AMQP
         def confirm(args)
           ack_or_nack, delivery_tag, multiple = *args
           @unconfirmed_lock.synchronize do
-            case multiple
-            when true
-              idx = @unconfirmed.index(delivery_tag) || raise("Delivery tag not found")
-              @unconfirmed.shift(idx + 1)
-            when false
-              @unconfirmed.delete(delivery_tag) || raise("Delivery tag not found")
+            # A tag we're not tracking (a duplicate, out-of-order, or broker
+            # quirk) is logged and ignored, not raised: #confirm runs on the
+            # read_loop thread, where an exception would tear down the connection.
+            confirmed =
+              if multiple
+                idx = @unconfirmed.index(delivery_tag)
+                @unconfirmed.shift(idx + 1) if idx
+              else
+                @unconfirmed.delete(delivery_tag)
+              end
+            if confirmed
+              @nacked = true if ack_or_nack == :nack
+              @unconfirmed_empty.broadcast if @unconfirmed.empty?
+            else
+              warn "AMQP-Client received #{ack_or_nack} for unknown delivery tag #{delivery_tag} on channel #{@id}"
             end
-            @nacked = true if ack_or_nack == :nack
-            @unconfirmed_empty.broadcast if @unconfirmed.empty?
           end
         end
 
