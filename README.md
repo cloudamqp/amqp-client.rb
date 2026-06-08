@@ -197,7 +197,7 @@ bin/test-tls            # both brokers
 bin/test-tls lavinmq    # or a single broker: lavinmq or rabbitmq
 ```
 
-It never uses the system service, writes under `/etc`, or stops a broker you are already running, so it is safe to use alongside a local RabbitMQ/LavinMQ on the default ports. The broker is installed if missing (LavinMQ from CloudAMQP's packagecloud repo, which is removed again if the script added it); that install is the only step needing `sudo`. An installed broker package is left in place afterwards — only the apt repo is cleaned up. The certificate directory is `CERT_DIR` (default `/tmp/amqp-tls`) and the ports are `TEST_AMQP_PORT`/`TEST_AMQPS_PORT`. Requires a Linux host. The `tls` jobs in `.github/workflows/` call this same script, so CI exercises it too.
+It never uses the system service, writes under `/etc`, or stops a broker you are already running, so it is safe to use alongside a local RabbitMQ/LavinMQ on the default ports. (LavinMQ is one exception: it hardcodes its control socket at `/tmp/lavinmqctl.sock`, which the script must clear, so a LavinMQ you already have running keeps serving AMQP but loses its `lavinmqctl` socket until restarted.) The broker is installed if missing (LavinMQ from CloudAMQP's packagecloud repo, which is removed again if the script added it); that install is the only step needing `sudo`. An installed broker package is left in place afterwards — only the apt repo is cleaned up. The certificate directory is `CERT_DIR` (default `/tmp/amqp-tls`) and the ports are `TEST_AMQP_PORT`/`TEST_AMQPS_PORT`. Requires a Linux host. The `tls` jobs in `.github/workflows/` call this same script, so CI exercises it too.
 
 ### Release Process
 
