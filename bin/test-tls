@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+#
+# Set up TLS on a local broker and run the client's TLS test suite.
+#
+# Usage: bin/test-tls [lavinmq|rabbitmq ...]   (default: both, one at a time)
+#
+# The CI workflows (.github/workflows/{lavinmq,rabbitmq}.yml) call this script
+# too, so the same setup is exercised locally and in CI. It generates a
+# self-signed localhost certificate, points the chosen broker at it on port
+# 5671 and runs the tests tagged `_tls`.
+#
+# The tests connect with `verify_peer: false`, so a self-signed certificate is
+# enough -- but the client still calls `post_connection_check`, so the cert
+# must carry `localhost` in its SAN, which is why we set it explicitly below.
+#
+# The certificate lives in a user-owned directory (CERT_DIR, default
+# /tmp/amqp-tls) rather than under /etc. The brokers run as their own service
+# users, so the path must be traversable and the files readable by them; /tmp
+# (mode 1777) satisfies this everywhere. Set CERT_DIR to override.
+#
+# Only one broker can own ports 5671/5672 at a time, so when both run they are
+# set up and tested one at a time; starting one stops the other. Requires a
+# Linux host with systemd; uses sudo for the broker (never for the certificate)
+# when not run as root.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+CERT_DIR="${CERT_DIR:-/tmp/amqp-tls}"
+CERT="$CERT_DIR/cert.pem"
+KEY="$CERT_DIR/key.pem"
+
+SUDO=""
+[ "$(id -u)" -eq 0 ] || SUDO="sudo"
+
+log() { echo "==> $*"; }
+
+require_linux_systemd() {
+  if [ "$(uname -s)" != "Linux" ] || [ ! -d /run/systemd/system ]; then
+    echo "bin/test-tls requires a Linux host with systemd" >&2
+    exit 1
+  fi
+}
+
+generate_cert() {
+  if [ -f "$CERT" ] && [ -f "$KEY" ]; then
+    log "Reusing certificate in $CERT_DIR"
+    return
+  fi
+  log "Generating self-signed localhost certificate in $CERT_DIR"
+  mkdir -p "$CERT_DIR"
+  openssl req -x509 -newkey rsa:2048 -nodes \
+    -keyout "$KEY" -out "$CERT" \
+    -days 3650 -subj "/CN=localhost" \
+    -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1" 2>/dev/null
+  # The brokers run as their own service users and must read these throwaway
+  # localhost test credentials, so make the path and files world-readable.
+  chmod 0755 "$CERT_DIR"
+  chmod 0644 "$CERT" "$KEY"
+}
+
+setup_lavinmq() {
+  log "Stopping RabbitMQ (frees ports 5671/5672)"
+  $SUDO systemctl stop rabbitmq-server 2>/dev/null || true
+
+  log "Writing LavinMQ TLS config"
+  local ini="/etc/lavinmq/lavinmq.ini"
+  [ -f "$ini.orig" ] || $SUDO cp "$ini" "$ini.orig"
+  $SUDO tee "$ini" >/dev/null <<EOF
+[main]
+data_dir = /var/lib/lavinmq
+log_level = info
+tls_cert = $CERT
+tls_key = $KEY
+
+[mgmt]
+bind = ::
+
+[amqp]
+bind = ::
+tls_port = 5671
+
+[mqtt]
+bind = ::
+
+[clustering]
+enabled = false
+bind = ::
+EOF
+
+  log "Restarting LavinMQ"
+  $SUDO systemctl restart lavinmq
+}
+
+setup_rabbitmq() {
+  log "Stopping LavinMQ (frees ports 5671/5672)"
+  $SUDO systemctl stop lavinmq 2>/dev/null || true
+
+  if ! command -v rabbitmqctl >/dev/null 2>&1; then
+    log "Installing RabbitMQ"
+    $SUDO apt-get update -qq
+    $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq rabbitmq-server
+  fi
+
+  log "Writing RabbitMQ TLS config"
+  $SUDO tee /etc/rabbitmq/rabbitmq.conf >/dev/null <<EOF
+listeners.ssl.default  = 5671
+ssl_options.certfile   = $CERT
+ssl_options.keyfile    = $KEY
+EOF
+
+  log "Restarting RabbitMQ"
+  $SUDO systemctl restart rabbitmq-server
+}
+
+wait_for_tls() {
+  log "Waiting for TLS listener on localhost:5671"
+  for _ in $(seq 1 60); do
+    if echo | openssl s_client -connect localhost:5671 >/dev/null 2>&1; then
+      log "TLS listener is up"
+      return
+    fi
+    sleep 1
+  done
+  echo "TLS listener on localhost:5671 did not come up" >&2
+  exit 1
+}
+
+require_linux_systemd
+
+brokers=("$@")
+[ ${#brokers[@]} -eq 0 ] && brokers=(lavinmq rabbitmq)
+for broker in "${brokers[@]}"; do
+  case "$broker" in
+    lavinmq | rabbitmq) ;;
+    *) echo "Usage: $0 [lavinmq|rabbitmq ...]   (default: both)" >&2; exit 1 ;;
+  esac
+done
+
+generate_cert
+
+failed=()
+for broker in "${brokers[@]}"; do
+  "setup_$broker"
+  wait_for_tls
+  log "Running TLS tests against $broker"
+  if bundle exec rake test TESTOPTS="--name=/_tls\$/"; then
+    log "$broker: tests passed"
+  else
+    log "$broker: tests FAILED"
+    failed+=("$broker")
+  fi
+done
+
+if [ ${#failed[@]} -ne 0 ]; then
+  echo "TLS tests failed for: ${failed[*]}" >&2
+  exit 1
+fi
+log "TLS tests passed for: ${brokers[*]}"
