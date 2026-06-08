@@ -94,6 +94,26 @@ module ThreadHelpers
   end
 end
 
+module ReadLoopHelpers
+  # Shutting down a connection's socket makes its blocked read loop return EOF on
+  # every engine (a plain close doesn't reliably wake the reader on truffleruby).
+  # The read loop then closes that same socket from its own ensure the instant
+  # the read returns, which on JRuby races with our shutdown and surfaces as an
+  # already-closed socket: IOError on MRI/JRuby, SystemCallError (EBADF) on
+  # truffleruby, sometimes a wrapped java.lang.NullPointerException on JRuby
+  # (guarded like the connection's own READ_EXCEPTIONS). Losing that race is
+  # harmless — it only happens once the read loop has already exited, which is
+  # exactly the wakeup we're triggering.
+  SOCKET_TEARDOWN_ERRORS = [IOError, SystemCallError,
+                            (java.lang.NullPointerException if RUBY_ENGINE == "jruby")].compact.freeze
+
+  def shutdown_read_loop(connection)
+    connection.instance_variable_get(:@socket).shutdown(Socket::SHUT_RDWR)
+  rescue *SOCKET_TEARDOWN_ERRORS
+    nil
+  end
+end
+
 # Socket stand-in that hands out preset byte chunks across successive reads,
 # so tests can drive the handshake parser deterministically (no real network,
 # no timing). Used to reproduce frame headers that arrive split across reads.
@@ -119,3 +139,4 @@ Minitest::Test.prepend TimeoutEveryTestCase
 Minitest::Test.prepend SkipSudoTestCase
 Minitest::Test.prepend FakeServer
 Minitest::Test.prepend ThreadHelpers
+Minitest::Test.prepend ReadLoopHelpers
