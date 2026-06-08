@@ -1,27 +1,31 @@
 #!/usr/bin/env bash
 #
-# Set up TLS on a local broker and run the client's TLS test suite.
+# Run the TLS test suite against a throwaway broker, without touching anything
+# you already have set up.
 #
 # Usage: bin/test-tls [lavinmq|rabbitmq ...]   (default: both, one at a time)
 #
-# The CI workflows (.github/workflows/{lavinmq,rabbitmq}.yml) call this script
-# too, so the same setup is exercised locally and in CI. It generates a
-# self-signed localhost certificate, points the chosen broker at it on port
-# 5671 and runs the tests tagged `_tls`.
+# For each broker it:
+#   - installs the broker if it is missing (LavinMQ needs the CloudAMQP apt
+#     repo, which is added with an embedded signing key and removed afterwards
+#     if we added it),
+#   - generates a self-signed localhost certificate,
+#   - starts the broker as the current user, from a temporary data/config
+#     directory, on non-default ports (so it never collides with a broker you
+#     are already running), and
+#   - runs the tests tagged `_tls` against it, then shuts it down.
 #
-# The tests connect with `verify_peer: false`, so a self-signed certificate is
-# enough -- but the client still calls `post_connection_check`, so the cert
-# must carry `localhost` in its SAN, which is why we set it explicitly below.
+# It deliberately does not use the system service, write under /etc, or stop any
+# broker you have running. The only privileged actions are the package install
+# (and its repo add/remove), so sudo is used just for those when not run as root.
 #
-# The certificate lives in a user-owned directory (CERT_DIR, default
-# /tmp/amqp-tls) rather than under /etc. The brokers run as their own service
-# users, so the path must be traversable and the files readable by them; /tmp
-# (mode 1777) satisfies this everywhere. Set CERT_DIR to override.
-#
-# Only one broker can own ports 5671/5672 at a time, so when both run they are
-# set up and tested one at a time; starting one stops the other. Requires a
-# Linux host with systemd; uses sudo for the broker (never for the certificate)
-# when not run as root.
+# The TLS tests verify the broker certificate: SSL_CERT_FILE points the client's
+# trust store at our self-signed cert, and the cert carries 127.0.0.1 (and
+# localhost) in its SAN for the hostname check. (One test still passes
+# verify_peer: false to cover that path too.) The certificate lives in a
+# user-owned directory (CERT_DIR, default /tmp/amqp-tls). The ports default to
+# 25672 (plaintext) / 25671 (TLS) and can be overridden with TEST_AMQP_PORT /
+# TEST_AMQPS_PORT.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -30,16 +34,29 @@ CERT_DIR="${CERT_DIR:-/tmp/amqp-tls}"
 CERT="$CERT_DIR/cert.pem"
 KEY="$CERT_DIR/key.pem"
 
+amqp_port="${TEST_AMQP_PORT:-25672}"
+amqps_port="${TEST_AMQPS_PORT:-25671}"
+
 SUDO=""
 [ "$(id -u)" -eq 0 ] || SUDO="sudo"
 
+# Apt repo we may add to install LavinMQ; removed on exit if we created it.
+LAVINMQ_REPO_LIST="/etc/apt/sources.list.d/lavinmq-test-tls.list"
+LAVINMQ_KEYRING="/usr/share/keyrings/lavinmq-test-tls.asc"
+added_lavinmq_repo=0
+
+# State for the currently running broker, used by cleanup.
+broker_kind=""
+broker_pid=""
+work_dir=""
+node_name=""
+epmd_port=""
+rmq_sbin=""
+
 log() { echo "==> $*"; }
 
-require_linux_systemd() {
-  if [ "$(uname -s)" != "Linux" ] || [ ! -d /run/systemd/system ]; then
-    echo "bin/test-tls requires a Linux host with systemd" >&2
-    exit 1
-  fi
+require_linux() {
+  [ "$(uname -s)" = "Linux" ] || { echo "bin/test-tls requires Linux (got $(uname -s))" >&2; exit 1; }
 }
 
 generate_cert() {
@@ -53,80 +70,197 @@ generate_cert() {
     -keyout "$KEY" -out "$CERT" \
     -days 3650 -subj "/CN=localhost" \
     -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1" 2>/dev/null
-  # The brokers run as their own service users and must read these throwaway
-  # localhost test credentials, so make the path and files world-readable.
-  chmod 0755 "$CERT_DIR"
   chmod 0644 "$CERT" "$KEY"
 }
 
-setup_lavinmq() {
-  log "Stopping RabbitMQ (frees ports 5671/5672)"
-  $SUDO systemctl stop rabbitmq-server 2>/dev/null || true
+# Public signing key from https://packagecloud.io/cloudamqp/lavinmq/gpgkey.
+# Embedded so we don't pipe a remote script to a shell; it changes very rarely.
+lavinmq_gpg_key() {
+  cat <<'KEY'
+-----BEGIN PGP PUBLIC KEY BLOCK-----
 
-  log "Writing LavinMQ TLS config"
-  local ini="/etc/lavinmq/lavinmq.ini"
-  [ -f "$ini.orig" ] || $SUDO cp "$ini" "$ini.orig"
-  $SUDO tee "$ini" >/dev/null <<EOF
-[main]
-data_dir = /var/lib/lavinmq
-log_level = info
-tls_cert = $CERT
-tls_key = $KEY
-
-[mgmt]
-bind = ::
-
-[amqp]
-bind = ::
-tls_port = 5671
-
-[mqtt]
-bind = ::
-
-[clustering]
-enabled = false
-bind = ::
-EOF
-
-  log "Restarting LavinMQ"
-  $SUDO systemctl restart lavinmq
+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
+bf6YFTS+lFyGNifXKC+V6w==
+=c3cH
+-----END PGP PUBLIC KEY BLOCK-----
+KEY
 }
 
-setup_rabbitmq() {
-  log "Stopping LavinMQ (frees ports 5671/5672)"
-  $SUDO systemctl stop lavinmq 2>/dev/null || true
+add_lavinmq_repo() {
+  log "Adding CloudAMQP packagecloud repo for LavinMQ"
+  . /etc/os-release
+  lavinmq_gpg_key | $SUDO tee "$LAVINMQ_KEYRING" >/dev/null
+  echo "deb [signed-by=$LAVINMQ_KEYRING] https://packagecloud.io/cloudamqp/lavinmq/$ID $VERSION_CODENAME main" \
+    | $SUDO tee "$LAVINMQ_REPO_LIST" >/dev/null
+  added_lavinmq_repo=1
+}
 
-  if ! command -v rabbitmqctl >/dev/null 2>&1; then
-    log "Installing RabbitMQ"
+ensure_lavinmq_installed() {
+  command -v lavinmq >/dev/null 2>&1 && return 0
+  log "LavinMQ not found; installing"
+  if ! apt-cache policy lavinmq 2>/dev/null | grep -qE 'Candidate: [0-9]'; then
+    add_lavinmq_repo
     $SUDO apt-get update -qq
-    $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq rabbitmq-server
   fi
+  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq lavinmq
+  # The package starts a system service; we run our own instance, so stop it.
+  $SUDO systemctl stop lavinmq 2>/dev/null || true
+}
 
-  log "Writing RabbitMQ TLS config"
-  $SUDO tee /etc/rabbitmq/rabbitmq.conf >/dev/null <<EOF
-listeners.ssl.default  = 5671
-ssl_options.certfile   = $CERT
-ssl_options.keyfile    = $KEY
+ensure_rabbitmq_installed() {
+  [ -e /usr/lib/rabbitmq/bin/rabbitmq-server ] && return 0
+  log "RabbitMQ not found; installing"
+  $SUDO apt-get update -qq
+  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq rabbitmq-server
+  $SUDO systemctl stop rabbitmq-server 2>/dev/null || true
+}
+
+start_lavinmq() {
+  broker_kind=lavinmq
+  work_dir="$(mktemp -d)"
+  : > "$work_dir/lavinmq.ini" # empty config so /etc/lavinmq/lavinmq.ini is ignored
+  lavinmq -c "$work_dir/lavinmq.ini" -D "$work_dir/data" --bind 127.0.0.1 \
+    --amqp-port "$amqp_port" --amqps-port "$amqps_port" \
+    --http-port=-1 --https-port=-1 --metrics-http-port=-1 \
+    --mqtt-port=-1 --mqtts-port=-1 \
+    --cert "$CERT" --key "$KEY" >"$work_dir/log" 2>&1 &
+  broker_pid=$!
+}
+
+start_rabbitmq() {
+  broker_kind=rabbitmq
+  work_dir="$(mktemp -d)"
+  node_name="amqpclienttls@localhost"
+  epmd_port=25670
+  rmq_sbin="$(dirname "$(readlink -f /usr/lib/rabbitmq/bin/rabbitmq-server)")"
+
+  cat >"$work_dir/rabbitmq.conf" <<EOF
+listeners.tcp.1 = 127.0.0.1:$amqp_port
+listeners.ssl.1 = 127.0.0.1:$amqps_port
+ssl_options.certfile = $CERT
+ssl_options.keyfile  = $KEY
 EOF
+  printf '[].' >"$work_dir/enabled_plugins"
+  : >"$work_dir/env.conf"
 
-  log "Restarting RabbitMQ"
-  $SUDO systemctl restart rabbitmq-server
+  # HOME is redirected so the Erlang cookie is isolated from any system node,
+  # and every directory/port is private, so we never touch a real RabbitMQ.
+  env HOME="$work_dir" \
+    RABBITMQ_NODENAME="$node_name" \
+    RABBITMQ_DIST_PORT=25675 \
+    ERL_EPMD_PORT="$epmd_port" \
+    RABBITMQ_MNESIA_BASE="$work_dir/mnesia" \
+    RABBITMQ_LOG_BASE="$work_dir/log" \
+    RABBITMQ_CONFIG_FILE="$work_dir/rabbitmq" \
+    RABBITMQ_CONF_ENV_FILE="$work_dir/env.conf" \
+    RABBITMQ_ENABLED_PLUGINS_FILE="$work_dir/enabled_plugins" \
+    RABBITMQ_PID_FILE="$work_dir/pid" \
+    "$rmq_sbin/rabbitmq-server" >"$work_dir/log.out" 2>&1 &
+  broker_pid=$!
 }
 
 wait_for_tls() {
-  log "Waiting for TLS listener on localhost:5671"
+  log "Waiting for TLS listener on 127.0.0.1:$amqps_port"
   for _ in $(seq 1 60); do
-    if echo | openssl s_client -connect localhost:5671 >/dev/null 2>&1; then
+    if echo | openssl s_client -connect "127.0.0.1:$amqps_port" >/dev/null 2>&1; then
       log "TLS listener is up"
       return
     fi
+    kill -0 "$broker_pid" 2>/dev/null || break
     sleep 1
   done
-  echo "TLS listener on localhost:5671 did not come up" >&2
+  echo "Broker did not start a TLS listener on 127.0.0.1:$amqps_port" >&2
+  tail -n 20 "$work_dir"/log* 2>/dev/null >&2 || true
   exit 1
 }
 
-require_linux_systemd
+stop_broker() {
+  [ -n "$broker_pid" ] || return 0
+  if [ "$broker_kind" = rabbitmq ]; then
+    env HOME="$work_dir" ERL_EPMD_PORT="$epmd_port" \
+      "$rmq_sbin/rabbitmqctl" -n "$node_name" stop >/dev/null 2>&1 || true
+  fi
+  kill "$broker_pid" 2>/dev/null || true
+  wait "$broker_pid" 2>/dev/null || true
+  # Reap our private epmd only after the node is gone (it refuses while a node
+  # is still registered). It listens on our own ERL_EPMD_PORT, not the host's.
+  if [ "$broker_kind" = rabbitmq ]; then
+    ERL_EPMD_PORT="$epmd_port" epmd -kill >/dev/null 2>&1 || true
+  fi
+  broker_pid=""
+  [ -n "$work_dir" ] && rm -rf "$work_dir"
+  work_dir=""
+}
+
+cleanup() {
+  stop_broker
+  if [ "$added_lavinmq_repo" -eq 1 ]; then
+    log "Removing the LavinMQ apt repo we added"
+    $SUDO rm -f "$LAVINMQ_REPO_LIST" "$LAVINMQ_KEYRING"
+  fi
+}
+trap cleanup EXIT
+
+require_linux
 
 brokers=("$@")
 [ ${#brokers[@]} -eq 0 ] && brokers=(lavinmq rabbitmq)
@@ -141,15 +275,19 @@ generate_cert
 
 failed=()
 for broker in "${brokers[@]}"; do
-  "setup_$broker"
+  "ensure_${broker}_installed"
+  "start_$broker"
   wait_for_tls
-  log "Running TLS tests against $broker"
-  if bundle exec rake test TESTOPTS="--name=/_tls\$/"; then
+  log "Running TLS tests against $broker (amqp $amqp_port / amqps $amqps_port)"
+  if env TEST_AMQP_HOST=127.0.0.1 TEST_AMQP_PORT="$amqp_port" TEST_AMQPS_PORT="$amqps_port" \
+    SSL_CERT_FILE="$CERT" \
+    bundle exec rake test TESTOPTS="--name=/_tls\$/"; then
     log "$broker: tests passed"
   else
     log "$broker: tests FAILED"
     failed+=("$broker")
   fi
+  stop_broker
 done
 
 if [ ${#failed[@]} -ne 0 ]; then

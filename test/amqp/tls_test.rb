@@ -4,7 +4,10 @@ require_relative "../test_helper"
 
 class AMQPSClientTest < Minitest::Test
   def test_it_can_connect_to_tls
-    connection = AMQP::Client.new("amqps://#{TEST_AMQP_HOST}", verify_peer: false).connect
+    # Default verify_peer (on): SSL_CERT_FILE (set by bin/test-tls) points the
+    # client's trust store at the broker's cert, so this exercises real
+    # certificate verification, not just the handshake.
+    connection = AMQP::Client.new("amqps://#{TEST_AMQP_HOST}:#{TEST_AMQPS_PORT}").connect
     channel = connection.channel
     q = channel.queue_declare ""
     channel.basic_publish "foobar", exchange: "", routing_key: q.queue_name
@@ -22,7 +25,8 @@ class AMQPSClientTest < Minitest::Test
 
   def test_it_can_ack_a_lot_of_msgs_on_tls
     msgs1 = Queue.new
-    connection = AMQP::Client.new("amqps://#{TEST_AMQP_HOST}", verify_peer: false).connect
+    # verify_peer: false here covers the unverified-connection path.
+    connection = AMQP::Client.new("amqps://#{TEST_AMQP_HOST}:#{TEST_AMQPS_PORT}", verify_peer: false).connect
     ch1 = connection.channel
     q = ch1.queue_declare ""
     ch1.basic_qos(200)

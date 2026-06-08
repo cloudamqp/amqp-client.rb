@@ -16,14 +16,20 @@ TEST_AMQP_HOST = ENV.fetch("TEST_AMQP_HOST") do
   RUBY_ENGINE == "jruby" ? "127.0.0.1" : "localhost"
 end
 
+# Ports the broker listens on, overridable so the suite can target a broker on
+# non-default ports (e.g. the standalone one bin/test-tls starts). The TLS
+# tests use TEST_AMQPS_PORT; everything else uses the plaintext TEST_AMQP_PORT.
+TEST_AMQP_PORT = ENV.fetch("TEST_AMQP_PORT", "5672")
+TEST_AMQPS_PORT = ENV.fetch("TEST_AMQPS_PORT", "5671")
+
 # Almost every test connects to a broker on TEST_AMQP_HOST. Verify one is
 # reachable up front so the suite aborts immediately with a clear message
 # instead of every test hanging until its 60s timeout.
 begin
-  AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", connect_timeout: 3).connect.close
+  AMQP::Client.new("amqp://#{TEST_AMQP_HOST}:#{TEST_AMQP_PORT}", connect_timeout: 3).connect.close
 rescue StandardError => e
-  abort "No AMQP broker reachable at amqp://#{TEST_AMQP_HOST} (#{e.class}: #{e.message}). " \
-        "Start a broker or set TEST_AMQP_HOST."
+  abort "No AMQP broker reachable at amqp://#{TEST_AMQP_HOST}:#{TEST_AMQP_PORT} (#{e.class}: #{e.message}). " \
+        "Start a broker or set TEST_AMQP_HOST/TEST_AMQP_PORT."
 end
 
 require "timeout"

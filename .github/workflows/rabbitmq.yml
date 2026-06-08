@@ -80,7 +80,6 @@ jobs:
       run: bin/test-tls rabbitmq
       env:
         JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
-        TEST_AMQP_HOST: "localhost"
     - name: Run TLS tests
       if: ${{ matrix.ruby != 'jruby' }}
       run: bin/test-tls rabbitmq
