@@ -99,12 +99,13 @@ module ReadLoopHelpers
   # every engine (a plain close doesn't reliably wake the reader on truffleruby).
   # The read loop then closes that same socket from its own ensure the instant
   # the read returns, which on JRuby races with our shutdown and surfaces as an
-  # already-closed socket: IOError on MRI/JRuby, SystemCallError (EBADF) on
-  # truffleruby, sometimes a wrapped java.lang.NullPointerException on JRuby
-  # (guarded like the connection's own READ_EXCEPTIONS). Losing that race is
-  # harmless — it only happens once the read loop has already exited, which is
-  # exactly the wakeup we're triggering.
-  SOCKET_TEARDOWN_ERRORS = [IOError, SystemCallError,
+  # already-closed socket. The error is engine- and socket-dependent: IOError on
+  # MRI/JRuby, SystemCallError (EBADF) on truffleruby, an OpenSSL::OpenSSLError
+  # for a TLS socket, sometimes a wrapped java.lang.NullPointerException on JRuby.
+  # We mirror the connection's own READ_EXCEPTIONS. Losing the race is harmless —
+  # it only happens once the read loop has already exited, which is exactly the
+  # wakeup we're triggering.
+  SOCKET_TEARDOWN_ERRORS = [IOError, OpenSSL::OpenSSLError, SystemCallError,
                             (java.lang.NullPointerException if RUBY_ENGINE == "jruby")].compact.freeze
 
   def shutdown_read_loop(connection)
