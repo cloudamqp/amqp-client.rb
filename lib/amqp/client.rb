@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "logger"
+
 require_relative "client/version"
 require_relative "client/connection"
 require_relative "client/exchange"
@@ -32,9 +34,10 @@ module AMQP
     #    the smallest of the client's and the broker's values will be used
     # @option options [Integer] channel_max (2048) Maximum number of channels the client will be allowed to have open.
     #   Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.
-    # @option options [#info, #warn, #error] logger (nil) Logger for {#start} lifecycle events
-    #   (connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
-    #   written to stderr via Kernel#warn for backwards compatibility.
+    # @option options [#info, #warn, #error] logger Logger for {#start} lifecycle events.
+    #   connected/reconnected/disconnected are logged at info, reconnect errors at warn.
+    #   Defaults to a WARN-level Logger writing to $stderr, so errors surface but routine
+    #   connect/disconnect cycles stay quiet.
     # @param on_connect [Proc, nil] Optional callback invoked with the client after each successful
     #   (re)connection — both the initial connect and every reconnect after consumer recovery.
     #   The supervisor calls it synchronously; if it raises, the exception is logged and the
@@ -43,7 +46,7 @@ module AMQP
       @uri = uri
       @options = options
       @on_connect = on_connect
-      @logger = options[:logger]
+      @logger = options[:logger] || Logger.new($stderr, level: Logger::WARN)
       @name = parse_name(uri)
       @queues = {}
       @exchanges = {}
@@ -100,7 +103,7 @@ module AMQP
             setup = Thread.new { restore_connection(conn) }
             setup.name = thread_name("reconnect_setup")
             conn.read_loop # blocks until connection is closed, then reconnect
-            log_lifecycle(:warn, "disconnected")
+            log_lifecycle(:info, "disconnected")
           rescue Error => e
             log_reconnect_error(e)
             sleep @options[:reconnect_interval] || 1
@@ -602,17 +605,11 @@ module AMQP
     end
 
     def log_lifecycle(level, event)
-      return unless @logger
-
       @logger.public_send(level, "#{lifecycle_prefix}: #{event}")
     end
 
     def log_reconnect_error(err)
-      if @logger
-        @logger.warn("#{lifecycle_prefix}: reconnect error: #{err.inspect}")
-      else
-        warn "AMQP-Client reconnect error: #{err.inspect}"
-      end
+      log_lifecycle(:warn, "reconnect error: #{err.inspect}")
     end
 
     def thread_name(role)
@@ -631,17 +628,20 @@ module AMQP
     # the exception is logged and the supervisor continues.
     def restore_connection(conn)
       conn.channel(1)
-      @consumers.delete_if do |_, consumer|
+      # Iterate a snapshot: @consumers can be mutated concurrently (e.g.
+      # cancel_consumer deletes before it blocks on with_connection), and
+      # mutating a Hash mid-iteration raises and aborts recovery.
+      @consumers.values.each do |consumer| # rubocop:disable Style/HashEachMethods -- snapshot, not live iteration
         ch = conn.channel
         ch.basic_qos(consumer.prefetch)
         consume_ok = ch.basic_consume(consumer.queue,
                                       **consumer.basic_consume_args,
                                       &consumer.block)
         consumer.update_consume_ok(consume_ok)
-        consumer.closed?
+        @consumers.delete(consumer.id) if consumer.closed?
       rescue Error::ChannelClosed => e
-        warn "#{lifecycle_prefix}: failed to resubscribe consumer for #{consumer.queue}: #{e.message}"
-        true
+        log_lifecycle(:warn, "failed to resubscribe consumer for #{consumer.queue}: #{e.message}")
+        @consumers.delete(consumer.id)
       end
       @connq << conn
       run_on_connect_hook
@@ -652,7 +652,7 @@ module AMQP
 
       @on_connect.call(self)
     rescue StandardError => e
-      warn "#{lifecycle_prefix}: on_connect raised: #{e.inspect}"
+      log_lifecycle(:warn, "on_connect raised: #{e.class}: #{e.message}")
     end
 
     def default_content_properties

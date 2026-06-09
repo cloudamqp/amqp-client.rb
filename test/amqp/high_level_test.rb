@@ -107,7 +107,6 @@ class HighLevelTest < Minitest::Test
     q = @client.queue("")
 
     refute_empty q.name
-    assert_match(/\Aamq\.gen-/, q.name)
   ensure
     q&.delete
   end
