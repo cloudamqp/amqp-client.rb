@@ -2,6 +2,7 @@
 
 require "json"
 require "zlib"
+require "stringio"
 
 module AMQP
   class Client
@@ -19,24 +20,58 @@ module AMQP
     end
 
     module Coders
+      # Uses instance-based GzipWriter/GzipReader over StringIO rather than the
+      # Zlib.gzip/Zlib.gunzip module helpers. Those helpers share process-global
+      # state in Ruby < 3.3 and corrupt each other when called from multiple
+      # threads (e.g. concurrent consumers), raising Zlib::DataError.
       Gzip = Class.new do
         def encode(data, _properties)
           return data if data.encoding == Encoding::BINARY
 
-          Zlib.gzip(data)
+          io = StringIO.new
+          io.set_encoding(Encoding::BINARY)
+          gz = Zlib::GzipWriter.new(io)
+          begin
+            gz.write(data)
+          ensure
+            gz.close
+          end
+          io.string
         end
 
-        def decode(data, _properties) = Zlib.gunzip(data)
+        def decode(data, _properties)
+          gz = Zlib::GzipReader.new(StringIO.new(data))
+          begin
+            gz.read
+          ensure
+            gz.close
+          end
+        end
       end.new
 
+      # Instance-based for the same thread-safety reason as Gzip: the
+      # Zlib.deflate/Zlib.inflate module helpers are not safe to call
+      # concurrently on Ruby < 3.3.
       Deflate = Class.new do
         def encode(data, _properties)
           return data if data.encoding == Encoding::BINARY
 
-          Zlib.deflate(data)
+          deflater = Zlib::Deflate.new
+          begin
+            deflater.deflate(data, Zlib::FINISH)
+          ensure
+            deflater.close
+          end
         end
 
-        def decode(data, _properties) = Zlib.inflate(data)
+        def decode(data, _properties)
+          inflater = Zlib::Inflate.new
+          begin
+            inflater.inflate(data)
+          ensure
+            inflater.close
+          end
+        end
       end.new
 
       # Raw DEFLATE coder (RFC 1951 -- no zlib header, no Adler-32 checksum).

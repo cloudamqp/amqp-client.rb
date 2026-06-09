@@ -104,10 +104,10 @@ class HighLevelEncodingTest < Minitest::Test
 
   def test_handles_already_gzipped_body
     message = "deflate me"
-    body = Zlib.gzip(message)
+    body = AMQP::Client::Coders::Gzip.encode(message, nil)
     @exchange.publish(body, routing_key: "rk2", content_encoding: "gzip")
     published = @client.published.last
-    inflated = Zlib.gunzip(published[:body])
+    inflated = AMQP::Client::Coders::Gzip.decode(published[:body], nil)
 
     assert_equal "deflate me", inflated
   end
@@ -166,7 +166,7 @@ class HighLevelEncodingTest < Minitest::Test
     published = client.published.last
 
     # Verify the body was gzip encoded
-    assert_equal "test data", Zlib.gunzip(published[:body])
+    assert_equal "test data", AMQP::Client::Coders::Gzip.decode(published[:body], nil)
   ensure
     DummyClient.config.default_content_encoding = original
   end

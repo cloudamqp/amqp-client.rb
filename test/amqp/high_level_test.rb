@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "../test_helper"
-require "zlib"
 
 class HighLevelTest < Minitest::Test
   def setup
@@ -53,7 +52,7 @@ class HighLevelTest < Minitest::Test
       msg.ack
       msgs.push msg
     end
-    q.publish Zlib.gzip("hej"), content_encoding: "gzip"
+    q.publish AMQP::Client::Coders::Gzip.encode("hej", nil), content_encoding: "gzip"
     msg1 = msgs.pop
 
     assert_equal "gzip", msg1.properties.content_encoding
