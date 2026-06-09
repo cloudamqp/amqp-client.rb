@@ -21,9 +21,13 @@ module AMQP
 
     module Coders
       # Uses instance-based GzipWriter/GzipReader over StringIO rather than the
-      # Zlib.gzip/Zlib.gunzip module helpers. Those helpers share process-global
-      # state in Ruby < 3.3 and corrupt each other when called from multiple
-      # threads (e.g. concurrent consumers), raising Zlib::DataError.
+      # Zlib.gzip/Zlib.gunzip module helpers. Those helpers grow the output
+      # buffer via rb_str_set_len while the GVL is released during (de)compression,
+      # so a concurrent thread (e.g. another consumer decoding a message) can
+      # corrupt it and raise Zlib::DataError. Only seen on Ruby 3.2: the upstream
+      # fix relies on safe no-GVL offload, a Ruby 3.3+ primitive.
+      # See https://github.com/ruby/zlib/pull/88 and
+      # https://github.com/ruby/zlib/pull/89
       Gzip = Class.new do
         def encode(data, _properties)
           return data if data.encoding == Encoding::BINARY
@@ -50,8 +54,8 @@ module AMQP
       end.new
 
       # Instance-based for the same thread-safety reason as Gzip: the
-      # Zlib.deflate/Zlib.inflate module helpers are not safe to call
-      # concurrently on Ruby < 3.3.
+      # Zlib.deflate/Zlib.inflate module helpers can corrupt their output buffer
+      # under concurrency on Ruby 3.2 (see ruby/zlib#88, ruby/zlib#89).
       Deflate = Class.new do
         def encode(data, _properties)
           return data if data.encoding == Encoding::BINARY
