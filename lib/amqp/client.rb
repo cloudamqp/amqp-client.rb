@@ -105,7 +105,7 @@ module AMQP
             conn.read_loop # blocks until connection is closed, then reconnect
             log_lifecycle(:info, "disconnected")
           rescue Error => e
-            log_reconnect_error(e)
+            log_lifecycle(:warn, "reconnect error: #{e.inspect}")
             sleep @options[:reconnect_interval] || 1
           ensure
             @connq.clear
@@ -606,10 +606,6 @@ module AMQP
 
     def log_lifecycle(level, event)
       @logger.public_send(level, "#{lifecycle_prefix}: #{event}")
-    end
-
-    def log_reconnect_error(err)
-      log_lifecycle(:warn, "reconnect error: #{err.inspect}")
     end
 
     def thread_name(role)
