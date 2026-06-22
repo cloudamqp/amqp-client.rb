@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Dependabot has no native "bi-weekly" interval, and a 5-field cron can't
+      # express a true fortnight, so approximate every two weeks by checking on
+      # the 1st and 15th of each month.
+      interval: "cron"
+      cronjob: "0 6 1,15 * *"
