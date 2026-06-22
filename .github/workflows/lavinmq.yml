@@ -25,9 +25,9 @@ jobs:
           - { ruby: truffleruby }
     steps:
     - name: Install LavinMQ
-      uses: cloudamqp/lavinmq-action@v1
-    - uses: actions/checkout@v6
-    - uses: ruby/setup-ruby@v1
+      uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
@@ -52,9 +52,9 @@ jobs:
           - "truffleruby"
     steps:
     - name: Install LavinMQ
-      uses: cloudamqp/lavinmq-action@v1
-    - uses: actions/checkout@v6
-    - uses: ruby/setup-ruby@v1
+      uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
@@ -82,8 +82,8 @@ jobs:
         brew install lavinmq
     - name: Start LavinMQ
       run: brew services start lavinmq
-    - uses: actions/checkout@v6
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
