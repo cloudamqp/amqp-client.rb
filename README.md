@@ -130,6 +130,14 @@ Without `?name=`, threads use the shorter form (`amqp.read_loop broker:5672`) an
 
 When `logger:` is not set, reconnect errors still go to stderr via `Kernel#warn` so existing behavior is preserved.
 
+#### Publishing and consuming on the same connection
+
+Each connection is driven by a single read loop, but consumer callbacks run on their own worker threads, so a busy or slow consumer never blocks deliveries, and publishing (a socket write) is independent of the read loop. Sharing one connection for both is therefore fine in most cases.
+
+The exception is AMQP flow control. If you publish faster than the broker accepts — or the broker raises a `connection.blocked` alarm (low memory or disk) — the socket write buffer fills and publishes block. Because acknowledgements are writes too, a consumer's acks then block behind the stalled publisher, its prefetch window fills, and deliveries stop. This affects every AMQP client, but it's most visible with high-prefetch manual-ack consumers such as LavinMQ and RabbitMQ streams.
+
+To stay decoupled, use a separate `AMQP::Client` (its own connection) for heavy publishing and another for consuming, and watch for back-pressure with `Connection#on_blocked`/`#on_unblocked`.
+
 ### Low level API
 
 This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn't handle reconnects.
