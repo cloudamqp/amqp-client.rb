@@ -26,29 +26,17 @@ jobs:
       - run: gem install *.gem
       - run: gem push *.gem
 
-      # create GitHub release
-      - name: Extract release notes
-        id: extract_release_notes
+      # create a GitHub release, with notes for this version from the changelog
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # Extract version from tag (remove 'v' prefix)
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-          # Extract changelog section for this version with better handling
-          if grep -q "## \[$VERSION\]" CHANGELOG.md; then
-            awk "/^## \[$VERSION\]/ {flag=1; next} /^## \[/ && flag {exit} flag && /[^[:space:]]/ {print}" CHANGELOG.md > release_notes.md
-            echo "Release notes extracted for version $VERSION:"
-            cat release_notes.md
+          version=${GITHUB_REF_NAME#v}
+          if grep -q "## \[$version\]" CHANGELOG.md; then
+            awk "/^## \[$version\]/ {flag=1; next} /^## \[/ && flag {exit} flag && /[^[:space:]]/ {print}" CHANGELOG.md > release_notes.md
           else
-            echo "No changelog entry found for version $VERSION" > release_notes.md
-            echo "Warning: No changelog entry found for version $VERSION"
+            echo "No changelog entry found for version $version" > release_notes.md
           fi
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
-        with:
-          name: Release ${{ steps.extract_release_notes.outputs.version }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
-          files: '*.gem'
+          gh release create "$GITHUB_REF_NAME" *.gem \
+            --title "Release $version" \
+            --notes-file release_notes.md
