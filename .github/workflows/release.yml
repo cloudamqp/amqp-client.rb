@@ -36,7 +36,7 @@ jobs:
 
           # Extract changelog section for this version with better handling
           if grep -q "## \[$VERSION\]" CHANGELOG.md; then
-            awk "/^## \[$VERSION\]/ {flag=1; next} /^## \[/ && flag {exit} flag && /\S/ {print}" CHANGELOG.md > release_notes.md
+            awk "/^## \[$VERSION\]/ {flag=1; next} /^## \[/ && flag {exit} flag && /[^[:space:]]/ {print}" CHANGELOG.md > release_notes.md
             echo "Release notes extracted for version $VERSION:"
             cat release_notes.md
           else
