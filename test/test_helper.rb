@@ -206,7 +206,8 @@ module LavinMQServer
     nil
   end
 
-  # Reserve `count` distinct free ports by holding all the sockets open at once.
+  # Probe distinct ports for the child process to bind. These are available when
+  # probed, but not reserved after this method returns.
   def free_tcp_ports(count)
     servers = Array.new(count) { TCPServer.new("127.0.0.1", 0) }
     servers.map { |s| s.addr[1] }
