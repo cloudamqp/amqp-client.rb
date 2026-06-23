@@ -35,9 +35,12 @@ module AMQP
     # @option options [#info, #warn, #error] logger (nil) Logger for {#start} lifecycle events
     #   (connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
     #   written to stderr via Kernel#warn for backwards compatibility.
-    def initialize(uri = "", **options)
+    # @param on_connect [Proc, nil] Optional callback invoked with the client after each successful
+    #   (re)connection, after consumer recovery.
+    def initialize(uri = "", on_connect: nil, **options)
       @uri = uri
       @options = options
+      @on_connect = on_connect
       @logger = options[:logger]
       @name = parse_name(uri)
       @queues = {}
@@ -625,10 +628,23 @@ module AMQP
         @consumers.delete(consumer.id)
       end
       @connq << conn
+      run_on_connect_hook
     end
 
     def server_named_queue?(name)
       name.nil? || name.empty?
+    end
+
+    def run_on_connect_hook
+      return unless @on_connect
+
+      @on_connect.call(self)
+    rescue StandardError => e
+      if @logger
+        log_lifecycle(:warn, "on_connect raised: #{e.class}: #{e.message}")
+      else
+        warn "AMQP-Client on_connect error: #{e.inspect}"
+      end
     end
 
     def default_content_properties
