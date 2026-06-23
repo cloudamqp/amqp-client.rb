@@ -142,13 +142,18 @@ module ReadLoopHelpers
 end
 
 # Boots a throwaway LavinMQ instance for tests that need broker behaviour we
-# can't toggle on the shared server. Requires the `lavinmq` executable on PATH;
-# the test is skipped otherwise (e.g. when running against RabbitMQ).
+# can't toggle on the shared server. These tests are opt-in because starting a
+# second LavinMQ currently requires clearing the hardcoded control socket path.
 module LavinMQServer
+  LAVINMQ_CONTROL_SOCKET = "/tmp/lavinmqctl.sock"
+  LAVINMQ_FLOW_CONTROL_OPT_IN = "RUN_LAVINMQ_FLOW_CONTROL_TESTS"
+
   # Yields the AMQP port of a private LavinMQ that believes it is out of disk
   # space (free_disk_min above any real free space), so it applies flow control
   # and rejects publishes/declarations with PRECONDITION_FAILED.
   def with_low_disk_lavinmq(&)
+    skip_unless_lavinmq_flow_control_tests
+
     exe = lavinmq_executable
     skip "lavinmq executable not found" unless exe
 
@@ -164,6 +169,7 @@ module LavinMQServer
     amqp_port, http_port, mqtt_port, metrics_port = free_tcp_ports(4)
     File.write(File.join(dir, "lavinmq.ini"),
                "[main]\ndata_dir = #{dir}/data\nfree_disk_min = 1000000000000000\n")
+    clear_lavinmq_control_socket(required: true)
     pid = spawn(exe, "--config", File.join(dir, "lavinmq.ini"),
                 "--amqp-port", amqp_port.to_s, "--http-port", http_port.to_s,
                 "--mqtt-port", mqtt_port.to_s, "--metrics-http-port", metrics_port.to_s,
@@ -172,7 +178,24 @@ module LavinMQServer
     yield amqp_port
   ensure
     stop_process(pid)
+    clear_lavinmq_control_socket(required: false)
     FileUtils.remove_entry(dir) if dir
+  end
+
+  def skip_unless_lavinmq_flow_control_tests
+    return if %w[1 true].include?(ENV[LAVINMQ_FLOW_CONTROL_OPT_IN])
+
+    skip "set #{LAVINMQ_FLOW_CONTROL_OPT_IN}=1 to run LavinMQ flow-control tests"
+  end
+
+  # LavinMQ < 2.9.0 hardcodes its control socket at /tmp/lavinmqctl.sock and
+  # aborts at startup if it can't recreate it. This can be removed when LavinMQ
+  # 2.9.0 is released with https://github.com/cloudamqp/lavinmq/pull/2029.
+  def clear_lavinmq_control_socket(required:)
+    return if system("rm", "-f", LAVINMQ_CONTROL_SOCKET, out: File::NULL, err: File::NULL)
+    return if system("sudo", "-n", "rm", "-f", LAVINMQ_CONTROL_SOCKET, out: File::NULL, err: File::NULL)
+
+    skip "requires removing #{LAVINMQ_CONTROL_SOCKET}" if required
   end
 
   def lavinmq_executable

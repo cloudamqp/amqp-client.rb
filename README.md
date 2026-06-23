@@ -196,6 +196,16 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`.
 
+### LavinMQ flow-control tests
+
+The LavinMQ flow-control test starts a private LavinMQ instance configured to reject publishes due to low disk space. It is skipped unless `RUN_LAVINMQ_FLOW_CONTROL_TESTS` is set to `1` or `true`:
+
+```bash
+RUN_LAVINMQ_FLOW_CONTROL_TESTS=1 bundle exec rake test
+```
+
+Current LavinMQ releases hardcode their control socket at `/tmp/lavinmqctl.sock`, so the helper clears that socket before startup. A LavinMQ you already have running keeps serving AMQP but loses its `lavinmqctl` socket until restarted. The workaround can be removed when LavinMQ 2.9.0 is released with https://github.com/cloudamqp/lavinmq/pull/2029. CI opts in for the LavinMQ test jobs.
+
 ### TLS tests
 
 `rake test` excludes the TLS tests because they need a broker with TLS enabled. `bin/test-tls` runs them against a throwaway broker without disturbing anything you already have set up: it generates a self-signed certificate, starts the broker as your user from a temporary directory on non-default ports (21672/21671), runs the `_tls` tests, then shuts it down. With no argument it tests both brokers in turn:

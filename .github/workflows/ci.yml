@@ -26,6 +26,8 @@ jobs:
     name: LavinMQ / ${{ matrix.ruby }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      RUN_LAVINMQ_FLOW_CONTROL_TESTS: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -85,6 +87,8 @@ jobs:
     name: LavinMQ / macOS
     runs-on: macos-latest
     timeout-minutes: 10
+    env:
+      RUN_LAVINMQ_FLOW_CONTROL_TESTS: "1"
     strategy:
       fail-fast: false
       matrix:
