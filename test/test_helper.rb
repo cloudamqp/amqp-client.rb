@@ -147,6 +147,8 @@ end
 module LavinMQServer
   LAVINMQ_CONTROL_SOCKET = "/tmp/lavinmqctl.sock"
   LAVINMQ_FLOW_CONTROL_OPT_IN = "RUN_LAVINMQ_FLOW_CONTROL_TESTS"
+  LAVINMQ_STARTUP_ATTEMPTS = 3
+  LAVINMQ_STARTUP_TIMEOUT = 10
   PROCESS_SHUTDOWN_TIMEOUT = 5
 
   # Yields the AMQP port of a private LavinMQ that believes it is out of disk
@@ -167,20 +169,44 @@ module LavinMQServer
   # AMQP port, then tear it down.
   def boot_low_disk_lavinmq(exe)
     dir = Dir.mktmpdir("lavinmq-lowdisk")
-    amqp_port, http_port, mqtt_port, metrics_port = free_tcp_ports(4)
-    File.write(File.join(dir, "lavinmq.ini"),
-               "[main]\ndata_dir = #{dir}/data\nfree_disk_min = 1000000000000000\n")
-    clear_lavinmq_control_socket(required: true)
-    pid = spawn(exe, "--config", File.join(dir, "lavinmq.ini"),
-                "--amqp-port", amqp_port.to_s, "--http-port", http_port.to_s,
-                "--mqtt-port", mqtt_port.to_s, "--metrics-http-port", metrics_port.to_s,
-                "--bind", "127.0.0.1", out: File::NULL, err: File::NULL)
-    wait_for_tcp("127.0.0.1", amqp_port)
+    pid, waiter, amqp_port = start_low_disk_lavinmq(exe, dir)
     yield amqp_port
   ensure
-    stop_process(pid)
+    stop_process(pid, waiter)
     clear_lavinmq_control_socket(required: false)
     FileUtils.remove_entry(dir) if dir
+  end
+
+  def start_low_disk_lavinmq(exe, dir)
+    LAVINMQ_STARTUP_ATTEMPTS.times do |attempt|
+      amqp_port = free_tcp_port
+      config = write_low_disk_lavinmq_config(dir, attempt + 1)
+      clear_lavinmq_control_socket(required: true)
+      pid = spawn_lavinmq(exe, config, amqp_port)
+      waiter = Process.detach(pid)
+      return [pid, waiter, amqp_port] if wait_for_tcp("127.0.0.1", amqp_port, waiter:)
+
+      stop_process(pid, waiter)
+    end
+
+    raise "lavinmq did not start after #{LAVINMQ_STARTUP_ATTEMPTS} attempts"
+  end
+
+  def write_low_disk_lavinmq_config(dir, attempt)
+    attempt_dir = File.join(dir, "attempt-#{attempt}")
+    FileUtils.mkdir_p(attempt_dir)
+    config = File.join(attempt_dir, "lavinmq.ini")
+    File.write(config, "[main]\ndata_dir = #{attempt_dir}/data\nfree_disk_min = 1000000000000000\n")
+    config
+  end
+
+  def spawn_lavinmq(exe, config, amqp_port)
+    spawn(exe, "--config", config,
+          "--amqp-port", amqp_port.to_s, "--amqps-port", "-1",
+          "--http-port", "-1", "--https-port", "-1",
+          "--mqtt-port", "-1", "--mqtts-port", "-1",
+          "--metrics-http-port", "-1", "--bind", "127.0.0.1",
+          out: File::NULL, err: File::NULL)
   end
 
   def skip_unless_lavinmq_flow_control_tests
@@ -207,22 +233,27 @@ module LavinMQServer
     nil
   end
 
-  # Probe distinct ports for the child process to bind. These are available when
-  # probed, but not reserved after this method returns.
-  def free_tcp_ports(count)
-    servers = Array.new(count) { TCPServer.new("127.0.0.1", 0) }
-    servers.map { |s| s.addr[1] }
+  # Probe a port for the child process to bind. It is available when probed, but
+  # not reserved after this method returns.
+  def free_tcp_port
+    server = TCPServer.new("127.0.0.1", 0)
+    server.addr[1]
   ensure
-    servers&.each(&:close)
+    server&.close
   end
 
-  def wait_for_tcp(host, port, timeout: 10)
+  def wait_for_tcp(host, port, timeout: LAVINMQ_STARTUP_TIMEOUT, waiter: nil)
     deadline = monotonic_now + timeout
     loop do
+      return false if waiter&.join(0)
+
       Socket.tcp(host, port, connect_timeout: 1).close
-      return
+      return false if waiter&.join(0)
+
+      return true
     rescue SystemCallError
-      raise "lavinmq did not start on #{host}:#{port}" if monotonic_now > deadline
+      return false if waiter&.join(0)
+      return false if monotonic_now > deadline
 
       sleep 0.1
     end
@@ -232,10 +263,10 @@ module LavinMQServer
     Process.clock_gettime(Process::CLOCK_MONOTONIC)
   end
 
-  def stop_process(pid)
+  def stop_process(pid, waiter = nil)
     return unless pid
 
-    waiter = Process.detach(pid)
+    waiter ||= Process.detach(pid)
     signal_process(pid, "TERM")
     return if waiter.join(PROCESS_SHUTDOWN_TIMEOUT)
 
