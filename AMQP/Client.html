@@ -6,13 +6,13 @@
 <title>
   Class: AMQP::Client
   
-    &mdash; Documentation by YARD 0.9.37
+    &mdash; Documentation by YARD 0.9.44
   
 </title>
 
-  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css">
 
-  <link rel="stylesheet" href="../css/common.css" type="text/css" />
+  <link rel="stylesheet" href="../css/common.css" type="text/css">
 
 <script type="text/javascript">
   pathId = "AMQP::Client";
@@ -27,6 +27,8 @@
 
   </head>
   <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
     <div class="nav_wrap">
       <iframe id="nav" src="../class_list.html?1"></iframe>
       <div id="resizer"></div>
@@ -94,8 +96,9 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/amqp/client.rb<span class="defines">,<br />
-  lib/amqp/client/queue.rb,<br /> lib/amqp/client/table.rb,<br /> lib/amqp/client/errors.rb,<br /> lib/amqp/client/channel.rb,<br /> lib/amqp/client/message.rb,<br /> lib/amqp/client/version.rb,<br /> lib/amqp/client/consumer.rb,<br /> lib/amqp/client/exchange.rb,<br /> lib/amqp/client/connection.rb,<br /> lib/amqp/client/properties.rb,<br /> lib/amqp/client/rpc_client.rb,<br /> lib/amqp/client/frame_bytes.rb,<br /> lib/amqp/client/configuration.rb,<br /> lib/amqp/client/message_codecs.rb,<br /> lib/amqp/client/message_codec_registry.rb</span>
+    <dd>lib/amqp/client.rb<span class="defines">,<br>
+  lib/amqp/client/queue.rb,<br> lib/amqp/client/table.rb,<br> lib/amqp/client/errors.rb,<br> lib/amqp/client/channel.rb,<br> lib/amqp/client/message.rb,<br> lib/amqp/client/version.rb,<br> lib/amqp/client/consumer.rb,<br> lib/amqp/client/exchange.rb,<br> lib/amqp/client/connection.rb,<br> lib/amqp/client/properties.rb,<br> lib/amqp/client/rpc_client.rb,<br> lib/amqp/client/frame_bytes.rb,<br> lib/amqp/client/configuration.rb,<br> lib/amqp/client/message_codecs.rb,<br> lib/amqp/client/message_codec_registry.rb</span>
+
 </dd>
   </dl>
   
@@ -103,9 +106,7 @@
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    
-<p>AMQP 0-9-1 Client</p>
-
+    <p>AMQP 0-9-1 Client</p>
 
   </div>
 </div>
@@ -143,9 +144,7 @@
         <dt id="VERSION-constant" class="">VERSION =
           <div class="docstring">
   <div class="discussion">
-    
-<p>Version of the client library</p>
-
+    <p>Version of the client library</p>
 
   </div>
 </div>
@@ -154,7 +153,7 @@
 
 </div>
         </dt>
-        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>2.0.1</span><span class='tstring_end'>&quot;</span></span></pre></dd>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>2.1.0</span><span class='tstring_end'>&quot;</span></span></pre></dd>
       
     </dl>
   
@@ -187,9 +186,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get the class-level codec registry.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get the class-level codec registry.</p></div></span>
   
 </li>
 
@@ -216,9 +213,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get the class-level configuration.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get the class-level configuration.</p></div></span>
   
 </li>
 
@@ -245,9 +240,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get the codec registry for this instance.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get the codec registry for this instance.</p></div></span>
   
 </li>
 
@@ -272,9 +265,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get/set the default content_encoding to use when publishing messages.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get/set the default content_encoding to use when publishing messages.</p></div></span>
   
 </li>
 
@@ -299,9 +290,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get/set the default content_type to use when publishing messages.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get/set the default content_type to use when publishing messages.</p></div></span>
   
 </li>
 
@@ -326,9 +315,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get/set if condig should be strict, i.e.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get/set if condig should be strict, i.e.</p></div></span>
   
 </li>
 
@@ -363,9 +350,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Establishes and returns a new AMQP connection.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Establishes and returns a new AMQP connection.</p></div></span>
   
 </li>
 
@@ -387,9 +372,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first.</p></div></span>
   
 </li>
 
@@ -411,9 +394,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Check if the client is connected.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Check if the client is connected.</p></div></span>
   
 </li>
 
@@ -435,14 +416,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Close the currently open connection and stop the supervision / reconnection logic.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Close the currently open connection and stop the supervision / reconnection logic.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
     <h2>
       High level objects
@@ -470,9 +450,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Return a high level Exchange object for the default direct exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Return a high level Exchange object for the default direct exchange.</p></div></span>
   
 </li>
 
@@ -496,9 +474,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Declare a direct exchange and return a high level Exchange object.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Declare a direct exchange and return a high level Exchange object.</p></div></span>
   
 </li>
 
@@ -520,9 +496,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Declare an exchange and return a high level Exchange object.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Declare an exchange and return a high level Exchange object.</p></div></span>
   
 </li>
 
@@ -546,9 +520,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Declare a fanout exchange and return a high level Exchange object.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Declare a fanout exchange and return a high level Exchange object.</p></div></span>
   
 </li>
 
@@ -572,9 +544,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Declare a headers exchange and return a high level Exchange object.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Declare a headers exchange and return a high level Exchange object.</p></div></span>
   
 </li>
 
@@ -596,9 +566,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Declare a queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Declare a queue.</p></div></span>
   
 </li>
 
@@ -622,14 +590,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Declare a topic exchange and return a high level Exchange object.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Declare a topic exchange and return a high level Exchange object.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
     <h2>
       Publish
@@ -655,9 +622,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Publish a (persistent) message and wait for confirmation.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Publish a (persistent) message and wait for confirmation.</p></div></span>
   
 </li>
 
@@ -679,9 +644,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Publish a (persistent) message but don’t wait for a confirmation.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Publish a (persistent) message but don't wait for a confirmation.</p></div></span>
   
 </li>
 
@@ -703,14 +666,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Wait for unconfirmed publishes.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Wait for unconfirmed publishes.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
     <h2>
       Queue actions
@@ -736,9 +698,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Bind a queue to an exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Bind a queue to an exchange.</p></div></span>
   
 </li>
 
@@ -760,9 +720,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Delete a queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Delete a queue.</p></div></span>
   
 </li>
 
@@ -784,9 +742,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get a message from a queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get a message from a queue.</p></div></span>
   
 </li>
 
@@ -808,9 +764,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Purge a queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Purge a queue.</p></div></span>
   
 </li>
 
@@ -832,9 +786,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Consume messages from a queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Consume messages from a queue.</p></div></span>
   
 </li>
 
@@ -856,14 +808,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Unbind a queue from an exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Unbind a queue from an exchange.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
     <h2>
       Exchange actions
@@ -889,9 +840,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Delete an exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Delete an exchange.</p></div></span>
   
 </li>
 
@@ -913,9 +862,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Bind an exchange to an exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Bind an exchange to an exchange.</p></div></span>
   
 </li>
 
@@ -937,14 +884,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Unbind an exchange from an exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Unbind an exchange from an exchange.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
     <h2>
       RPC
@@ -970,9 +916,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Configure the AMQP::Client class-level settings.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Configure the AMQP::Client class-level settings.</p></div></span>
   
 </li>
 
@@ -994,9 +938,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Do a RPC call, sends a messages, waits for a response.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Do a RPC call, sends a messages, waits for a response.</p></div></span>
   
 </li>
 
@@ -1018,9 +960,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Create a reusable RPC client.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Create a reusable RPC client.</p></div></span>
   
 </li>
 
@@ -1042,14 +982,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Create a RPC server for a single method/function/procedure.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Create a RPC server for a single method/function/procedure.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
     <h2>
       Instance Method Summary
@@ -1077,9 +1016,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Create a new Client object, this won’t establish a connection yet, use <span class='object_link'><a href="#connect-instance_method" title="AMQP::Client#connect (method)">#connect</a></span> or <span class='object_link'><a href="#start-instance_method" title="AMQP::Client#start (method)">#start</a></span> for that.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Create a new Client object, this won't establish a connection yet, use <span class='object_link'><a href="#connect-instance_method" title="AMQP::Client#connect (method)">#connect</a></span> or <span class='object_link'><a href="#start-instance_method" title="AMQP::Client#start (method)">#start</a></span> for that.</p></div></span>
   
 </li>
 
@@ -1107,6 +1044,7 @@
 
       
     </ul>
+    
   
 
 <div id="constructor_details" class="method_details_list">
@@ -1123,9 +1061,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Create a new Client object, this won’t establish a connection yet, use <span class='object_link'><a href="#connect-instance_method" title="AMQP::Client#connect (method)">#connect</a></span> or <span class='object_link'><a href="#start-instance_method" title="AMQP::Client#start (method)">#start</a></span> for that</p>
-
+    <p>Create a new Client object, this won't establish a connection yet, use <span class='object_link'><a href="#connect-instance_method" title="AMQP::Client#connect (method)">#connect</a></span> or <span class='object_link'><a href="#start-instance_method" title="AMQP::Client#start (method)">#start</a></span> for that</p>
 
   </div>
 </div>
@@ -1145,9 +1081,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection</p>
-</div>
+        <div class='inline'><p>URL on the format amqp://username:password@hostname/vhost,
+use amqps:// for encrypted connection</p></div>
       
     </li>
   
@@ -1161,9 +1096,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>a customizable set of options</p>
-</div>
+        <div class='inline'><p>a customizable set of options</p></div>
       
     </li>
   
@@ -1187,9 +1120,8 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Set a name for the connection to be able to identify the client from the broker</p>
-</div>
+            &mdash; <div class='inline'><p>Set a name for the connection to be able to identify
+the client from the broker</p></div>
           
         </li>
       
@@ -1203,9 +1135,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Verify broker’s TLS certificate, set to false for self-signed certs</p>
-</div>
+            &mdash; <div class='inline'><p>Verify broker's TLS certificate, set to false for self-signed certs</p></div>
           
         </li>
       
@@ -1219,9 +1149,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead</p>
-</div>
+            &mdash; <div class='inline'><p>Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead</p></div>
           
         </li>
       
@@ -1235,9 +1163,8 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Maximum frame size, the smallest of the client’s and the broker’s values will be used</p>
-</div>
+            &mdash; <div class='inline'><p>Maximum frame size,
+the smallest of the client's and the broker's values will be used</p></div>
           
         </li>
       
@@ -1251,9 +1178,24 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Maximum number of channels the client will be allowed to have open. Maximum allowed is 65_536.  The smallest of the client’s and the broker’s value will be used.</p>
-</div>
+            &mdash; <div class='inline'><p>Maximum number of channels the client will be allowed to have open.
+Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.</p></div>
+          
+        </li>
+      
+        <li>
+          <span class="name">logger</span>
+          <span class="type">(<tt>#info</tt>, <tt>#warn</tt>, <tt>#error</tt>)</span>
+          <span class="default">
+            
+              &mdash; default:
+              <tt>nil</tt>
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>Logger for <span class='object_link'><a href="#start-instance_method" title="AMQP::Client#start (method)">#start</a></span> lifecycle events
+(connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
+written to stderr via Kernel#warn for backwards compatibility.</p></div>
           
         </li>
       
@@ -1267,9 +1209,6 @@
       <pre class="lines">
 
 
-35
-36
-37
 38
 39
 40
@@ -1282,14 +1221,21 @@
 47
 48
 49
-50</pre>
+50
+51
+52
+53
+54
+55</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 35</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 38</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
   <span class='ivar'>@uri</span> <span class='op'>=</span> <span class='id identifier rubyid_uri'>uri</span>
   <span class='ivar'>@options</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span>
+  <span class='ivar'>@logger</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span>
+  <span class='ivar'>@name</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_name'>parse_name</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span><span class='rparen'>)</span>
   <span class='ivar'>@queues</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
   <span class='ivar'>@exchanges</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
   <span class='ivar'>@consumers</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
@@ -1326,9 +1272,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get the class-level codec registry</p>
-
+    <p>Get the class-level codec registry</p>
 
   </div>
 </div>
@@ -1354,12 +1298,12 @@
       <pre class="lines">
 
 
-507
-508
-509</pre>
+521
+522
+523</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 507</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 521</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_codec_registry'>codec_registry</span>
   <span class='ivar'>@codec_registry</span>
@@ -1382,9 +1326,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get the class-level configuration</p>
-
+    <p>Get the class-level configuration</p>
 
   </div>
 </div>
@@ -1410,12 +1352,12 @@
       <pre class="lines">
 
 
-503
-504
-505</pre>
+517
+518
+519</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 503</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 517</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_config'>config</span>
   <span class='ivar'>@config</span>
@@ -1443,9 +1385,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get the codec registry for this instance</p>
-
+    <p>Get the codec registry for this instance</p>
 
   </div>
 </div>
@@ -1471,12 +1411,12 @@
       <pre class="lines">
 
 
-526
-527
-528</pre>
+540
+541
+542</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 526</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 540</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_codec_registry'>codec_registry</span>
   <span class='ivar'>@codec_registry</span>
@@ -1499,9 +1439,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get/set the default content_encoding to use when publishing messages</p>
-
+    <p>Get/set the default content_encoding to use when publishing messages</p>
 
   </div>
 </div>
@@ -1527,12 +1465,12 @@
       <pre class="lines">
 
 
-537
-538
-539</pre>
+551
+552
+553</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 537</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 551</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_content_encoding'>default_content_encoding</span>
   <span class='ivar'>@default_content_encoding</span>
@@ -1555,9 +1493,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get/set the default content_type to use when publishing messages</p>
-
+    <p>Get/set the default content_type to use when publishing messages</p>
 
   </div>
 </div>
@@ -1583,12 +1519,12 @@
       <pre class="lines">
 
 
-533
-534
-535</pre>
+547
+548
+549</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 533</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 547</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_content_type'>default_content_type</span>
   <span class='ivar'>@default_content_type</span>
@@ -1611,9 +1547,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get/set if condig should be strict, i.e. if the client should raise on unknown codecs</p>
-
+    <p>Get/set if condig should be strict, i.e. if the client should raise on unknown codecs</p>
 
   </div>
 </div>
@@ -1626,12 +1560,12 @@
       <pre class="lines">
 
 
-529
-530
-531</pre>
+543
+544
+545</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 529</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 543</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strict_coding'>strict_coding</span>
   <span class='ivar'>@strict_coding</span>
@@ -1659,9 +1593,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Configure the AMQP::Client class-level settings</p>
-
+    <p>Configure the AMQP::Client class-level settings</p>
 
   </div>
 </div>
@@ -1689,9 +1621,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Yields the configuration object for modification</p>
-</div>
+        <div class='inline'><p>Yields the configuration object for modification</p></div>
       
     </li>
   
@@ -1707,9 +1637,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The configuration object</p>
-</div>
+        <div class='inline'><p>The configuration object</p></div>
       
     </li>
   
@@ -1721,13 +1649,13 @@
       <pre class="lines">
 
 
-496
-497
-498
-499</pre>
+510
+511
+512
+513</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 496</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 510</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_configure'>configure</span>
   <span class='kw'>yield</span> <span class='ivar'>@config</span> <span class='kw'>if</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1755,9 +1683,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Bind a queue to an exchange</p>
-
+    <p>Bind a queue to an exchange</p>
 
   </div>
 </div>
@@ -1775,9 +1701,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the queue to bind</p>
-</div>
+        <div class='inline'><p>Name of the queue to bind</p></div>
       
     </li>
   
@@ -1791,9 +1715,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to bind to</p>
-</div>
+        <div class='inline'><p>Name of the exchange to bind to</p></div>
       
     </li>
   
@@ -1809,9 +1731,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Binding key on which messages that match might be routed (depending on exchange type)</p>
-</div>
+        <div class='inline'><p>Binding key on which messages that match might be routed (depending on exchange type)</p></div>
       
     </li>
   
@@ -1827,9 +1747,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Message headers to match on (only relevant for header exchanges)</p>
-</div>
+        <div class='inline'><p>Message headers to match on (only relevant for header exchanges)</p></div>
       
     </li>
   
@@ -1855,14 +1773,14 @@
       <pre class="lines">
 
 
-346
-347
-348
-349
-350</pre>
+360
+361
+362
+363
+364</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 346</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 360</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='label'>queue:</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -1885,9 +1803,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Establishes and returns a new AMQP connection</p>
-
+    <p>Establishes and returns a new AMQP connection</p>
 
   </div>
 </div>
@@ -1928,15 +1844,17 @@
       <pre class="lines">
 
 
-59
-60
-61</pre>
+64
+65
+66
+67</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 59</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 64</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>true</span><span class='rparen'>)</span>
-  <span class='const'><span class='object_link'><a href="Client/Connection.html" title="AMQP::Client::Connection (class)">Connection</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Client/Connection.html#initialize-instance_method" title="AMQP::Client::Connection#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span><span class='comma'>,</span> <span class='label'>codec_registry:</span> <span class='ivar'>@codec_registry</span><span class='comma'>,</span> <span class='label'>strict_coding:</span> <span class='ivar'>@strict_coding</span><span class='comma'>,</span> <span class='op'>**</span><span class='ivar'>@options</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="Client/Connection.html" title="AMQP::Client::Connection (class)">Connection</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Client/Connection.html#initialize-instance_method" title="AMQP::Client::Connection#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='ivar'>@name</span><span class='comma'>,</span>
+                       <span class='label'>codec_registry:</span> <span class='ivar'>@codec_registry</span><span class='comma'>,</span> <span class='label'>strict_coding:</span> <span class='ivar'>@strict_coding</span><span class='comma'>,</span> <span class='op'>**</span><span class='ivar'>@options</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1958,9 +1876,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Return a high level Exchange object for the default direct exchange</p>
-
+    <p>Return a high level Exchange object for the default direct exchange</p>
 
   </div>
 </div>
@@ -1993,12 +1909,12 @@
       <pre class="lines">
 
 
-201
-202
-203</pre>
+215
+216
+217</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 201</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 215</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_exchange'>default_exchange</span><span class='lparen'>(</span><span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_direct'>direct</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -2019,9 +1935,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Delete an exchange</p>
-
+    <p>Delete an exchange</p>
 
   </div>
 </div>
@@ -2039,9 +1953,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange</p>
-</div>
+        <div class='inline'><p>Name of the exchange</p></div>
       
     </li>
   
@@ -2067,16 +1979,16 @@
       <pre class="lines">
 
 
-416
-417
-418
-419
-420
-421
-422</pre>
+430
+431
+432
+433
+434
+435
+436</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 416</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 430</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_exchange'>delete_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2101,9 +2013,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Delete a queue</p>
-
+    <p>Delete a queue</p>
 
   </div>
 </div>
@@ -2121,9 +2031,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the queue</p>
-</div>
+        <div class='inline'><p>Name of the queue</p></div>
       
     </li>
   
@@ -2139,9 +2047,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Only delete if the queue doesn’t have consumers, raises a ChannelClosed error otherwise</p>
-</div>
+        <div class='inline'><p>Only delete if the queue doesn't have consumers, raises a ChannelClosed error otherwise</p></div>
       
     </li>
   
@@ -2157,9 +2063,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Only delete if the queue is empty, raises a ChannelClosed error otherwise</p>
-</div>
+        <div class='inline'><p>Only delete if the queue is empty, raises a ChannelClosed error otherwise</p></div>
       
     </li>
   
@@ -2176,9 +2080,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Number of messages in the queue when deleted</p>
-</div>
+        <div class='inline'><p>Number of messages in the queue when deleted</p></div>
       
     </li>
   
@@ -2190,16 +2092,16 @@
       <pre class="lines">
 
 
-378
-379
-380
-381
-382
-383
-384</pre>
+392
+393
+394
+395
+396
+397
+398</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 378</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 392</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_queue'>delete_queue</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>if_unused:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>if_empty:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2228,9 +2130,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Declare a direct exchange and return a high level Exchange object</p>
-
+    <p>Declare a direct exchange and return a high level Exchange object</p>
 
   </div>
 </div>
@@ -2250,9 +2150,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange (defaults to “amq.direct”)</p>
-</div>
+        <div class='inline'><p>Name of the exchange (defaults to &quot;amq.direct&quot;)</p></div>
       
     </li>
   
@@ -2285,17 +2183,17 @@
       <pre class="lines">
 
 
-185
-186
-187
-188
-189
-190
-191
-192</pre>
+199
+200
+201
+202
+203
+204
+205
+206</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 185</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 199</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_direct_exchange'>direct_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.direct</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>direct</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -2321,9 +2219,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Declare an exchange and return a high level Exchange object</p>
-
+    <p>Declare an exchange and return a high level Exchange object</p>
 
   </div>
 </div>
@@ -2351,9 +2247,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange</p>
-</div>
+        <div class='inline'><p>Name of the exchange</p></div>
       
     </li>
   
@@ -2367,9 +2261,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Type of the exchange, one of “direct”, “fanout”, “topic”, “headers” or custom exchange type</p>
-</div>
+        <div class='inline'><p>Type of the exchange, one of &quot;direct&quot;, &quot;fanout&quot;, &quot;topic&quot;, &quot;headers&quot; or custom exchange type</p></div>
       
     </li>
   
@@ -2385,9 +2277,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the exchange will survive broker restarts</p>
-</div>
+        <div class='inline'><p>If true the exchange will survive broker restarts</p></div>
       
     </li>
   
@@ -2403,9 +2293,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the exchange will be deleted when the last queue is unbound</p>
-</div>
+        <div class='inline'><p>If true the exchange will be deleted when the last queue is unbound</p></div>
       
     </li>
   
@@ -2421,9 +2309,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the exchange will not accept directly published messages</p>
-</div>
+        <div class='inline'><p>If true the exchange will not accept directly published messages</p></div>
       
     </li>
   
@@ -2439,9 +2325,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Custom arguments such as alternate-exchange etc.</p>
-</div>
+        <div class='inline'><p>Custom arguments such as alternate-exchange etc.</p></div>
       
     </li>
   
@@ -2467,17 +2351,17 @@
       <pre class="lines">
 
 
-172
-173
-174
-175
-176
-177
-178
-179</pre>
+186
+187
+188
+189
+190
+191
+192
+193</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 172</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 186</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>internal:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='ivar'>@exchanges</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span> <span class='kw'>do</span>
@@ -2503,9 +2387,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Bind an exchange to an exchange</p>
-
+    <p>Bind an exchange to an exchange</p>
 
   </div>
 </div>
@@ -2523,9 +2405,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to bind to</p>
-</div>
+        <div class='inline'><p>Name of the exchange to bind to</p></div>
       
     </li>
   
@@ -2539,9 +2419,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to bind</p>
-</div>
+        <div class='inline'><p>Name of the exchange to bind</p></div>
       
     </li>
   
@@ -2557,9 +2435,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Binding key on which messages that match might be routed (depending on exchange type)</p>
-</div>
+        <div class='inline'><p>Binding key on which messages that match might be routed (depending on exchange type)</p></div>
       
     </li>
   
@@ -2575,9 +2451,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Message headers to match on (only relevant for header exchanges)</p>
-</div>
+        <div class='inline'><p>Message headers to match on (only relevant for header exchanges)</p></div>
       
     </li>
   
@@ -2603,14 +2477,14 @@
       <pre class="lines">
 
 
-395
-396
-397
-398
-399</pre>
+409
+410
+411
+412
+413</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 395</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 409</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange_bind'>exchange_bind</span><span class='lparen'>(</span><span class='label'>source:</span><span class='comma'>,</span> <span class='label'>destination:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2633,9 +2507,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Unbind an exchange from an exchange</p>
-
+    <p>Unbind an exchange from an exchange</p>
 
   </div>
 </div>
@@ -2653,9 +2525,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to unbind from</p>
-</div>
+        <div class='inline'><p>Name of the exchange to unbind from</p></div>
       
     </li>
   
@@ -2669,9 +2539,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to unbind</p>
-</div>
+        <div class='inline'><p>Name of the exchange to unbind</p></div>
       
     </li>
   
@@ -2687,9 +2555,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Binding key which the exchange is bound to the exchange with</p>
-</div>
+        <div class='inline'><p>Binding key which the exchange is bound to the exchange with</p></div>
       
     </li>
   
@@ -2705,9 +2571,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Arguments matching the binding that’s being removed</p>
-</div>
+        <div class='inline'><p>Arguments matching the binding that's being removed</p></div>
       
     </li>
   
@@ -2733,14 +2597,14 @@
       <pre class="lines">
 
 
-407
-408
-409
-410
-411</pre>
+421
+422
+423
+424
+425</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 407</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 421</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange_unbind'>exchange_unbind</span><span class='lparen'>(</span><span class='label'>source:</span><span class='comma'>,</span> <span class='label'>destination:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2767,9 +2631,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Declare a fanout exchange and return a high level Exchange object</p>
-
+    <p>Declare a fanout exchange and return a high level Exchange object</p>
 
   </div>
 </div>
@@ -2789,9 +2651,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange (defaults to “amq.fanout”)</p>
-</div>
+        <div class='inline'><p>Name of the exchange (defaults to &quot;amq.fanout&quot;)</p></div>
       
     </li>
   
@@ -2824,12 +2684,12 @@
       <pre class="lines">
 
 
-213
-214
-215</pre>
+227
+228
+229</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 213</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 227</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fanout_exchange'>fanout_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.fanout</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>fanout</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -2850,9 +2710,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get a message from a queue</p>
-
+    <p>Get a message from a queue</p>
 
   </div>
 </div>
@@ -2870,9 +2728,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the queue to get the message from</p>
-</div>
+        <div class='inline'><p>Name of the queue to get the message from</p></div>
       
     </li>
   
@@ -2888,9 +2744,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>When false the message has to be manually acknowledged (or rejected) (default: false)</p>
-</div>
+        <div class='inline'><p>When false the message has to be manually acknowledged (or rejected) (default: false)</p></div>
       
     </li>
   
@@ -2907,9 +2761,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The message from the queue or nil if the queue is empty</p>
-</div>
+        <div class='inline'><p>The message from the queue or nil if the queue is empty</p></div>
       
     </li>
   
@@ -2921,16 +2773,16 @@
       <pre class="lines">
 
 
-332
-333
-334
-335
-336
-337
-338</pre>
+346
+347
+348
+349
+350
+351
+352</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 332</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 346</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2959,9 +2811,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Declare a headers exchange and return a high level Exchange object</p>
-
+    <p>Declare a headers exchange and return a high level Exchange object</p>
 
   </div>
 </div>
@@ -2981,9 +2831,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange (defaults to “amq.headers”)</p>
-</div>
+        <div class='inline'><p>Name of the exchange (defaults to &quot;amq.headers&quot;)</p></div>
       
     </li>
   
@@ -3016,12 +2864,12 @@
       <pre class="lines">
 
 
-237
-238
-239</pre>
+251
+252
+253</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 237</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 251</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_headers_exchange'>headers_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.headers</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>headers</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -3042,9 +2890,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Publish a (persistent) message and wait for confirmation</p>
-
+    <p>Publish a (persistent) message and wait for confirmation</p>
 
   </div>
 </div>
@@ -3062,9 +2908,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The message body will be encoded if any matching codec is found in the client’s codec registry</p>
-</div>
+        <div class='inline'><p>The message body
+will be encoded if any matching codec is found in the client's codec registry</p></div>
       
     </li>
   
@@ -3078,9 +2923,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to publish to</p>
-</div>
+        <div class='inline'><p>Name of the exchange to publish to</p></div>
       
     </li>
   
@@ -3096,9 +2939,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Routing key for the message</p>
-</div>
+        <div class='inline'><p>Routing key for the message</p></div>
       
     </li>
   
@@ -3123,9 +2964,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>The message will be returned if the message can’t be routed to a queue</p>
-</div>
+            &mdash; <div class='inline'><p>The message will be returned if the message can't be routed to a queue</p></div>
           
         </li>
       
@@ -3136,9 +2975,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Same as delivery_mode: 2</p>
-</div>
+            &mdash; <div class='inline'><p>Same as delivery_mode: 2</p></div>
           
         </li>
       
@@ -3149,9 +2986,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content type of the message body</p>
-</div>
+            &mdash; <div class='inline'><p>Content type of the message body</p></div>
           
         </li>
       
@@ -3162,9 +2997,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content encoding of the body</p>
-</div>
+            &mdash; <div class='inline'><p>Content encoding of the body</p></div>
           
         </li>
       
@@ -3175,9 +3008,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Custom headers</p>
-</div>
+            &mdash; <div class='inline'><p>Custom headers</p></div>
           
         </li>
       
@@ -3188,9 +3019,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>2 for persisted message, transient messages for all other values</p>
-</div>
+            &mdash; <div class='inline'><p>2 for persisted message, transient messages for all other values</p></div>
           
         </li>
       
@@ -3201,9 +3030,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A priority of the message (between 0 and 255)</p>
-</div>
+            &mdash; <div class='inline'><p>A priority of the message (between 0 and 255)</p></div>
           
         </li>
       
@@ -3214,9 +3041,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A correlation id, most often used used for RPC communication</p>
-</div>
+            &mdash; <div class='inline'><p>A correlation id, most often used used for RPC communication</p></div>
           
         </li>
       
@@ -3227,9 +3052,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Queue to reply RPC responses to</p>
-</div>
+            &mdash; <div class='inline'><p>Queue to reply RPC responses to</p></div>
           
         </li>
       
@@ -3240,9 +3063,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Number of seconds the message will stay in the queue</p>
-</div>
+            &mdash; <div class='inline'><p>Number of seconds the message will stay in the queue</p></div>
           
         </li>
       
@@ -3253,9 +3074,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to uniquely identify the message, e.g. for deduplication</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to uniquely identify the message, e.g. for deduplication</p></div>
           
         </li>
       
@@ -3266,9 +3085,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Often used for the time the message was originally generated</p>
-</div>
+            &mdash; <div class='inline'><p>Often used for the time the message was originally generated</p></div>
           
         </li>
       
@@ -3279,9 +3096,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can indicate what kind of message this is</p>
-</div>
+            &mdash; <div class='inline'><p>Can indicate what kind of message this is</p></div>
           
         </li>
       
@@ -3292,9 +3107,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to verify that this is the user that published the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to verify that this is the user that published the message</p></div>
           
         </li>
       
@@ -3305,9 +3118,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to indicates which app that generated the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to indicates which app that generated the message</p></div>
           
         </li>
       
@@ -3338,9 +3149,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If the message was not confirmed by the broker</p>
-</div>
+        <div class='inline'><p>If the message was not confirmed by the broker</p></div>
       
     </li>
   
@@ -3352,9 +3161,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content type is unsupported</p>
-</div>
+        <div class='inline'><p>If content type is unsupported</p></div>
       
     </li>
   
@@ -3366,9 +3173,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content encoding is unsupported</p>
-</div>
+        <div class='inline'><p>If content encoding is unsupported</p></div>
       
     </li>
   
@@ -3380,20 +3185,20 @@
       <pre class="lines">
 
 
-259
-260
-261
-262
-263
-264
-265
-266
-267
-268
-269</pre>
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 259</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 273</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>routing_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -3422,9 +3227,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Publish a (persistent) message but don’t wait for a confirmation</p>
-
+    <p>Publish a (persistent) message but don't wait for a confirmation</p>
 
   </div>
 </div>
@@ -3442,9 +3245,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The body</p>
-</div>
+        <div class='inline'><p>The body</p></div>
       
     </li>
   
@@ -3458,9 +3259,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to publish to</p>
-</div>
+        <div class='inline'><p>Name of the exchange to publish to</p></div>
       
     </li>
   
@@ -3476,9 +3275,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The routing key that the exchange might use to route the message to a queue</p>
-</div>
+        <div class='inline'><p>The routing key that the exchange might use to route the message to a queue</p></div>
       
     </li>
   
@@ -3514,9 +3311,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>The message will be returned if the message can’t be routed to a queue</p>
-</div>
+            &mdash; <div class='inline'><p>The message will be returned if the message can't be routed to a queue</p></div>
           
         </li>
       
@@ -3527,9 +3322,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Same as delivery_mode: 2</p>
-</div>
+            &mdash; <div class='inline'><p>Same as delivery_mode: 2</p></div>
           
         </li>
       
@@ -3540,9 +3333,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content type of the message body</p>
-</div>
+            &mdash; <div class='inline'><p>Content type of the message body</p></div>
           
         </li>
       
@@ -3553,9 +3344,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content encoding of the body</p>
-</div>
+            &mdash; <div class='inline'><p>Content encoding of the body</p></div>
           
         </li>
       
@@ -3566,9 +3355,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Custom headers</p>
-</div>
+            &mdash; <div class='inline'><p>Custom headers</p></div>
           
         </li>
       
@@ -3579,9 +3366,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>2 for persisted message, transient messages for all other values</p>
-</div>
+            &mdash; <div class='inline'><p>2 for persisted message, transient messages for all other values</p></div>
           
         </li>
       
@@ -3592,9 +3377,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A priority of the message (between 0 and 255)</p>
-</div>
+            &mdash; <div class='inline'><p>A priority of the message (between 0 and 255)</p></div>
           
         </li>
       
@@ -3605,9 +3388,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A correlation id, most often used used for RPC communication</p>
-</div>
+            &mdash; <div class='inline'><p>A correlation id, most often used used for RPC communication</p></div>
           
         </li>
       
@@ -3618,9 +3399,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Queue to reply RPC responses to</p>
-</div>
+            &mdash; <div class='inline'><p>Queue to reply RPC responses to</p></div>
           
         </li>
       
@@ -3631,9 +3410,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Number of seconds the message will stay in the queue</p>
-</div>
+            &mdash; <div class='inline'><p>Number of seconds the message will stay in the queue</p></div>
           
         </li>
       
@@ -3644,9 +3421,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to uniquely identify the message, e.g. for deduplication</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to uniquely identify the message, e.g. for deduplication</p></div>
           
         </li>
       
@@ -3657,9 +3432,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Often used for the time the message was originally generated</p>
-</div>
+            &mdash; <div class='inline'><p>Often used for the time the message was originally generated</p></div>
           
         </li>
       
@@ -3670,9 +3443,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can indicate what kind of message this is</p>
-</div>
+            &mdash; <div class='inline'><p>Can indicate what kind of message this is</p></div>
           
         </li>
       
@@ -3683,9 +3454,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to verify that this is the user that published the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to verify that this is the user that published the message</p></div>
           
         </li>
       
@@ -3696,9 +3465,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to indicates which app that generated the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to indicates which app that generated the message</p></div>
           
         </li>
       
@@ -3729,9 +3496,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content type is unsupported</p>
-</div>
+        <div class='inline'><p>If content type is unsupported</p></div>
       
     </li>
   
@@ -3743,9 +3508,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content encoding is unsupported</p>
-</div>
+        <div class='inline'><p>If content encoding is unsupported</p></div>
       
     </li>
   
@@ -3757,17 +3520,17 @@
       <pre class="lines">
 
 
-278
-279
-280
-281
-282
-283
-284
-285</pre>
+292
+293
+294
+295
+296
+297
+298
+299</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 278</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 292</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_publish_and_forget'>publish_and_forget</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>routing_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -3793,9 +3556,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Purge a queue</p>
-
+    <p>Purge a queue</p>
 
   </div>
 </div>
@@ -3813,9 +3574,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the queue</p>
-</div>
+        <div class='inline'><p>Name of the queue</p></div>
       
     </li>
   
@@ -3841,14 +3600,14 @@
       <pre class="lines">
 
 
-367
-368
-369
-370
-371</pre>
+381
+382
+383
+384
+385</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 367</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 381</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_purge'>purge</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -3871,9 +3630,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Declare a queue</p>
-
+    <p>Declare a queue</p>
 
   </div>
 </div>
@@ -3901,9 +3658,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the queue</p>
-</div>
+        <div class='inline'><p>Name of the queue</p></div>
       
     </li>
   
@@ -3919,9 +3674,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the queue will survive broker restarts, messages in the queue will only survive if they are published as persistent</p>
-</div>
+        <div class='inline'><p>If true the queue will survive broker restarts,
+messages in the queue will only survive if they are published as persistent</p></div>
       
     </li>
   
@@ -3937,9 +3691,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the queue will be deleted when the last consumer stops consuming (it won’t be deleted until at least one consumer has consumed from it)</p>
-</div>
+        <div class='inline'><p>If true the queue will be deleted when the last consumer stops consuming
+(it won't be deleted until at least one consumer has consumed from it)</p></div>
       
     </li>
   
@@ -3955,9 +3708,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the queue will be deleted when the connection is closed</p>
-</div>
+        <div class='inline'><p>If true the queue will be deleted when the connection is closed</p></div>
       
     </li>
   
@@ -3973,9 +3724,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true an exception will be raised if the queue doesn’t already exists</p>
-</div>
+        <div class='inline'><p>If true an exception will be raised if the queue doesn't already exists</p></div>
       
     </li>
   
@@ -3991,9 +3740,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Custom arguments, such as queue-ttl etc.</p>
-</div>
+        <div class='inline'><p>Custom arguments, such as queue-ttl etc.</p></div>
       
     </li>
   
@@ -4032,19 +3779,19 @@
       <pre class="lines">
 
 
-149
-150
-151
-152
-153
-154
-155
-156
-157
-158</pre>
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 149</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 163</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_queue'>queue</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>exclusive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>passive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Currently only supports named, durable queues</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -4072,9 +3819,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Do a RPC call, sends a messages, waits for a response</p>
-
+    <p>Do a RPC call, sends a messages, waits for a response</p>
 
   </div>
 </div>
@@ -4092,9 +3837,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>name of the RPC method to call (i.e. queue name on the server side)</p>
-</div>
+        <div class='inline'><p>name of the RPC method to call (i.e. queue name on the server side)</p></div>
       
     </li>
   
@@ -4108,9 +3851,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>arguments/body to the call</p>
-</div>
+        <div class='inline'><p>arguments/body to the call</p></div>
       
     </li>
   
@@ -4126,9 +3867,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Number of seconds to wait for a response</p>
-</div>
+        <div class='inline'><p>Number of seconds to wait for a response</p></div>
       
     </li>
   
@@ -4153,9 +3892,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>The message will be returned if the message can’t be routed to a queue</p>
-</div>
+            &mdash; <div class='inline'><p>The message will be returned if the message can't be routed to a queue</p></div>
           
         </li>
       
@@ -4166,9 +3903,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Same as delivery_mode: 2</p>
-</div>
+            &mdash; <div class='inline'><p>Same as delivery_mode: 2</p></div>
           
         </li>
       
@@ -4179,9 +3914,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content type of the message body</p>
-</div>
+            &mdash; <div class='inline'><p>Content type of the message body</p></div>
           
         </li>
       
@@ -4192,9 +3925,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content encoding of the body</p>
-</div>
+            &mdash; <div class='inline'><p>Content encoding of the body</p></div>
           
         </li>
       
@@ -4205,9 +3936,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Custom headers</p>
-</div>
+            &mdash; <div class='inline'><p>Custom headers</p></div>
           
         </li>
       
@@ -4218,9 +3947,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>2 for persisted message, transient messages for all other values</p>
-</div>
+            &mdash; <div class='inline'><p>2 for persisted message, transient messages for all other values</p></div>
           
         </li>
       
@@ -4231,9 +3958,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A priority of the message (between 0 and 255)</p>
-</div>
+            &mdash; <div class='inline'><p>A priority of the message (between 0 and 255)</p></div>
           
         </li>
       
@@ -4244,9 +3969,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A correlation id, most often used used for RPC communication</p>
-</div>
+            &mdash; <div class='inline'><p>A correlation id, most often used used for RPC communication</p></div>
           
         </li>
       
@@ -4257,9 +3980,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Queue to reply RPC responses to</p>
-</div>
+            &mdash; <div class='inline'><p>Queue to reply RPC responses to</p></div>
           
         </li>
       
@@ -4270,9 +3991,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Number of seconds the message will stay in the queue</p>
-</div>
+            &mdash; <div class='inline'><p>Number of seconds the message will stay in the queue</p></div>
           
         </li>
       
@@ -4283,9 +4002,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to uniquely identify the message, e.g. for deduplication</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to uniquely identify the message, e.g. for deduplication</p></div>
           
         </li>
       
@@ -4296,9 +4013,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Often used for the time the message was originally generated</p>
-</div>
+            &mdash; <div class='inline'><p>Often used for the time the message was originally generated</p></div>
           
         </li>
       
@@ -4309,9 +4024,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can indicate what kind of message this is</p>
-</div>
+            &mdash; <div class='inline'><p>Can indicate what kind of message this is</p></div>
           
         </li>
       
@@ -4322,9 +4035,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to verify that this is the user that published the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to verify that this is the user that published the message</p></div>
           
         </li>
       
@@ -4335,9 +4046,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to indicates which app that generated the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to indicates which app that generated the message</p></div>
           
         </li>
       
@@ -4355,9 +4064,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Returns the result from the call</p>
-</div>
+        <div class='inline'><p>Returns the result from the call</p></div>
       
     </li>
   
@@ -4373,9 +4080,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>if no response is received within the timeout period</p>
-</div>
+        <div class='inline'><p>if no response is received within the timeout period</p></div>
       
     </li>
   
@@ -4387,23 +4092,23 @@
       <pre class="lines">
 
 
-462
-463
-464
-465
-466
-467
-468
-469
-470
-471
-472
-473
-474
-475</pre>
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 462</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 476</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rpc_call'>rpc_call</span><span class='lparen'>(</span><span class='id identifier rubyid_method'>method</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_with_connection'>with_connection</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:channel</span><span class='rparen'>)</span>
@@ -4435,9 +4140,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Create a reusable RPC client</p>
-
+    <p>Create a reusable RPC client</p>
 
   </div>
 </div>
@@ -4463,13 +4166,13 @@
       <pre class="lines">
 
 
-479
-480
-481
-482</pre>
+493
+494
+495
+496</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 479</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 493</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rpc_client'>rpc_client</span>
   <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_with_connection'>with_connection</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:channel</span><span class='rparen'>)</span>
@@ -4491,9 +4194,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Create a RPC server for a single method/function/procedure</p>
-
+    <p>Create a RPC server for a single method/function/procedure</p>
 
   </div>
 </div>
@@ -4511,9 +4212,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>name of the RPC method to host (i.e. queue name on the server side)</p>
-</div>
+        <div class='inline'><p>name of the RPC method to host (i.e. queue name on the server side)</p></div>
       
     </li>
   
@@ -4529,9 +4228,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>number of threads that process requests</p>
-</div>
+        <div class='inline'><p>number of threads that process requests</p></div>
       
     </li>
   
@@ -4547,9 +4244,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the queue will survive broker restarts</p>
-</div>
+        <div class='inline'><p>If true the queue will survive broker restarts</p></div>
       
     </li>
   
@@ -4565,9 +4260,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the queue will be deleted when the last consumer stops consuming (it won’t be deleted until at least one consumer has consumed from it)</p>
-</div>
+        <div class='inline'><p>If true the queue will be deleted when the last consumer stops consuming
+(it won't be deleted until at least one consumer has consumed from it)</p></div>
       
     </li>
   
@@ -4583,9 +4277,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Custom arguments, such as queue-ttl etc.</p>
-</div>
+        <div class='inline'><p>Custom arguments, such as queue-ttl etc.</p></div>
       
     </li>
   
@@ -4602,9 +4294,7 @@
       
       
         
-        <div class='inline'>
-<p>Block that processes the RPC request messages</p>
-</div>
+        <div class='inline'><p>Block that processes the RPC request messages</p></div>
       
     </li>
   
@@ -4622,9 +4312,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>body of the request message</p>
-</div>
+        <div class='inline'><p>body of the request message</p></div>
       
     </li>
   
@@ -4640,9 +4328,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The response message body</p>
-</div>
+        <div class='inline'><p>The response message body</p></div>
       
     </li>
   
@@ -4658,9 +4344,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The consumer object, which can be used to cancel the consumer</p>
-</div>
+        <div class='inline'><p>The consumer object, which can be used to cancel the consumer</p></div>
       
     </li>
   
@@ -4672,25 +4356,25 @@
       <pre class="lines">
 
 
-438
-439
-440
-441
-442
-443
-444
-445
-446
-447
-448
-449
-450
-451
 452
-453</pre>
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 438</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 452</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rpc_server'>rpc_server</span><span class='lparen'>(</span><span class='id identifier rubyid_method'>method</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid__'>_</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_queue'>queue</span><span class='lparen'>(</span><span class='id identifier rubyid_method'>method</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='comma'>,</span> <span class='label'>durable:</span><span class='comma'>,</span> <span class='label'>auto_delete:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
@@ -4724,9 +4408,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first</p>
-
+    <p>Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first</p>
 
   </div>
 </div>
@@ -4762,12 +4444,6 @@
       <pre class="lines">
 
 
-69
-70
-71
-72
-73
-74
 75
 76
 77
@@ -4804,10 +4480,24 @@
 108
 109
 110
-111</pre>
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 69</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 75</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_start'>start</span>
   <span class='kw'>return</span> <span class='kw'>self</span> <span class='kw'>if</span> <span class='id identifier rubyid_started?'>started?</span>
@@ -4817,14 +4507,19 @@
 
     <span class='ivar'>@supervisor_started</span> <span class='op'>=</span> <span class='kw'>true</span>
     <span class='ivar'>@stopped</span> <span class='op'>=</span> <span class='kw'>false</span>
-    <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>false</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
-      <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='period'>.</span><span class='id identifier rubyid_abort_on_exception'>abort_on_exception</span> <span class='op'>=</span> <span class='kw'>true</span> <span class='comment'># Raising an unhandled exception is a bug
-</span>      <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
-        <span class='kw'>break</span> <span class='kw'>if</span> <span class='ivar'>@stopped</span>
+    <span class='id identifier rubyid_initial_conn'>initial_conn</span> <span class='op'>=</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_log_lifecycle'>log_lifecycle</span><span class='lparen'>(</span><span class='symbol'>:info</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>connected</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_supervisor'>supervisor</span> <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_initial_conn'>initial_conn</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span> <span class='comment'># rubocop:disable Metrics/BlockLength
+</span>      <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='period'>.</span><span class='id identifier rubyid_abort_on_exception'>abort_on_exception</span> <span class='op'>=</span> <span class='kw'>true</span> <span class='comment'># Raising an unhandled exception is a bug
+</span>      <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span> <span class='comment'># rubocop:disable Metrics/BlockLength
+</span>        <span class='kw'>break</span> <span class='kw'>if</span> <span class='ivar'>@stopped</span>
 
-        <span class='id identifier rubyid_conn'>conn</span> <span class='op'>||=</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+        <span class='kw'>unless</span> <span class='id identifier rubyid_conn'>conn</span>
+          <span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_log_lifecycle'>log_lifecycle</span><span class='lparen'>(</span><span class='symbol'>:info</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>reconnected</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
 
-        <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+        <span class='id identifier rubyid_setup'>setup</span> <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
           <span class='comment'># restore connection in another thread, read_loop have to run
 </span>          <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_channel'>channel</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span> <span class='comment'># reserve channel 1 for publishes
 </span>          <span class='ivar'>@consumers</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_consumer'>consumer</span><span class='op'>|</span>
@@ -4840,15 +4535,18 @@
           <span class='comment'># Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
 </span>          <span class='ivar'>@consumers</span><span class='period'>.</span><span class='id identifier rubyid_delete_if'>delete_if</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>|</span> <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_closed?'>closed?</span> <span class='rbrace'>}</span>
         <span class='kw'>end</span>
+        <span class='id identifier rubyid_setup'>setup</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='id identifier rubyid_thread_name'>thread_name</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>reconnect_setup</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
         <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_read_loop'>read_loop</span> <span class='comment'># blocks until connection is closed, then reconnect
-</span>      <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="Client/Error.html" title="AMQP::Client::Error (class)">Error</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
-        <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>AMQP-Client reconnect error: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+</span>        <span class='id identifier rubyid_log_lifecycle'>log_lifecycle</span><span class='lparen'>(</span><span class='symbol'>:warn</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>disconnected</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="Client/Error.html" title="AMQP::Client::Error (class)">Error</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
+        <span class='id identifier rubyid_log_reconnect_error'>log_reconnect_error</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span>
         <span class='id identifier rubyid_sleep'>sleep</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:reconnect_interval</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='int'>1</span>
       <span class='kw'>ensure</span>
         <span class='ivar'>@connq</span><span class='period'>.</span><span class='id identifier rubyid_clear'>clear</span>
         <span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='kw'>nil</span>
       <span class='kw'>end</span>
     <span class='kw'>end</span>
+    <span class='id identifier rubyid_supervisor'>supervisor</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='id identifier rubyid_thread_name'>thread_name</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>supervisor</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='kw'>end</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
@@ -4868,9 +4566,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Check if the client is connected</p>
-
+    <p>Check if the client is connected</p>
 
   </div>
 </div>
@@ -4887,9 +4583,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>true if connected or currently trying to connect, false otherwise</p>
-</div>
+        <div class='inline'><p>true if connected or currently trying to connect, false otherwise</p></div>
       
     </li>
   
@@ -4901,12 +4595,12 @@
       <pre class="lines">
 
 
-128
-129
-130</pre>
+142
+143
+144</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 128</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 142</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_started?'>started?</span>
   <span class='ivar'>@supervisor_started</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@stopped</span>
@@ -4927,9 +4621,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Close the currently open connection and stop the supervision / reconnection logic.</p>
-
+    <p>Close the currently open connection and stop the supervision / reconnection logic.</p>
 
   </div>
 </div>
@@ -4955,19 +4647,19 @@
       <pre class="lines">
 
 
-115
-116
-117
-118
-119
-120
-121
-122
-123
-124</pre>
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 115</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 129</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_stop'>stop</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@stopped</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@supervisor_started</span>
@@ -4995,9 +4687,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Consume messages from a queue</p>
-
+    <p>Consume messages from a queue</p>
 
   </div>
 </div>
@@ -5015,9 +4705,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the queue to subscribe to</p>
-</div>
+        <div class='inline'><p>Name of the queue to subscribe to</p></div>
       
     </li>
   
@@ -5033,9 +4721,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>When false messages have to be manually acknowledged (or rejected) (default: false)</p>
-</div>
+        <div class='inline'><p>When false messages have to be manually acknowledged (or rejected) (default: false)</p></div>
       
     </li>
   
@@ -5051,9 +4737,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Specify how many messages to prefetch for consumers with no_ack is false (default: 1)</p>
-</div>
+        <div class='inline'><p>Specify how many messages to prefetch for consumers with no_ack is false (default: 1)</p></div>
       
     </li>
   
@@ -5069,9 +4753,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Number of threads processing messages (default: 1)</p>
-</div>
+        <div class='inline'><p>Number of threads processing messages (default: 1)</p></div>
       
     </li>
   
@@ -5087,9 +4769,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Optional proc that will be called if the consumer is cancelled by the broker The proc will be called with the consumer tag as the only argument</p>
-</div>
+        <div class='inline'><p>Optional proc that will be called if the consumer is cancelled by the broker
+The proc will be called with the consumer tag as the only argument</p></div>
       
     </li>
   
@@ -5105,9 +4786,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Custom arguments to the consumer</p>
-</div>
+        <div class='inline'><p>Custom arguments to the consumer</p></div>
       
     </li>
   
@@ -5124,9 +4803,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Delivered message from the queue</p>
-</div>
+        <div class='inline'><p>Delivered message from the queue</p></div>
       
     </li>
   
@@ -5142,9 +4819,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The consumer object, which can be used to cancel the consumer</p>
-</div>
+        <div class='inline'><p>The consumer object, which can be used to cancel the consumer</p></div>
       
     </li>
   
@@ -5169,29 +4844,29 @@
       <pre class="lines">
 
 
-307
-308
-309
-310
-311
-312
-313
-314
-315
-316
-317
-318
-319
-320
 321
 322
 323
 324
 325
-326</pre>
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 307</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 321</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='label'>exclusive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>prefetch:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span>
               <span class='label'>on_cancel:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
@@ -5233,9 +4908,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Declare a topic exchange and return a high level Exchange object</p>
-
+    <p>Declare a topic exchange and return a high level Exchange object</p>
 
   </div>
 </div>
@@ -5255,9 +4928,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange (defaults to “amq.topic”)</p>
-</div>
+        <div class='inline'><p>Name of the exchange (defaults to &quot;amq.topic&quot;)</p></div>
       
     </li>
   
@@ -5290,12 +4961,12 @@
       <pre class="lines">
 
 
-225
-226
-227</pre>
+239
+240
+241</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 225</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 239</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_topic_exchange'>topic_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -5316,9 +4987,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Unbind a queue from an exchange</p>
-
+    <p>Unbind a queue from an exchange</p>
 
   </div>
 </div>
@@ -5336,9 +5005,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the queue to unbind</p>
-</div>
+        <div class='inline'><p>Name of the queue to unbind</p></div>
       
     </li>
   
@@ -5352,9 +5019,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to unbind from</p>
-</div>
+        <div class='inline'><p>Name of the exchange to unbind from</p></div>
       
     </li>
   
@@ -5370,9 +5035,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Binding key which the queue is bound to the exchange with</p>
-</div>
+        <div class='inline'><p>Binding key which the queue is bound to the exchange with</p></div>
       
     </li>
   
@@ -5388,9 +5051,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Arguments matching the binding that’s being removed</p>
-</div>
+        <div class='inline'><p>Arguments matching the binding that's being removed</p></div>
       
     </li>
   
@@ -5416,14 +5077,14 @@
       <pre class="lines">
 
 
-358
-359
-360
-361
-362</pre>
+372
+373
+374
+375
+376</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 358</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 372</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='label'>queue:</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -5446,9 +5107,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Wait for unconfirmed publishes</p>
-
+    <p>Wait for unconfirmed publishes</p>
 
   </div>
 </div>
@@ -5465,9 +5124,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>True if successful, false if any message negatively acknowledged</p>
-</div>
+        <div class='inline'><p>True if successful, false if any message negatively acknowledged</p></div>
       
     </li>
   
@@ -5479,14 +5136,14 @@
       <pre class="lines">
 
 
-289
-290
-291
-292
-293</pre>
+303
+304
+305
+306
+307</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 289</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 303</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait_for_confirms'>wait_for_confirms</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -5513,23 +5170,23 @@
       <pre class="lines">
 
 
-541
-542
-543
-544
-545
-546
-547
-548
-549
-550
-551
-552
-553
-554</pre>
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 541</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 555</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_connection'>with_connection</span>
   <span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='kw'>nil</span>
@@ -5555,9 +5212,9 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Nov 18 08:28:53 2025 by
+  Generated on Tue Jun 23 15:16:12 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.7).
+  0.9.44 (ruby-4.0.5).
 </div>
 
     </div>

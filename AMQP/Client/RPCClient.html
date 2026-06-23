@@ -6,13 +6,13 @@
 <title>
   Class: AMQP::Client::RPCClient
   
-    &mdash; Documentation by YARD 0.9.37
+    &mdash; Documentation by YARD 0.9.44
   
 </title>
 
-  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css">
 
-  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/common.css" type="text/css">
 
 <script type="text/javascript">
   pathId = "AMQP::Client::RPCClient";
@@ -27,6 +27,8 @@
 
   </head>
   <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
     <div class="nav_wrap">
       <iframe id="nav" src="../../class_list.html?1"></iframe>
       <div id="resizer"></div>
@@ -94,16 +96,15 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/amqp/client/rpc_client.rb</dd>
+    <dd>lib/amqp/client/rpc_client.rb
+</dd>
   </dl>
   
 </div>
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    
-<p>Reusable RPC client, when RPC performance is important</p>
-
+    <p>Reusable RPC client, when RPC performance is important</p>
 
   </div>
 </div>
@@ -142,9 +143,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Do a RPC call, sends a messages, waits for a response.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Do a RPC call, sends a messages, waits for a response.</p></div></span>
   
 </li>
 
@@ -166,9 +165,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Closes the channel used by the RPCClient.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Closes the channel used by the RPCClient.</p></div></span>
   
 </li>
 
@@ -192,9 +189,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>A new instance of RPCClient.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>A new instance of RPCClient.</p></div></span>
   
 </li>
 
@@ -216,14 +211,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Start listening for responses from the RPC calls.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Start listening for responses from the RPC calls.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
 
 <div id="constructor_details" class="method_details_list">
@@ -240,9 +234,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Returns a new instance of RPCClient.</p>
-
+    <p>Returns a new instance of RPCClient.</p>
 
   </div>
 </div>
@@ -260,9 +252,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>the channel to use for the RPC calls</p>
-</div>
+        <div class='inline'><p>the channel to use for the RPC calls</p></div>
       
     </li>
   
@@ -314,9 +304,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Do a RPC call, sends a messages, waits for a response</p>
-
+    <p>Do a RPC call, sends a messages, waits for a response</p>
 
   </div>
 </div>
@@ -334,9 +322,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>name of the method to call (i.e. queue name on the server side)</p>
-</div>
+        <div class='inline'><p>name of the method to call (i.e. queue name on the server side)</p></div>
       
     </li>
   
@@ -350,9 +336,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>arguments/body to the call</p>
-</div>
+        <div class='inline'><p>arguments/body to the call</p></div>
       
     </li>
   
@@ -368,9 +352,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Number of seconds to wait for a response</p>
-</div>
+        <div class='inline'><p>Number of seconds to wait for a response</p></div>
       
     </li>
   
@@ -384,9 +366,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>a customizable set of options</p>
-</div>
+        <div class='inline'><p>a customizable set of options</p></div>
       
     </li>
   
@@ -411,9 +391,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>The message will be returned if the message can’t be routed to a queue</p>
-</div>
+            &mdash; <div class='inline'><p>The message will be returned if the message can't be routed to a queue</p></div>
           
         </li>
       
@@ -424,9 +402,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Same as delivery_mode: 2</p>
-</div>
+            &mdash; <div class='inline'><p>Same as delivery_mode: 2</p></div>
           
         </li>
       
@@ -437,9 +413,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content type of the message body</p>
-</div>
+            &mdash; <div class='inline'><p>Content type of the message body</p></div>
           
         </li>
       
@@ -450,9 +424,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content encoding of the body</p>
-</div>
+            &mdash; <div class='inline'><p>Content encoding of the body</p></div>
           
         </li>
       
@@ -463,9 +435,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Custom headers</p>
-</div>
+            &mdash; <div class='inline'><p>Custom headers</p></div>
           
         </li>
       
@@ -476,9 +446,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>2 for persisted message, transient messages for all other values</p>
-</div>
+            &mdash; <div class='inline'><p>2 for persisted message, transient messages for all other values</p></div>
           
         </li>
       
@@ -489,9 +457,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A priority of the message (between 0 and 255)</p>
-</div>
+            &mdash; <div class='inline'><p>A priority of the message (between 0 and 255)</p></div>
           
         </li>
       
@@ -502,9 +468,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A correlation id, most often used used for RPC communication</p>
-</div>
+            &mdash; <div class='inline'><p>A correlation id, most often used used for RPC communication</p></div>
           
         </li>
       
@@ -515,9 +479,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Queue to reply RPC responses to</p>
-</div>
+            &mdash; <div class='inline'><p>Queue to reply RPC responses to</p></div>
           
         </li>
       
@@ -528,9 +490,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Number of seconds the message will stay in the queue</p>
-</div>
+            &mdash; <div class='inline'><p>Number of seconds the message will stay in the queue</p></div>
           
         </li>
       
@@ -541,9 +501,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to uniquely identify the message, e.g. for deduplication</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to uniquely identify the message, e.g. for deduplication</p></div>
           
         </li>
       
@@ -554,9 +512,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Often used for the time the message was originally generated</p>
-</div>
+            &mdash; <div class='inline'><p>Often used for the time the message was originally generated</p></div>
           
         </li>
       
@@ -567,9 +523,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can indicate what kind of message this is</p>
-</div>
+            &mdash; <div class='inline'><p>Can indicate what kind of message this is</p></div>
           
         </li>
       
@@ -580,9 +534,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to verify that this is the user that published the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to verify that this is the user that published the message</p></div>
           
         </li>
       
@@ -593,9 +545,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to indicates which app that generated the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to indicates which app that generated the message</p></div>
           
         </li>
       
@@ -613,9 +563,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Returns the result from the call</p>
-</div>
+        <div class='inline'><p>Returns the result from the call</p></div>
       
     </li>
   
@@ -631,9 +579,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>if no response is received within the timeout period</p>
-</div>
+        <div class='inline'><p>if no response is received within the timeout period</p></div>
       
     </li>
   
@@ -699,9 +645,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Closes the channel used by the RPCClient</p>
-
+    <p>Closes the channel used by the RPCClient</p>
 
   </div>
 </div>
@@ -742,9 +686,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Start listening for responses from the RPC calls</p>
-
+    <p>Start listening for responses from the RPC calls</p>
 
   </div>
 </div>
@@ -796,9 +738,9 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Nov 18 08:28:54 2025 by
+  Generated on Tue Jun 23 15:16:14 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.7).
+  0.9.44 (ruby-4.0.5).
 </div>
 
     </div>

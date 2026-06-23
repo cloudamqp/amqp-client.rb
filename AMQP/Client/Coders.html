@@ -6,13 +6,13 @@
 <title>
   Module: AMQP::Client::Coders
   
-    &mdash; Documentation by YARD 0.9.37
+    &mdash; Documentation by YARD 0.9.44
   
 </title>
 
-  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css">
 
-  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/common.css" type="text/css">
 
 <script type="text/javascript">
   pathId = "AMQP::Client::Coders";
@@ -27,6 +27,8 @@
 
   </head>
   <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
     <div class="nav_wrap">
       <iframe id="nav" src="../../class_list.html?1"></iframe>
       <div id="resizer"></div>
@@ -78,7 +80,8 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/amqp/client/message_codecs.rb</dd>
+    <dd>lib/amqp/client/message_codecs.rb
+</dd>
   </dl>
   
 </div>
@@ -118,6 +121,58 @@
   <span class='kw'>def</span> <span class='id identifier rubyid_decode'>decode</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='comma'>,</span> <span class='id identifier rubyid__properties'>_properties</span><span class='rparen'>)</span> <span class='op'>=</span> <span class='const'>Zlib</span><span class='period'>.</span><span class='id identifier rubyid_inflate'>inflate</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
 <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span></pre></dd>
       
+        <dt id="DeflateRaw-constant" class="">DeflateRaw =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Raw DEFLATE coder (RFC 1951 -- no zlib header, no Adler-32 checksum).
+Not registered by default. Use to interoperate with producers that emit
+raw DEFLATE under content_encoding &quot;deflate&quot;, the same ambiguity HTTP
+has carried for decades and that Zlib::Deflate.new(level, -MAX_WBITS)
+exists for.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Override the built-in deflate coder</p></div></h5>
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../../AMQP.html" title="AMQP (module)">AMQP</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Client.html" title="AMQP::Client (class)">Client</a></span></span><span class='period'>.</span><span class='id identifier rubyid_configure'><span class='object_link'><a href="../Client.html#configure-class_method" title="AMQP::Client.configure (method)">configure</a></span></span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_config'>config</span><span class='op'>|</span>
+  <span class='id identifier rubyid_config'>config</span><span class='period'>.</span><span class='id identifier rubyid_enable_builtin_codecs'>enable_builtin_codecs</span>
+  <span class='id identifier rubyid_config'>config</span><span class='period'>.</span><span class='id identifier rubyid_register_coder'>register_coder</span><span class='lparen'>(</span><span class='label'>content_encoding:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>deflate</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                        <span class='label'>coder:</span> <span class='const'><span class='object_link'><a href="../../AMQP.html" title="AMQP (module)">AMQP</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Client.html" title="AMQP::Client (class)">Client</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="AMQP::Client::Coders (module)">Coders</a></span></span><span class='op'>::</span><span class='const'>DeflateRaw</span><span class='rparen'>)</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+  <span class='kw'>def</span> <span class='id identifier rubyid_encode'>encode</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='comma'>,</span> <span class='id identifier rubyid__properties'>_properties</span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='id identifier rubyid_data'>data</span> <span class='kw'>if</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_encoding'>encoding</span> <span class='op'>==</span> <span class='const'>Encoding</span><span class='op'>::</span><span class='const'>BINARY</span>
+
+    <span class='id identifier rubyid_deflater'>deflater</span> <span class='op'>=</span> <span class='const'>Zlib</span><span class='op'>::</span><span class='const'>Deflate</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>Zlib</span><span class='op'>::</span><span class='const'>DEFAULT_COMPRESSION</span><span class='comma'>,</span> <span class='op'>-</span><span class='const'>Zlib</span><span class='op'>::</span><span class='const'>MAX_WBITS</span><span class='rparen'>)</span>
+    <span class='kw'>begin</span>
+      <span class='id identifier rubyid_deflater'>deflater</span><span class='period'>.</span><span class='id identifier rubyid_deflate'>deflate</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='comma'>,</span> <span class='const'>Zlib</span><span class='op'>::</span><span class='const'>FINISH</span><span class='rparen'>)</span>
+    <span class='kw'>ensure</span>
+      <span class='id identifier rubyid_deflater'>deflater</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_decode'>decode</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='comma'>,</span> <span class='id identifier rubyid__properties'>_properties</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_inflater'>inflater</span> <span class='op'>=</span> <span class='const'>Zlib</span><span class='op'>::</span><span class='const'>Inflate</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>-</span><span class='const'>Zlib</span><span class='op'>::</span><span class='const'>MAX_WBITS</span><span class='rparen'>)</span>
+    <span class='kw'>begin</span>
+      <span class='id identifier rubyid_inflater'>inflater</span><span class='period'>.</span><span class='id identifier rubyid_inflate'>inflate</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
+    <span class='kw'>ensure</span>
+      <span class='id identifier rubyid_inflater'>inflater</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span></pre></dd>
+      
     </dl>
   
 
@@ -132,9 +187,9 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Nov 18 08:28:53 2025 by
+  Generated on Tue Jun 23 15:16:12 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.7).
+  0.9.44 (ruby-4.0.5).
 </div>
 
     </div>

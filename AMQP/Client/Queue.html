@@ -6,13 +6,13 @@
 <title>
   Class: AMQP::Client::Queue
   
-    &mdash; Documentation by YARD 0.9.37
+    &mdash; Documentation by YARD 0.9.44
   
 </title>
 
-  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css">
 
-  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/common.css" type="text/css">
 
 <script type="text/javascript">
   pathId = "AMQP::Client::Queue";
@@ -27,6 +27,8 @@
 
   </head>
   <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
     <div class="nav_wrap">
       <iframe id="nav" src="../../class_list.html?1"></iframe>
       <div id="resizer"></div>
@@ -94,16 +96,15 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/amqp/client/queue.rb</dd>
+    <dd>lib/amqp/client/queue.rb
+</dd>
   </dl>
   
 </div>
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    
-<p>Queue abstraction</p>
-
+    <p>Queue abstraction</p>
 
   </div>
 </div>
@@ -139,9 +140,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute name.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute name.</p></div></span>
   
 </li>
 
@@ -176,9 +175,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Bind the queue to an exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Bind the queue to an exchange.</p></div></span>
   
 </li>
 
@@ -200,9 +197,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Delete the queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Delete the queue.</p></div></span>
   
 </li>
 
@@ -224,9 +219,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Get a message from the queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Get a message from the queue.</p></div></span>
   
 </li>
 
@@ -248,9 +241,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Publish to the queue, wait for confirm.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Publish to the queue, wait for confirm.</p></div></span>
   
 </li>
 
@@ -272,9 +263,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Publish to the queue, without waiting for confirm.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Publish to the queue, without waiting for confirm.</p></div></span>
   
 </li>
 
@@ -296,9 +285,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Purge/empty the queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Purge/empty the queue.</p></div></span>
   
 </li>
 
@@ -320,9 +307,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Subscribe/consume from the queue.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Subscribe/consume from the queue.</p></div></span>
   
 </li>
 
@@ -344,14 +329,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Unbind the queue from an exchange.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Unbind the queue from an exchange.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
 
 
@@ -371,9 +355,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Returns the value of attribute name.</p>
-
+    <p>Returns the value of attribute name.</p>
 
   </div>
 </div>
@@ -419,9 +401,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Bind the queue to an exchange</p>
-
+    <p>Bind the queue to an exchange</p>
 
   </div>
 </div>
@@ -439,9 +419,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to bind to, or the exchange object itself</p>
-</div>
+        <div class='inline'><p>Name of the exchange to bind to, or the exchange object itself</p></div>
       
     </li>
   
@@ -457,9 +435,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Binding key on which messages that match might be routed (depending on exchange type)</p>
-</div>
+        <div class='inline'><p>Binding key on which messages that match might be routed (depending on exchange type)</p></div>
       
     </li>
   
@@ -475,9 +451,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Message headers to match on (only relevant for header exchanges)</p>
-</div>
+        <div class='inline'><p>Message headers to match on (only relevant for header exchanges)</p></div>
       
     </li>
   
@@ -533,9 +507,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Delete the queue</p>
-
+    <p>Delete the queue</p>
 
   </div>
 </div>
@@ -589,9 +561,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Get a message from the queue</p>
-
+    <p>Get a message from the queue</p>
 
   </div>
 </div>
@@ -611,9 +581,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>When false the message has to be manually acknowledged (or rejected) (default: false)</p>
-</div>
+        <div class='inline'><p>When false the message has to be manually acknowledged (or rejected) (default: false)</p></div>
       
     </li>
   
@@ -630,9 +598,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The message from the queue or nil if the queue is empty</p>
-</div>
+        <div class='inline'><p>The message from the queue or nil if the queue is empty</p></div>
       
     </li>
   
@@ -670,9 +636,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Publish to the queue, wait for confirm</p>
-
+    <p>Publish to the queue, wait for confirm</p>
 
   </div>
 </div>
@@ -690,9 +654,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The message body will be encoded if any matching codec is found in the client’s codec registry</p>
-</div>
+        <div class='inline'><p>The message body
+will be encoded if any matching codec is found in the client's codec registry</p></div>
       
     </li>
   
@@ -713,9 +676,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>The message will be returned if the message can’t be routed to a queue</p>
-</div>
+            &mdash; <div class='inline'><p>The message will be returned if the message can't be routed to a queue</p></div>
           
         </li>
       
@@ -726,9 +687,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Same as delivery_mode: 2</p>
-</div>
+            &mdash; <div class='inline'><p>Same as delivery_mode: 2</p></div>
           
         </li>
       
@@ -739,9 +698,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content type of the message body</p>
-</div>
+            &mdash; <div class='inline'><p>Content type of the message body</p></div>
           
         </li>
       
@@ -752,9 +709,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content encoding of the body</p>
-</div>
+            &mdash; <div class='inline'><p>Content encoding of the body</p></div>
           
         </li>
       
@@ -765,9 +720,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Custom headers</p>
-</div>
+            &mdash; <div class='inline'><p>Custom headers</p></div>
           
         </li>
       
@@ -778,9 +731,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>2 for persisted message, transient messages for all other values</p>
-</div>
+            &mdash; <div class='inline'><p>2 for persisted message, transient messages for all other values</p></div>
           
         </li>
       
@@ -791,9 +742,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A priority of the message (between 0 and 255)</p>
-</div>
+            &mdash; <div class='inline'><p>A priority of the message (between 0 and 255)</p></div>
           
         </li>
       
@@ -804,9 +753,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A correlation id, most often used used for RPC communication</p>
-</div>
+            &mdash; <div class='inline'><p>A correlation id, most often used used for RPC communication</p></div>
           
         </li>
       
@@ -817,9 +764,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Queue to reply RPC responses to</p>
-</div>
+            &mdash; <div class='inline'><p>Queue to reply RPC responses to</p></div>
           
         </li>
       
@@ -830,9 +775,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Number of seconds the message will stay in the queue</p>
-</div>
+            &mdash; <div class='inline'><p>Number of seconds the message will stay in the queue</p></div>
           
         </li>
       
@@ -843,9 +786,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to uniquely identify the message, e.g. for deduplication</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to uniquely identify the message, e.g. for deduplication</p></div>
           
         </li>
       
@@ -856,9 +797,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Often used for the time the message was originally generated</p>
-</div>
+            &mdash; <div class='inline'><p>Often used for the time the message was originally generated</p></div>
           
         </li>
       
@@ -869,9 +808,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can indicate what kind of message this is</p>
-</div>
+            &mdash; <div class='inline'><p>Can indicate what kind of message this is</p></div>
           
         </li>
       
@@ -882,9 +819,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to verify that this is the user that published the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to verify that this is the user that published the message</p></div>
           
         </li>
       
@@ -895,9 +830,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to indicates which app that generated the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to indicates which app that generated the message</p></div>
           
         </li>
       
@@ -915,9 +848,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>self</p>
-</div>
+        <div class='inline'><p>self</p></div>
       
     </li>
   
@@ -933,9 +864,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If the message was not confirmed by the broker</p>
-</div>
+        <div class='inline'><p>If the message was not confirmed by the broker</p></div>
       
     </li>
   
@@ -947,9 +876,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content type is unsupported</p>
-</div>
+        <div class='inline'><p>If content type is unsupported</p></div>
       
     </li>
   
@@ -961,9 +888,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content encoding is unsupported</p>
-</div>
+        <div class='inline'><p>If content encoding is unsupported</p></div>
       
     </li>
   
@@ -1003,9 +928,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Publish to the queue, without waiting for confirm</p>
-
+    <p>Publish to the queue, without waiting for confirm</p>
 
   </div>
 </div>
@@ -1023,9 +946,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The message body will be encoded if any matching codec is found in the client’s codec registry</p>
-</div>
+        <div class='inline'><p>The message body
+will be encoded if any matching codec is found in the client's codec registry</p></div>
       
     </li>
   
@@ -1046,9 +968,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>The message will be returned if the message can’t be routed to a queue</p>
-</div>
+            &mdash; <div class='inline'><p>The message will be returned if the message can't be routed to a queue</p></div>
           
         </li>
       
@@ -1059,9 +979,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Same as delivery_mode: 2</p>
-</div>
+            &mdash; <div class='inline'><p>Same as delivery_mode: 2</p></div>
           
         </li>
       
@@ -1072,9 +990,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content type of the message body</p>
-</div>
+            &mdash; <div class='inline'><p>Content type of the message body</p></div>
           
         </li>
       
@@ -1085,9 +1001,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Content encoding of the body</p>
-</div>
+            &mdash; <div class='inline'><p>Content encoding of the body</p></div>
           
         </li>
       
@@ -1098,9 +1012,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Custom headers</p>
-</div>
+            &mdash; <div class='inline'><p>Custom headers</p></div>
           
         </li>
       
@@ -1111,9 +1023,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>2 for persisted message, transient messages for all other values</p>
-</div>
+            &mdash; <div class='inline'><p>2 for persisted message, transient messages for all other values</p></div>
           
         </li>
       
@@ -1124,9 +1034,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A priority of the message (between 0 and 255)</p>
-</div>
+            &mdash; <div class='inline'><p>A priority of the message (between 0 and 255)</p></div>
           
         </li>
       
@@ -1137,9 +1045,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>A correlation id, most often used used for RPC communication</p>
-</div>
+            &mdash; <div class='inline'><p>A correlation id, most often used used for RPC communication</p></div>
           
         </li>
       
@@ -1150,9 +1056,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Queue to reply RPC responses to</p>
-</div>
+            &mdash; <div class='inline'><p>Queue to reply RPC responses to</p></div>
           
         </li>
       
@@ -1163,9 +1067,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Number of seconds the message will stay in the queue</p>
-</div>
+            &mdash; <div class='inline'><p>Number of seconds the message will stay in the queue</p></div>
           
         </li>
       
@@ -1176,9 +1078,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to uniquely identify the message, e.g. for deduplication</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to uniquely identify the message, e.g. for deduplication</p></div>
           
         </li>
       
@@ -1189,9 +1089,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Often used for the time the message was originally generated</p>
-</div>
+            &mdash; <div class='inline'><p>Often used for the time the message was originally generated</p></div>
           
         </li>
       
@@ -1202,9 +1100,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can indicate what kind of message this is</p>
-</div>
+            &mdash; <div class='inline'><p>Can indicate what kind of message this is</p></div>
           
         </li>
       
@@ -1215,9 +1111,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to verify that this is the user that published the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to verify that this is the user that published the message</p></div>
           
         </li>
       
@@ -1228,9 +1122,7 @@
             
           </span>
           
-            &mdash; <div class='inline'>
-<p>Can be used to indicates which app that generated the message</p>
-</div>
+            &mdash; <div class='inline'><p>Can be used to indicates which app that generated the message</p></div>
           
         </li>
       
@@ -1248,9 +1140,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>self</p>
-</div>
+        <div class='inline'><p>self</p></div>
       
     </li>
   
@@ -1266,9 +1156,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If the message was not confirmed by the broker</p>
-</div>
+        <div class='inline'><p>If the message was not confirmed by the broker</p></div>
       
     </li>
   
@@ -1280,9 +1168,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content type is unsupported</p>
-</div>
+        <div class='inline'><p>If content type is unsupported</p></div>
       
     </li>
   
@@ -1294,9 +1180,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If content encoding is unsupported</p>
-</div>
+        <div class='inline'><p>If content encoding is unsupported</p></div>
       
     </li>
   
@@ -1336,9 +1220,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Purge/empty the queue</p>
-
+    <p>Purge/empty the queue</p>
 
   </div>
 </div>
@@ -1392,9 +1274,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Subscribe/consume from the queue</p>
-
+    <p>Subscribe/consume from the queue</p>
 
   </div>
 </div>
@@ -1414,9 +1294,10 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true, messages are automatically acknowledged by the server upon delivery. If false, messages are acknowledged only after the block completes successfully; if the block raises an exception, the message is rejected and can be optionally requeued. You can of course handle the ack/reject in the block yourself. (Default: false)</p>
-</div>
+        <div class='inline'><p>If true, messages are automatically acknowledged by the server upon delivery.
+If false, messages are acknowledged only after the block completes successfully; if the block raises
+an exception, the message is rejected and can be optionally requeued.
+You can of course handle the ack/reject in the block yourself. (Default: false)</p></div>
       
     </li>
   
@@ -1432,9 +1313,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>When true only a single consumer can consume from the queue at a time</p>
-</div>
+        <div class='inline'><p>When true only a single consumer can consume from the queue at a time</p></div>
       
     </li>
   
@@ -1450,9 +1329,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Specify how many messages to prefetch for consumers with no_ack is false</p>
-</div>
+        <div class='inline'><p>Specify how many messages to prefetch for consumers with no_ack is false</p></div>
       
     </li>
   
@@ -1468,9 +1345,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Number of threads processing messages, 0 means that the thread calling this method will be blocked</p>
-</div>
+        <div class='inline'><p>Number of threads processing messages,
+0 means that the thread calling this method will be blocked</p></div>
       
     </li>
   
@@ -1486,9 +1362,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true, messages that are rejected due to an exception in the block will be requeued. Only relevant if no_ack is false. (Default: true)</p>
-</div>
+        <div class='inline'><p>If true, messages that are rejected due to an exception in the block
+will be requeued. Only relevant if no_ack is false. (Default: true)</p></div>
       
     </li>
   
@@ -1504,9 +1379,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Optional proc that will be called if the consumer is cancelled by the broker The proc will be called with the consumer tag as the only argument</p>
-</div>
+        <div class='inline'><p>Optional proc that will be called if the consumer is cancelled by the broker
+The proc will be called with the consumer tag as the only argument</p></div>
       
     </li>
   
@@ -1522,9 +1396,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Custom arguments to the consumer</p>
-</div>
+        <div class='inline'><p>Custom arguments to the consumer</p></div>
       
     </li>
   
@@ -1541,9 +1413,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Delivered message from the queue</p>
-</div>
+        <div class='inline'><p>Delivered message from the queue</p></div>
       
     </li>
   
@@ -1559,9 +1429,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The consumer object, which can be used to cancel the consumer</p>
-</div>
+        <div class='inline'><p>The consumer object, which can be used to cancel the consumer</p></div>
       
     </li>
   
@@ -1613,9 +1481,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Unbind the queue from an exchange</p>
-
+    <p>Unbind the queue from an exchange</p>
 
   </div>
 </div>
@@ -1633,9 +1499,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Name of the exchange to unbind from, or the exchange object itself</p>
-</div>
+        <div class='inline'><p>Name of the exchange to unbind from, or the exchange object itself</p></div>
       
     </li>
   
@@ -1651,9 +1515,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Binding key which the queue is bound to the exchange with</p>
-</div>
+        <div class='inline'><p>Binding key which the queue is bound to the exchange with</p></div>
       
     </li>
   
@@ -1669,9 +1531,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>Arguments matching the binding that’s being removed</p>
-</div>
+        <div class='inline'><p>Arguments matching the binding that's being removed</p></div>
       
     </li>
   
@@ -1721,9 +1581,9 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Nov 18 08:28:53 2025 by
+  Generated on Tue Jun 23 15:16:13 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.7).
+  0.9.44 (ruby-4.0.5).
 </div>
 
     </div>

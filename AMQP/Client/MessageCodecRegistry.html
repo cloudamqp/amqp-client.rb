@@ -6,13 +6,13 @@
 <title>
   Class: AMQP::Client::MessageCodecRegistry
   
-    &mdash; Documentation by YARD 0.9.37
+    &mdash; Documentation by YARD 0.9.44
   
 </title>
 
-  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css">
 
-  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/common.css" type="text/css">
 
 <script type="text/javascript">
   pathId = "AMQP::Client::MessageCodecRegistry";
@@ -27,6 +27,8 @@
 
   </head>
   <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
     <div class="nav_wrap">
       <iframe id="nav" src="../../class_list.html?1"></iframe>
       <div id="resizer"></div>
@@ -94,16 +96,16 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/amqp/client/message_codec_registry.rb</dd>
+    <dd>lib/amqp/client/message_codec_registry.rb
+</dd>
   </dl>
   
 </div>
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    
-<p>Internal registry that stores content_type parsers and content_encoding coders. Only exact content_type and content_encoding matches are supported.</p>
-
+    <p>Internal registry that stores content_type parsers and content_encoding coders.
+Only exact content_type and content_encoding matches are supported.</p>
 
   </div>
 </div>
@@ -142,9 +144,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Lightweight cloning: registry contents duplicated (shallow copy of handler references).</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Lightweight cloning: registry contents duplicated (shallow copy of handler references).</p></div></span>
   
 </li>
 
@@ -166,9 +166,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Enable all built-in codecs (parsers and coders).</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Enable all built-in codecs (parsers and coders).</p></div></span>
   
 </li>
 
@@ -190,9 +188,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Enable built-in coders for common content encodings.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Enable built-in coders for common content encodings.</p></div></span>
   
 </li>
 
@@ -214,9 +210,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Enable built-in parsers for common content types.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Enable built-in parsers for common content types.</p></div></span>
   
 </li>
 
@@ -238,9 +232,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Find coder handler based on content_encoding.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Find coder handler based on content_encoding.</p></div></span>
   
 </li>
 
@@ -262,9 +254,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Find parser handler based on message properties.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Find parser handler based on message properties.</p></div></span>
   
 </li>
 
@@ -288,9 +278,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>A new instance of MessageCodecRegistry.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>A new instance of MessageCodecRegistry.</p></div></span>
   
 </li>
 
@@ -312,9 +300,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Introspection helper to list all registered content encodings.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Introspection helper to list all registered content encodings.</p></div></span>
   
 </li>
 
@@ -336,9 +322,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Introspection helper to list all registered content types.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Introspection helper to list all registered content types.</p></div></span>
   
 </li>
 
@@ -360,9 +344,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Register a coder for a specific content_encoding.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Register a coder for a specific content_encoding.</p></div></span>
   
 </li>
 
@@ -384,14 +366,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Register a parser for a content_type.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Register a parser for a content_type.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
 
 <div id="constructor_details" class="method_details_list">
@@ -408,9 +389,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Returns a new instance of MessageCodecRegistry.</p>
-
+    <p>Returns a new instance of MessageCodecRegistry.</p>
 
   </div>
 </div>
@@ -458,9 +437,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Lightweight cloning: registry contents duplicated (shallow copy of handler references)</p>
-
+    <p>Lightweight cloning: registry contents duplicated (shallow copy of handler references)</p>
 
   </div>
 </div>
@@ -505,9 +482,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Enable all built-in codecs (parsers and coders)</p>
-
+    <p>Enable all built-in codecs (parsers and coders)</p>
 
   </div>
 </div>
@@ -559,9 +534,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Enable built-in coders for common content encodings</p>
-
+    <p>Enable built-in coders for common content encodings</p>
 
   </div>
 </div>
@@ -617,9 +590,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Enable built-in parsers for common content types</p>
-
+    <p>Enable built-in parsers for common content types</p>
 
   </div>
 </div>
@@ -675,9 +646,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Find coder handler based on content_encoding</p>
-
+    <p>Find coder handler based on content_encoding</p>
 
   </div>
 </div>
@@ -695,9 +664,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The content_encoding to match</p>
-</div>
+        <div class='inline'><p>The content_encoding to match</p></div>
       
     </li>
   
@@ -714,9 +681,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The coder object or nil if not found</p>
-</div>
+        <div class='inline'><p>The coder object or nil if not found</p></div>
       
     </li>
   
@@ -754,9 +719,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Find parser handler based on message properties</p>
-
+    <p>Find parser handler based on message properties</p>
 
   </div>
 </div>
@@ -774,9 +737,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The content_type to match</p>
-</div>
+        <div class='inline'><p>The content_type to match</p></div>
       
     </li>
   
@@ -793,9 +754,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The parser object or nil if not found</p>
-</div>
+        <div class='inline'><p>The parser object or nil if not found</p></div>
       
     </li>
   
@@ -833,9 +792,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Introspection helper to list all registered content encodings</p>
-
+    <p>Introspection helper to list all registered content encodings</p>
 
   </div>
 </div>
@@ -852,9 +809,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>List of registered content encodings</p>
-</div>
+        <div class='inline'><p>List of registered content encodings</p></div>
       
     </li>
   
@@ -892,9 +847,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Introspection helper to list all registered content types</p>
-
+    <p>Introspection helper to list all registered content types</p>
 
   </div>
 </div>
@@ -911,9 +864,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>List of registered content types</p>
-</div>
+        <div class='inline'><p>List of registered content types</p></div>
       
     </li>
   
@@ -951,9 +902,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Register a coder for a specific content_encoding</p>
-
+    <p>Register a coder for a specific content_encoding</p>
 
   </div>
 </div>
@@ -971,9 +920,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The content_encoding to match</p>
-</div>
+        <div class='inline'><p>The content_encoding to match</p></div>
       
     </li>
   
@@ -987,9 +934,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The coder object, must respond to encode(data, properties) and decode(data, properties)</p>
-</div>
+        <div class='inline'><p>The coder object,
+must respond to encode(data, properties) and decode(data, properties)</p></div>
       
     </li>
   
@@ -1045,9 +991,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Register a parser for a content_type</p>
-
+    <p>Register a parser for a content_type</p>
 
   </div>
 </div>
@@ -1065,9 +1009,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The content_type to match</p>
-</div>
+        <div class='inline'><p>The content_type to match</p></div>
       
     </li>
   
@@ -1081,9 +1023,8 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The parser object, must respond to parse(data, properties) and serialize(obj, properties)</p>
-</div>
+        <div class='inline'><p>The parser object,
+must respond to parse(data, properties) and serialize(obj, properties)</p></div>
       
     </li>
   
@@ -1133,9 +1074,9 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Nov 18 08:28:54 2025 by
+  Generated on Tue Jun 23 15:16:14 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.7).
+  0.9.44 (ruby-4.0.5).
 </div>
 
     </div>

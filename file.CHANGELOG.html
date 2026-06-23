@@ -6,13 +6,13 @@
 <title>
   File: CHANGELOG
   
-    &mdash; Documentation by YARD 0.9.37
+    &mdash; Documentation by YARD 0.9.44
   
 </title>
 
-  <link rel="stylesheet" href="css/style.css" type="text/css" />
+  <link rel="stylesheet" href="css/style.css" type="text/css">
 
-  <link rel="stylesheet" href="css/common.css" type="text/css" />
+  <link rel="stylesheet" href="css/common.css" type="text/css">
 
 <script type="text/javascript">
   pathId = "CHANGELOG";
@@ -27,6 +27,8 @@
 
   </head>
   <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
     <div class="nav_wrap">
       <iframe id="nav" src="file_list.html?1"></iframe>
       <div id="resizer"></div>
@@ -57,241 +59,174 @@
         <div class="clear"></div>
       </div>
 
-      <div id="content"><div id='filecontents'>
-<h2 id="label-5BUnreleased-5D">[Unreleased]</h2>
-
-<h2 id="label-5B2.0.1-5D+-+2025-11-18">[2.0.1] - 2025-11-18</h2>
-<ul><li>
-<p>Fixed: Ensure closing channels on basic get high level api (#73)</p>
-</li><li>
-<p>Improved: Clean up migration guide</p>
-</li><li>
-<p>Added: GitHub release notes for v2.0.0</p>
-</li></ul>
-
-<h2 id="label-5B2.0.0-5D+-+2025-10-27">[2.0.0] - 2025-10-27</h2>
-<ul><li>
-<p><strong>BREAKING CHANGE</strong>: Refactored public API to use keyword arguments for improved clarity and consistency</p>
-</li><li>
-<p>All methods now use keyword arguments instead of positional arguments (e.g., <code>publish(body, exchange:, routing_key:)</code>)</p>
-</li><li>
-<p><strong>BREAKING CHANGE</strong>: <code>Channel#basic_subscribe</code> methods now return <code>Connection::Channel::ConsumeOk</code> for better consumer response handling</p>
-</li><li>
-<p><strong>BREAKING CHANGE</strong>: <code>Connection::Channel::QueueOk</code> converted from <code>Struct</code> to <code>Data</code> class</p>
-</li><li>
-<p><strong>BREAKING CHANGE</strong>: Direct exchange default name changed from empty string to “amq.direct” for API consistency</p>
-</li><li>
-<p><strong>BREAKING CHANGE</strong>: Client exchange convenience methods renamed to <code>$type_exchange</code>, e.g. <code>direct_exchange</code> for improved clarity</p>
-</li><li>
-<p><strong>BREAKING_CHANGE</strong>: <code>Client#subscribe</code> and <code>Queue#subscribe</code> now return a <code>Consumer</code> which can be cancelled.</p>
-</li><li>
-<p>Added: <code>Queue#subscribe</code> now handles ack and rejects automatically</p>
-</li><li>
-<p>Added: RPC API</p>
-</li><li>
-<p>Added: Support <code>no_wait</code> argument in <code>#basic_consume</code></p>
-</li><li>
-<p>Added: <code>Client#started?</code> to check if <code>start</code> has already been called and made <code>Clinet#start</code> idempotent</p>
-</li><li>
-<p>Added: Automatic message encoding/serialization for high level API (built-in JSON, Marshal etc. via codec registry)</p>
-</li><li>
-<p>Added: Support for default <code>content_type</code> and <code>content_encoding</code> at class and instance level (automatically applied to published messages unless explicitly overridden)</p>
-</li><li>
-<p>Added: <code>AMQP::Client.configure</code> block pattern for unified class-level configuration</p>
-</li><li>
-<p>Added: <code>Queue#get</code> and <code>Client#get</code> methods for polling messages from queues as an alternative to subscribe</p>
-</li><li>
-<p>Added: <code>passive</code> parameter to queue declaration for checking queue existence without creating it</p>
-</li><li>
-<p>Added: <code>exclusive</code> parameter to queue method and subscribe</p>
-</li><li>
-<p>Added: <code>Message#delivery_info</code> struct for easier access to delivery metadata (exchange, routing_key, delivery_tag, redelivered, consumer_tag)</p>
-</li><li>
-<p>Changed: Disabled nagle’s algorithm</p>
-</li><li>
-<p>Fixed: Running minitest with <code>--verbose</code> flag no longer causes TypeError</p>
-</li><li>
-<p>Fixed: <code>Clinet#start</code> is now thread-safe</p>
-</li><li>
-<p>Fixed: <code>wait_for_confirms</code> handles NACKs and actually returns the promised success bool</p>
-</li></ul>
-
-<h2 id="label-5B1.2.1-5D+-+2025-09-15">[1.2.1] - 2025-09-15</h2>
-<ul><li>
-<p>Added: Convenience methods for creating exchange types: <code>fanout()</code>, <code>direct()</code>, <code>topic()</code>, and <code>headers()</code></p>
-</li><li>
-<p>Added: Support for binding with high level objects (Exchange and Queue objects can now be passed as binding sources)</p>
-</li><li>
-<p>Fixed: Bug where a client without any connection could not be closed properly</p>
-</li></ul>
-
-<h2 id="label-5B1.2.0-5D+-+2025-09-10">[1.2.0] - 2025-09-10</h2>
-<ul><li>
-<p>Fixed: <code>Connection#channel</code> wasn’t thread-safe</p>
-</li><li>
-<p>Added: Support for heartbeats</p>
-</li></ul>
-
-<h2 id="label-5B1.1.7-5D+-+2024-05-12">[1.1.7] - 2024-05-12</h2>
-<ul><li>
-<p>Support for Connection.update-secret</p>
-</li><li>
-<p>Allow sub-second connect_timeout</p>
-</li><li>
-<p>Fixed: undefinied variable if message was returned and no on_return block was set</p>
-</li></ul>
-
-<h2 id="label-5B1.1.6-5D+-+2024-03-26">[1.1.6] - 2024-03-26</h2>
-<ul><li>
-<p>Fixed: Channel#wait_for_confirms now waits for all confirms, in a thread safe way</p>
-</li><li>
-<p>Changed: When server sends Connection.blocked the client isn’t write blocked anymore, and can continue consume for instance. However, the on_blocked/unblocked callbacks should be used and manually stop publishing as the server otherwise will stop reading from the client socket.</p>
-</li></ul>
-
-<h2 id="label-5B1.1.5-5D+-+2024-03-15">[1.1.5] - 2024-03-15</h2>
-<ul><li>
-<p>Fixed: Correctly reference the <code>UnexpectedFrameEnd</code> exception</p>
-</li></ul>
-
-<h2 id="label-5B1.1.4-5D+-+2021-12-27">[1.1.4] - 2021-12-27</h2>
-<ul><li>
-<p>Fixed: Ruby 3.1.0 compability, StringIO have to be required manually</p>
-</li></ul>
-
-<h2 id="label-5B1.1.3-5D+-+2021-11-04">[1.1.3] - 2021-11-04</h2>
-<ul><li>
-<p>Fixed: Reraise SystemcallError in connect so that reconnect works</p>
-</li><li>
-<p>Fixed: Keepalive support in OS X</p>
-</li><li>
-<p>Added: Make keepalive settings configurable (eg. amqp://?keepalive=60:10:3)</p>
-</li></ul>
-
-<h2 id="label-5B1.1.2-5D+-+2021-10-15">[1.1.2] - 2021-10-15</h2>
-<ul><li>
-<p>Added: Support for JRuby and TruffleRuby</p>
-</li></ul>
-
-<h2 id="label-5B1.1.1-5D+-+2021-09-15">[1.1.1] - 2021-09-15</h2>
-<ul><li>
-<p>Added: Examples in the documentation</p>
-</li><li>
-<p>Added: Faster Properties and Table encoding and decoding</p>
-</li></ul>
-
-<h2 id="label-5B1.1.0-5D+-+2021-09-08">[1.1.0] - 2021-09-08</h2>
-<ul><li>
-<p>Fixed: Due to a race condition publishers could get stuck waiting for publish confirms</p>
-</li><li>
-<p>Change: Message, ReturnMessage and Properties are now classes and not structs (for performance reasons)</p>
-</li><li>
-<p>Added: Ruby 2.6 support</p>
-</li><li>
-<p>Added: RBS signatures in sig/amqp-client.rbs</p>
-</li></ul>
-
-<h2 id="label-5B1.0.2-5D+-+2021-09-07">[1.0.2] - 2021-09-07</h2>
-<ul><li>
-<p>Changed: Raise ConnectionClosed and ChannelClosed correctly (previous always ChannelClosed)</p>
-</li><li>
-<p>Fixed: Respect Connection#blocked sent by the broker, will block all writes/requests</p>
-</li></ul>
-
-<h2 id="label-5B1.0.1-5D+-+2021-09-06">[1.0.1] - 2021-09-06</h2>
-<ul><li>
-<p>The API is fully documented! <a href="https://cloudamqp.github.io/amqp-client.rb">cloudamqp.github.io/amqp-client.rb</a>/</p>
-</li><li>
-<p>Fixed: Socket writing is now thread-safe</p>
-</li><li>
-<p>Change: Block while waiting for basic_cancel by default</p>
-</li><li>
-<p>Added: Can specify channel_max, heartbeat and frame_max as options to the Client/Connection</p>
-</li><li>
-<p>Added: Reuse channel 1 to declare high level queues/exchanges</p>
-</li><li>
-<p>Fixed: Only wait for exchange_delete confirmation if not no_wait is set</p>
-</li><li>
-<p>Fixed: Don’t raise if Connection#close detects a closed socket (expected)</p>
-</li></ul>
-
-<h2 id="label-5B1.0.0-5D+-+2021-08-27">[1.0.0] - 2021-08-27</h2>
-<ul><li>
-<p>Verify TLS certificate matches hostname</p>
-</li><li>
-<p>TLS thread-safety</p>
-</li><li>
-<p>Assemble Messages in the (single threaded) read_loop thread</p>
-</li><li>
-<p>Give read_loop_thread higher priority so that channel errors crop up faster</p>
-</li><li>
-<p>One less Thread required per Consumer</p>
-</li><li>
-<p>Read exactly one frame at a time, not trying to split/assemble frames over socket reads</p>
-</li><li>
-<p>Heafty speedup for message assembling with StringIO</p>
-</li><li>
-<p>Channel#queue_declare returns a struct for nicer API (still backward compatible)</p>
-</li><li>
-<p>AMQP::Client#publish_and_forget for fast, non confirmed publishes</p>
-</li><li>
-<p>Allow Properties#timestamp to be an integer (in addition to Time)</p>
-</li><li>
-<p>Bug fix allow Properties#expiration to be an Integer</p>
-</li><li>
-<p>Consistent use of named parameters</p>
-</li><li>
-<p>High level Exchange API</p>
-</li><li>
-<p>Don’t try to reconnect if first connect fails</p>
-</li><li>
-<p>Bug fix: Close all channels when connection is closed by server</p>
-</li><li>
-<p>Raise error if run out of channels</p>
-</li><li>
-<p>Improved retry in high level client</p>
-</li><li>
-<p>Bug fix: Support channel_max 0</p>
-</li></ul>
-
-<h2 id="label-5B0.3.0-5D+-+2021-08-20">[0.3.0] - 2021-08-20</h2>
-<ul><li>
-<p>Channel#wait_for_confirms is a smarter way of waiting for publish confirms</p>
-</li><li>
-<p>Default connection_name to $PROGRAM_NAME</p>
-</li></ul>
-
-<h2 id="label-5B0.2.3-5D+-+2021-08-19">[0.2.3] - 2021-08-19</h2>
-<ul><li>
-<p>Improved TLS/AMQPS support</p>
-</li></ul>
-
-<h2 id="label-5B0.2.2-5D+-+2021-08-19">[0.2.2] - 2021-08-19</h2>
-<ul><li>
-<p>TLS port issue fixed</p>
-</li></ul>
-
-<h2 id="label-5B0.2.1-5D+-+2021-08-19">[0.2.1] - 2021-08-19</h2>
-<ul><li>
-<p>More arguments to be passed to AMQP::Client::Queue</p>
-</li><li>
-<p>Can require with ‘amqp-client’</p>
-</li></ul>
-
-<h2 id="label-5B0.2.0-5D+-+2021-08-19">[0.2.0] - 2021-08-19</h2>
-<ul><li>
-<p>Much improved and with a high level client</p>
-</li></ul>
-
-<h2 id="label-5B0.1.0-5D+-+2021-04-13">[0.1.0] - 2021-04-13</h2>
-<ul><li>
-<p>Initial release</p>
-</li></ul>
-</div></div>
+      <div id="content"><div id='filecontents'><h2 id="_Unreleased_">[Unreleased]</h2>
+<h2 id="_2_1_0____2026_06_23">[2.1.0] - 2026-06-23</h2>
+<ul>
+<li>Changed: Dropped support for Ruby 3.2 (now requires Ruby &gt;= 3.3).</li>
+<li>Fixed: A malformed frame end during the connection handshake (e.g. connecting to a non-AMQP service) now raises the intended <code>Error::UnexpectedFrameEnd</code> instead of a <code>NameError</code> from a mistyped constant, which previously surfaced as a confusing <code>invalid handshake (uninitialized constant AMQP::Client::Error::UnexpectedFrameTypeEnd)</code> message</li>
+<li>Fixed: The handshake now buffers the full 7-byte frame header before parsing it. On JRuby the header could arrive split across reads, leaving <code>frame_size</code> nil and raising <code>NoMethodError</code> (&quot;undefined method '+' for nil&quot;) instead of <code>UnexpectedFrameEnd</code> when connecting to a non-AMQP service</li>
+<li>Fixed: <code>Channel#wait_for_confirms</code> no longer hangs when the broker closes the channel (e.g. a publish to a missing exchange) right before the publishing thread starts waiting. The closed-channel check now runs before the condition-variable wait, so the wakeup from <code>#closed!</code> can't be lost. This resolves a flaky <code>ChannelClosed</code>-expected timeout that surfaced on truffleruby, whose threads run truly in parallel.</li>
+<li>Fixed: When the read loop exits on an abrupt socket close (no channel/connection close frame from the broker), open channels are now marked closed, so callers blocked in <code>#wait_for_confirms</code> or awaiting a broker reply raise <code>ConnectionClosed</code> instead of hanging forever.</li>
+<li>Fixed: An ack/nack for a delivery tag the channel isn't tracking (a duplicate, out-of-order, or broker quirk) is now ignored instead of raising. The previous bare <code>RuntimeError</code> ran on the read loop thread, tearing down the connection — and, under the high-level supervisor, aborting the whole process.</li>
+<li>Fixed: <code>Consumer#cancel</code> now closes the dedicated channel opened by <code>subscribe</code>, preventing a channel leak on long-lived connections that subscribe/cancel repeatedly (#81)</li>
+<li>Fixed: Consumer threads no longer crash with <code>ConnectionClosed</code>/<code>ChannelClosed</code> when the connection or channel closes while a delivery is being processed (e.g. an ack/reject/publish racing a shutdown); the consumer now stops quietly. Previously surfaced as a flaky error on JRuby/TruffleRuby, whose threads run truly in parallel.</li>
+<li>Added: <code>logger:</code> option on <code>AMQP::Client.new</code> that emits info/warn lifecycle messages for connect, reconnect, and disconnect in the supervised <code>#start</code> loop. The prefix uses <code>?name=</code> from the URL when present.</li>
+<li>Added: Every thread the library spawns (read_loop, heartbeat, consumer workers, on_return, supervisor, reconnect_setup) now gets a descriptive <code>Thread#name</code>. When the URL includes <code>?name=</code>, that identifier is embedded in each thread's name too, matching the lifecycle log prefix.</li>
+</ul>
+<h2 id="_2_0_1____2025_11_18">[2.0.1] - 2025-11-18</h2>
+<ul>
+<li>Fixed: Ensure closing channels on basic get high level api (#73)</li>
+<li>Improved: Clean up migration guide</li>
+<li>Added: GitHub release notes for v2.0.0</li>
+</ul>
+<h2 id="_2_0_0____2025_10_27">[2.0.0] - 2025-10-27</h2>
+<ul>
+<li>
+<strong>BREAKING CHANGE</strong>: Refactored public API to use keyword arguments for improved clarity and consistency
+<ul>
+<li>All methods now use keyword arguments instead of positional arguments (e.g., <code>publish(body, exchange:, routing_key:)</code>)</li>
+</ul>
+</li>
+<li><strong>BREAKING CHANGE</strong>: <code>Channel#basic_subscribe</code> methods now return <code>Connection::Channel::ConsumeOk</code> for better consumer response handling</li>
+<li><strong>BREAKING CHANGE</strong>: <code>Connection::Channel::QueueOk</code> converted from <code>Struct</code> to <code>Data</code> class</li>
+<li><strong>BREAKING CHANGE</strong>: Direct exchange default name changed from empty string to &quot;amq.direct&quot; for API consistency</li>
+<li><strong>BREAKING CHANGE</strong>: Client exchange convenience methods renamed to <code>$type_exchange</code>, e.g. <code>direct_exchange</code> for improved clarity</li>
+<li><strong>BREAKING_CHANGE</strong>: <code>Client#subscribe</code> and <code>Queue#subscribe</code> now return a <code>Consumer</code> which can be cancelled.</li>
+<li>Added: <code>Queue#subscribe</code> now handles ack and rejects automatically</li>
+<li>Added: RPC API</li>
+<li>Added: Support <code>no_wait</code> argument in <code>#basic_consume</code></li>
+<li>Added: <code>Client#started?</code> to check if <code>start</code> has already been called and made <code>Clinet#start</code> idempotent</li>
+<li>Added: Automatic message encoding/serialization for high level API (built-in JSON, Marshal etc. via codec registry)</li>
+<li>Added: Support for default <code>content_type</code> and <code>content_encoding</code> at class and instance level (automatically applied to published messages unless explicitly overridden)</li>
+<li>Added: <code>AMQP::Client.configure</code> block pattern for unified class-level configuration</li>
+<li>Added: <code>Queue#get</code> and <code>Client#get</code> methods for polling messages from queues as an alternative to subscribe</li>
+<li>Added: <code>passive</code> parameter to queue declaration for checking queue existence without creating it</li>
+<li>Added: <code>exclusive</code> parameter to queue method and subscribe</li>
+<li>Added: <code>Message#delivery_info</code> struct for easier access to delivery metadata (exchange, routing_key, delivery_tag, redelivered, consumer_tag)</li>
+<li>Changed: Disabled nagle's algorithm</li>
+<li>Fixed: Running minitest with <code>--verbose</code> flag no longer causes TypeError</li>
+<li>Fixed: <code>Clinet#start</code> is now thread-safe</li>
+<li>Fixed: <code>wait_for_confirms</code> handles NACKs and actually returns the promised success bool</li>
+</ul>
+<h2 id="_1_2_1____2025_09_15">[1.2.1] - 2025-09-15</h2>
+<ul>
+<li>Added: Convenience methods for creating exchange types: <code>fanout()</code>, <code>direct()</code>, <code>topic()</code>, and <code>headers()</code></li>
+<li>Added: Support for binding with high level objects (Exchange and Queue objects can now be passed as binding sources)</li>
+<li>Fixed: Bug where a client without any connection could not be closed properly</li>
+</ul>
+<h2 id="_1_2_0____2025_09_10">[1.2.0] - 2025-09-10</h2>
+<ul>
+<li>Fixed: <code>Connection#channel</code> wasn't thread-safe</li>
+<li>Added: Support for heartbeats</li>
+</ul>
+<h2 id="_1_1_7____2024_05_12">[1.1.7] - 2024-05-12</h2>
+<ul>
+<li>Support for Connection.update-secret</li>
+<li>Allow sub-second connect_timeout</li>
+<li>Fixed: undefinied variable if message was returned and no on_return block was set</li>
+</ul>
+<h2 id="_1_1_6____2024_03_26">[1.1.6] - 2024-03-26</h2>
+<ul>
+<li>Fixed: Channel#wait_for_confirms now waits for all confirms, in a thread safe way</li>
+<li>Changed: When server sends Connection.blocked the client isn't write blocked anymore, and can continue consume for instance. However, the on_blocked/unblocked callbacks should be used and manually stop publishing as the server otherwise will stop reading from the client socket.</li>
+</ul>
+<h2 id="_1_1_5____2024_03_15">[1.1.5] - 2024-03-15</h2>
+<ul>
+<li>Fixed: Correctly reference the <code>UnexpectedFrameEnd</code> exception</li>
+</ul>
+<h2 id="_1_1_4____2021_12_27">[1.1.4] - 2021-12-27</h2>
+<ul>
+<li>Fixed: Ruby 3.1.0 compability, StringIO have to be required manually</li>
+</ul>
+<h2 id="_1_1_3____2021_11_04">[1.1.3] - 2021-11-04</h2>
+<ul>
+<li>Fixed: Reraise SystemcallError in connect so that reconnect works</li>
+<li>Fixed: Keepalive support in OS X</li>
+<li>Added: Make keepalive settings configurable (eg. amqp://?keepalive=60:10:3)</li>
+</ul>
+<h2 id="_1_1_2____2021_10_15">[1.1.2] - 2021-10-15</h2>
+<ul>
+<li>Added: Support for JRuby and TruffleRuby</li>
+</ul>
+<h2 id="_1_1_1____2021_09_15">[1.1.1] - 2021-09-15</h2>
+<ul>
+<li>Added: Examples in the documentation</li>
+<li>Added: Faster Properties and Table encoding and decoding</li>
+</ul>
+<h2 id="_1_1_0____2021_09_08">[1.1.0] - 2021-09-08</h2>
+<ul>
+<li>Fixed: Due to a race condition publishers could get stuck waiting for publish confirms</li>
+<li>Change: Message, ReturnMessage and Properties are now classes and not structs (for performance reasons)</li>
+<li>Added: Ruby 2.6 support</li>
+<li>Added: RBS signatures in sig/amqp-client.rbs</li>
+</ul>
+<h2 id="_1_0_2____2021_09_07">[1.0.2] - 2021-09-07</h2>
+<ul>
+<li>Changed: Raise ConnectionClosed and ChannelClosed correctly (previous always ChannelClosed)</li>
+<li>Fixed: Respect Connection#blocked sent by the broker, will block all writes/requests</li>
+</ul>
+<h2 id="_1_0_1____2021_09_06">[1.0.1] - 2021-09-06</h2>
+<ul>
+<li>The API is fully documented! <a href="https://cloudamqp.github.io/amqp-client.rb/">https://cloudamqp.github.io/amqp-client.rb/</a></li>
+<li>Fixed: Socket writing is now thread-safe</li>
+<li>Change: Block while waiting for basic_cancel by default</li>
+<li>Added: Can specify channel_max, heartbeat and frame_max as options to the Client/Connection</li>
+<li>Added: Reuse channel 1 to declare high level queues/exchanges</li>
+<li>Fixed: Only wait for exchange_delete confirmation if not no_wait is set</li>
+<li>Fixed: Don't raise if Connection#close detects a closed socket (expected)</li>
+</ul>
+<h2 id="_1_0_0____2021_08_27">[1.0.0] - 2021-08-27</h2>
+<ul>
+<li>Verify TLS certificate matches hostname</li>
+<li>TLS thread-safety</li>
+<li>Assemble Messages in the (single threaded) read_loop thread</li>
+<li>Give read_loop_thread higher priority so that channel errors crop up faster</li>
+<li>One less Thread required per Consumer</li>
+<li>Read exactly one frame at a time, not trying to split/assemble frames over socket reads</li>
+<li>Heafty speedup for message assembling with StringIO</li>
+<li>Channel#queue_declare returns a struct for nicer API (still backward compatible)</li>
+<li>AMQP::Client#publish_and_forget for fast, non confirmed publishes</li>
+<li>Allow Properties#timestamp to be an integer (in addition to Time)</li>
+<li>Bug fix allow Properties#expiration to be an Integer</li>
+<li>Consistent use of named parameters</li>
+<li>High level Exchange API</li>
+<li>Don't try to reconnect if first connect fails</li>
+<li>Bug fix: Close all channels when connection is closed by server</li>
+<li>Raise error if run out of channels</li>
+<li>Improved retry in high level client</li>
+<li>Bug fix: Support channel_max 0</li>
+</ul>
+<h2 id="_0_3_0____2021_08_20">[0.3.0] - 2021-08-20</h2>
+<ul>
+<li>Channel#wait_for_confirms is a smarter way of waiting for publish confirms</li>
+<li>Default connection_name to $PROGRAM_NAME</li>
+</ul>
+<h2 id="_0_2_3____2021_08_19">[0.2.3] - 2021-08-19</h2>
+<ul>
+<li>Improved TLS/AMQPS support</li>
+</ul>
+<h2 id="_0_2_2____2021_08_19">[0.2.2] - 2021-08-19</h2>
+<ul>
+<li>TLS port issue fixed</li>
+</ul>
+<h2 id="_0_2_1____2021_08_19">[0.2.1] - 2021-08-19</h2>
+<ul>
+<li>More arguments to be passed to AMQP::Client::Queue</li>
+<li>Can require with 'amqp-client'</li>
+</ul>
+<h2 id="_0_2_0____2021_08_19">[0.2.0] - 2021-08-19</h2>
+<ul>
+<li>Much improved and with a high level client</li>
+</ul>
+<h2 id="_0_1_0____2021_04_13">[0.1.0] - 2021-04-13</h2>
+<ul>
+<li>Initial release</li>
+</ul></div></div>
 
       <div id="footer">
-  Generated on Tue Nov 18 08:28:53 2025 by
+  Generated on Tue Jun 23 15:16:12 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.7).
+  0.9.44 (ruby-4.0.5).
 </div>
 
     </div>

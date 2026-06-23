@@ -6,13 +6,13 @@
 <title>
   Class: AMQP::Client::Message
   
-    &mdash; Documentation by YARD 0.9.37
+    &mdash; Documentation by YARD 0.9.44
   
 </title>
 
-  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css">
 
-  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/common.css" type="text/css">
 
 <script type="text/javascript">
   pathId = "AMQP::Client::Message";
@@ -27,6 +27,8 @@
 
   </head>
   <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
     <div class="nav_wrap">
       <iframe id="nav" src="../../class_list.html?1"></iframe>
       <div id="resizer"></div>
@@ -94,16 +96,15 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/amqp/client/message.rb</dd>
+    <dd>lib/amqp/client/message.rb
+</dd>
   </dl>
   
 </div>
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    
-<p>A message delivered from the broker</p>
-
+    <p>A message delivered from the broker</p>
 
   </div>
 </div>
@@ -147,9 +148,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>The message body.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>The message body.</p></div></span>
   
 </li>
 
@@ -176,9 +175,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>The channel the message was deliviered to.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>The channel the message was deliviered to.</p></div></span>
   
 </li>
 
@@ -205,9 +202,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>The tag of the consumer the message was deliviered to.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>The tag of the consumer the message was deliviered to.</p></div></span>
   
 </li>
 
@@ -234,9 +229,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>The delivery tag of the message, used for acknowledge or reject the message.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>The delivery tag of the message, used for acknowledge or reject the message.</p></div></span>
   
 </li>
 
@@ -263,9 +256,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Name of the exchange the message was published to.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Name of the exchange the message was published to.</p></div></span>
   
 </li>
 
@@ -317,9 +308,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Message properties.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Message properties.</p></div></span>
   
 </li>
 
@@ -346,9 +335,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>True if the message have been delivered before.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>True if the message have been delivered before.</p></div></span>
   
 </li>
 
@@ -375,9 +362,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>The routing key the message was published with.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>The routing key the message was published with.</p></div></span>
   
 </li>
 
@@ -412,9 +397,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Decode the message body based on content_encoding.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Decode the message body based on content_encoding.</p></div></span>
   
 </li>
 
@@ -436,14 +419,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Parse the message body based on content_type and content_encoding.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Parse the message body based on content_type and content_encoding.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
     <h2>
       Instance Method Summary
@@ -469,9 +451,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Acknowledge the message.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Acknowledge the message.</p></div></span>
   
 </li>
 
@@ -515,14 +495,13 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>Reject the message.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'><p>Reject the message.</p></div></span>
   
 </li>
 
       
     </ul>
+    
   
 
 
@@ -542,9 +521,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>The message body</p>
-
+    <p>The message body</p>
 
   </div>
 </div>
@@ -598,9 +575,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>The channel the message was deliviered to</p>
-
+    <p>The channel the message was deliviered to</p>
 
   </div>
 </div>
@@ -654,9 +629,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>The tag of the consumer the message was deliviered to</p>
-
+    <p>The tag of the consumer the message was deliviered to</p>
 
   </div>
 </div>
@@ -682,9 +655,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If the message was polled and not deliviered to a consumer</p>
-</div>
+        <div class='inline'><p>If the message was polled and not deliviered to a consumer</p></div>
       
     </li>
   
@@ -724,9 +695,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>The delivery tag of the message, used for acknowledge or reject the message</p>
-
+    <p>The delivery tag of the message, used for acknowledge or reject the message</p>
 
   </div>
 </div>
@@ -780,9 +749,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Name of the exchange the message was published to</p>
-
+    <p>Name of the exchange the message was published to</p>
 
   </div>
 </div>
@@ -898,9 +865,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Message properties</p>
-
+    <p>Message properties</p>
 
   </div>
 </div>
@@ -954,9 +919,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>True if the message have been delivered before</p>
-
+    <p>True if the message have been delivered before</p>
 
   </div>
 </div>
@@ -1010,9 +973,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>The routing key the message was published with</p>
-
+    <p>The routing key the message was published with</p>
 
   </div>
 </div>
@@ -1071,9 +1032,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Acknowledge the message</p>
-
+    <p>Acknowledge the message</p>
 
   </div>
 </div>
@@ -1133,9 +1092,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Decode the message body based on content_encoding</p>
-
+    <p>Decode the message body based on content_encoding</p>
 
   </div>
 </div>
@@ -1152,9 +1109,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The decoded message body</p>
-</div>
+        <div class='inline'><p>The decoded message body</p></div>
       
     </li>
   
@@ -1170,9 +1125,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If the content encoding is not supported</p>
-</div>
+        <div class='inline'><p>If the content encoding is not supported</p></div>
       
     </li>
   
@@ -1274,9 +1227,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Parse the message body based on content_type and content_encoding</p>
-
+    <p>Parse the message body based on content_type and content_encoding</p>
 
   </div>
 </div>
@@ -1293,9 +1244,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>The parsed message body</p>
-</div>
+        <div class='inline'><p>The parsed message body</p></div>
       
     </li>
   
@@ -1311,9 +1260,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If the content encoding is not supported</p>
-</div>
+        <div class='inline'><p>If the content encoding is not supported</p></div>
       
     </li>
   
@@ -1325,9 +1272,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If the content type is not supported</p>
-</div>
+        <div class='inline'><p>If the content type is not supported</p></div>
       
     </li>
   
@@ -1391,9 +1336,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-<p>Reject the message</p>
-
+    <p>Reject the message</p>
 
   </div>
 </div>
@@ -1413,9 +1356,7 @@
       
       
         &mdash;
-        <div class='inline'>
-<p>If true the message will be put back into the queue again, ready to be redelivered</p>
-</div>
+        <div class='inline'><p>If true the message will be put back into the queue again, ready to be redelivered</p></div>
       
     </li>
   
@@ -1469,9 +1410,9 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Nov 18 08:28:54 2025 by
+  Generated on Tue Jun 23 15:16:13 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.37 (ruby-3.4.7).
+  0.9.44 (ruby-4.0.5).
 </div>
 
     </div>
