@@ -8,7 +8,6 @@ class AMQPLavinMQFlowControlTest < Minitest::Test
       conn = AMQP::Client.new("amqp://127.0.0.1:#{port}").connect
       begin
         ch = conn.channel
-        ch.confirm_select
         assert_raises(AMQP::Client::Error::PreconditionFailed) do
           ch.basic_publish_confirm("body", exchange: "", routing_key: "low.disk.test")
         end
