@@ -50,11 +50,13 @@ module AMQP
       # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
       #   The proc will be called with the consumer tag as the only argument
       # @param arguments [Hash] Custom arguments to the consumer
+      # @param consumer_tag [String, nil] Custom consumer tag. Pass nil or "" to let the broker generate one.
       # @yield [Message] Delivered message from the queue
       # @return [Consumer] The consumer object, which can be used to cancel the consumer
       def subscribe(no_ack: false, exclusive: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true,
-                    on_cancel: nil, arguments: {})
-        @client.subscribe(@name, no_ack:, exclusive:, prefetch:, worker_threads:, on_cancel:, arguments:) do |message|
+                    on_cancel: nil, arguments: {}, consumer_tag: nil)
+        @client.subscribe(@name, no_ack:, exclusive:, prefetch:, worker_threads:,
+                                 on_cancel:, arguments:, consumer_tag:) do |message|
           yield message
           message.ack unless no_ack
         rescue StandardError => e
