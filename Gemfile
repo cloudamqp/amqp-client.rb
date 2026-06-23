@@ -6,8 +6,6 @@ source "https://rubygems.org", cooldown: 7
 gemspec
 
 gem "benchmark"
-gem "benchmark-ips"
-gem "benchmark-memory"
 gem "bunny"
 gem "logger"
 gem "minitest"
