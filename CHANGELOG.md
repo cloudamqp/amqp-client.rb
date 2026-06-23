@@ -1,6 +1,6 @@
 ## [Unreleased]
 
-## [2.1.0] - 2026-06-22
+## [2.1.0] - 2026-06-23
 
 - Changed: Dropped support for Ruby 3.2 (now requires Ruby >= 3.3).
 - Fixed: A malformed frame end during the connection handshake (e.g. connecting to a non-AMQP service) now raises the intended `Error::UnexpectedFrameEnd` instead of a `NameError` from a mistyped constant, which previously surfaced as a confusing `invalid handshake (uninitialized constant AMQP::Client::Error::UnexpectedFrameTypeEnd)` message
