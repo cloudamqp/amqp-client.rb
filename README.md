@@ -68,6 +68,17 @@ ex.publish("my message", routing_key: "topic.foo", headers: { foo: "bar" })
 amqp.publish("an event", exchange: "amq.topic", routing_key: "my.event", content_encoding: "gzip")
 ```
 
+#### Reconnect setup hook
+
+Pass `on_connect:` when setup must run after every supervised connection or
+reconnection, after the client has recovered existing consumers:
+
+```ruby
+amqp = AMQP::Client.new("amqp://localhost", on_connect: ->(client) {
+  client.topic_exchange("events")
+}).start
+```
+
 #### Configuration
 
 Configure class-level defaults and enable built-in codecs using the `configure` method:

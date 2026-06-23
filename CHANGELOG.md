@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Added: `on_connect:` constructor option for `AMQP::Client`. The callback runs with the client after each successful supervised connection or reconnection, after consumer recovery.
+
 ## [2.1.0] - 2026-06-23
 
 - Changed: Dropped support for Ruby 3.2 (now requires Ruby >= 3.3).

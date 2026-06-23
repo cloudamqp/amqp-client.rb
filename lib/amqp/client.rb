@@ -35,9 +35,12 @@ module AMQP
     # @option options [#info, #warn, #error] logger (nil) Logger for {#start} lifecycle events
     #   (connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
     #   written to stderr via Kernel#warn for backwards compatibility.
-    def initialize(uri = "", **options)
+    # @param on_connect [Proc, nil] Optional callback invoked with the client after each successful
+    #   (re)connection, after consumer recovery.
+    def initialize(uri = "", on_connect: nil, **options)
       @uri = uri
       @options = options
+      @on_connect = on_connect
       @logger = options[:logger]
       @name = parse_name(uri)
       @queues = {}
@@ -82,9 +85,9 @@ module AMQP
         @stopped = false
         initial_conn = connect(read_loop_thread: false)
         log_lifecycle(:info, "connected")
-        supervisor = Thread.new(initial_conn) do |conn| # rubocop:disable Metrics/BlockLength
+        supervisor = Thread.new(initial_conn) do |conn|
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
-          loop do # rubocop:disable Metrics/BlockLength
+          loop do
             break if @stopped
 
             unless conn
@@ -92,22 +95,7 @@ module AMQP
               log_lifecycle(:info, "reconnected")
             end
 
-            setup = Thread.new do
-              # restore connection in another thread, read_loop have to run
-              conn.channel(1) # reserve channel 1 for publishes
-              @consumers.each_value do |consumer|
-                ch = conn.channel
-                ch.basic_qos(consumer.prefetch)
-                consume_ok = ch.basic_consume(consumer.queue,
-                                              **consumer.basic_consume_args,
-                                              &consumer.block)
-                # Update the consumer with new channel and consume_ok metadata
-                consumer.update_consume_ok(consume_ok)
-              end
-              @connq << conn
-              # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
-              @consumers.delete_if { |_, c| c.closed? }
-            end
+            setup = Thread.new { restore_connection(conn) }
             setup.name = thread_name("reconnect_setup")
             conn.read_loop # blocks until connection is closed, then reconnect
             log_lifecycle(:warn, "disconnected")
@@ -614,6 +602,34 @@ module AMQP
 
     def lifecycle_prefix
       @name ? "AMQP::Client[#{@name}]" : "AMQP::Client"
+    end
+
+    # Restore connection state before exposing the connection to callers.
+    def restore_connection(conn)
+      conn.channel(1)
+      @consumers.each_value do |consumer|
+        ch = conn.channel
+        ch.basic_qos(consumer.prefetch)
+        consume_ok = ch.basic_consume(consumer.queue,
+                                      **consumer.basic_consume_args,
+                                      &consumer.block)
+        consumer.update_consume_ok(consume_ok)
+      end
+      @connq << conn
+      @consumers.delete_if { |_, c| c.closed? }
+      run_on_connect_hook
+    end
+
+    def run_on_connect_hook
+      return unless @on_connect
+
+      @on_connect.call(self)
+    rescue StandardError => e
+      if @logger
+        log_lifecycle(:warn, "on_connect raised: #{e.class}: #{e.message}")
+      else
+        warn "AMQP-Client on_connect error: #{e.inspect}"
+      end
     end
 
     def default_content_properties
