@@ -1,0 +1,209 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  rubocop:
+    name: RuboCop
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        with:
+          bundler-cache: true
+          ruby-version: ruby
+      - name: Run RuboCop
+        run: bundle exec rake rubocop
+
+  lavinmq-tests:
+    name: LavinMQ / ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "3.3"
+          - "3.4"
+          - "4.0"
+        include:
+          - ruby: jruby
+          - ruby: truffleruby
+    steps:
+      - name: Install LavinMQ
+        uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        with:
+          bundler-cache: true
+          ruby-version: ${{ matrix.ruby }}
+      - name: Run tests (excluding TLS tests) (JRuby)
+        if: ${{ matrix.ruby == 'jruby' }}
+        run: bundle exec rake
+        env:
+          JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      - name: Run tests (excluding TLS tests)
+        if: ${{ matrix.ruby != 'jruby' }}
+        run: bundle exec rake
+
+  lavinmq-tls:
+    name: LavinMQ TLS / ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "ruby"
+          - "jruby"
+          - "truffleruby"
+    steps:
+      - name: Install LavinMQ
+        uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        with:
+          bundler-cache: true
+          ruby-version: ${{ matrix.ruby }}
+      - name: Run TLS tests (JRuby)
+        if: ${{ matrix.ruby == 'jruby' }}
+        run: bin/test-tls lavinmq
+        env:
+          JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      - name: Run TLS tests
+        if: ${{ matrix.ruby != 'jruby' }}
+        run: bin/test-tls lavinmq
+
+  lavinmq-macos:
+    name: LavinMQ / macOS
+    runs-on: macos-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "ruby"
+    steps:
+      - name: Install LavinMQ
+        run: |
+          brew update
+          brew install lavinmq
+      - name: Start LavinMQ
+        run: brew services start lavinmq
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        with:
+          bundler-cache: true
+          ruby-version: ${{ matrix.ruby }}
+      - name: Run tests (excluding TLS tests)
+        run: bundle exec rake
+
+  rabbitmq-tests:
+    name: "RabbitMQ / ${{ matrix.ruby }} (sudo: ${{ matrix.sudo }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        sudo:
+          - true
+        ruby:
+          - "3.3"
+          - "3.4"
+          - "4.0"
+        include:
+          - ruby: jruby
+            allow-failure: false
+            sudo: false
+          - ruby: truffleruby
+            allow-failure: false
+            sudo: false
+    steps:
+      - name: Configure dpkg to skip building man pages
+        run: |
+          echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+          echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+      - name: Install RabbitMQ
+        run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
+      - name: Verify RabbitMQ started correctly
+        run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        with:
+          bundler-cache: true
+          ruby-version: ${{ matrix.ruby }}
+      - name: Run tests (excluding TLS tests) (JRuby)
+        if: ${{ matrix.ruby == 'jruby' }}
+        continue-on-error: ${{ matrix.allow-failure || false }}
+        run: bundle exec rake
+        env:
+          JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      - name: Run tests (excluding TLS tests)
+        if: ${{ matrix.ruby != 'jruby' }}
+        continue-on-error: ${{ matrix.allow-failure || false }}
+        run: bundle exec rake
+        env:
+          RUN_SUDO_TESTS: ${{ matrix.sudo }}
+
+  rabbitmq-tls:
+    name: RabbitMQ TLS / ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "ruby"
+          - "jruby"
+          - "truffleruby"
+    steps:
+      - name: Configure dpkg to skip building man pages
+        run: |
+          echo 'path-exclude /usr/share/doc/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+          echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
+      - name: Install RabbitMQ
+        run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        with:
+          bundler-cache: true
+          ruby-version: ${{ matrix.ruby }}
+      - name: Run TLS tests (JRuby)
+        if: ${{ matrix.ruby == 'jruby' }}
+        run: bin/test-tls rabbitmq
+        env:
+          JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
+      - name: Run TLS tests
+        if: ${{ matrix.ruby != 'jruby' }}
+        run: bin/test-tls rabbitmq
+
+  rabbitmq-macos:
+    name: RabbitMQ / macOS
+    runs-on: macos-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "ruby"
+    steps:
+      - name: Install RabbitMQ
+        run: brew install rabbitmq
+      - name: Start RabbitMQ
+        run: brew services start rabbitmq
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        with:
+          bundler-cache: true
+          ruby-version: ${{ matrix.ruby }}
+      - name: Verify RabbitMQ started correctly
+        run: while true; do rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
+      - name: Run tests (excluding TLS tests)
+        run: bundle exec rake
