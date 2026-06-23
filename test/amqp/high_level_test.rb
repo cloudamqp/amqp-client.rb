@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative "../test_helper"
+require "logger"
+require "stringio"
 require "zlib"
 
 class HighLevelTest < Minitest::Test
@@ -117,6 +119,50 @@ class HighLevelTest < Minitest::Test
     msg = msgs.pop
 
     assert msg.body, "bar"
+  ensure
+    q&.delete
+  end
+
+  def test_on_connect_fires_on_initial_connect
+    fired = Queue.new
+    @client&.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", on_connect: ->(c) { fired << c }).start
+
+    assert_same @client, fired.pop(timeout: 2)
+  end
+
+  def test_on_connect_fires_on_every_reconnect
+    counts = Queue.new
+    @client&.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", on_connect: ->(_c) { counts << :tick }).start
+
+    assert_equal :tick, counts.pop(timeout: 2)
+
+    @client.with_connection(&:close)
+
+    assert_equal :tick, counts.pop(timeout: 5)
+  end
+
+  def test_on_connect_error_is_logged_and_connection_stays_usable
+    io = StringIO.new
+    logger = Logger.new(io)
+    logger.formatter = ->(_severity, _time, _progname, message) { "#{message}\n" }
+    @client&.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}",
+                               logger:,
+                               on_connect: ->(_c) { raise "forced setup failure" }).start
+
+    q = @client.queue("test.on_connect.raise.usable", auto_delete: true)
+    q.publish("ping")
+
+    msg = q.get(no_ack: true)
+
+    assert_equal "ping", msg.body
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 2
+    sleep 0.01 until io.string.include?("on_connect raised") ||
+                     Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+
+    assert_includes io.string, "AMQP::Client: on_connect raised: RuntimeError: forced setup failure"
   ensure
     q&.delete
   end
