@@ -147,6 +147,7 @@ end
 module LavinMQServer
   LAVINMQ_CONTROL_SOCKET = "/tmp/lavinmqctl.sock"
   LAVINMQ_FLOW_CONTROL_OPT_IN = "RUN_LAVINMQ_FLOW_CONTROL_TESTS"
+  PROCESS_SHUTDOWN_TIMEOUT = 5
 
   # Yields the AMQP port of a private LavinMQ that believes it is out of disk
   # space (free_disk_min above any real free space), so it applies flow control
@@ -234,9 +235,19 @@ module LavinMQServer
   def stop_process(pid)
     return unless pid
 
-    Process.kill("TERM", pid)
-    Process.wait(pid)
-  rescue Errno::ESRCH, Errno::ECHILD
+    waiter = Process.detach(pid)
+    signal_process(pid, "TERM")
+    return if waiter.join(PROCESS_SHUTDOWN_TIMEOUT)
+
+    signal_process(pid, "KILL")
+    waiter.join(PROCESS_SHUTDOWN_TIMEOUT)
+  rescue Errno::ECHILD
+    nil
+  end
+
+  def signal_process(pid, signal)
+    Process.kill(signal, pid)
+  rescue Errno::ESRCH
     nil
   end
 end
