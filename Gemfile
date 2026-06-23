@@ -12,7 +12,6 @@ gem "minitest"
 gem "minitest-mock"
 gem "minitest-reporters"
 gem "rake"
-gem "redcarpet", require: false, platforms: :ruby
 gem "rubocop"
 gem "rubocop-minitest", require: false
 gem "rubocop-rake", require: false
