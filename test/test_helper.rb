@@ -62,7 +62,7 @@ module SkipRabbitMQTestCase
   def skip_unless_rabbitmqctl
     return if rabbitmqctl?
 
-    skip "requires RabbitMQ; rabbitmqctl not found (LavinMQ doesn't send Connection.Blocked)"
+    skip "requires RabbitMQ; rabbitmqctl not found"
   end
 
   def rabbitmqctl?
