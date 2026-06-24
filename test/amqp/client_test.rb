@@ -96,7 +96,7 @@ class AMQPClientLifecycleTest < Minitest::Test
     client.stop
 
     assert wait_for_log(io, /^INFO AMQP::Client: connected$/), "missing connected log: #{io.string.inspect}"
-    assert wait_for_log(io, /^WARN AMQP::Client: disconnected$/), "missing disconnected log: #{io.string.inspect}"
+    assert wait_for_log(io, /^INFO AMQP::Client: disconnected$/), "missing disconnected log: #{io.string.inspect}"
   end
 
   def test_logger_prefix_includes_name_from_uri
