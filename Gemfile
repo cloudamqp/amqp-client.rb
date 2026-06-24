@@ -12,8 +12,8 @@ gem "minitest"
 gem "minitest-mock"
 gem "minitest-reporters"
 gem "rake"
+gem "rdoc", require: false
 gem "rubocop"
 gem "rubocop-minitest", require: false
 gem "rubocop-rake", require: false
 gem "stackprof", platforms: :ruby
-gem "yard", require: false

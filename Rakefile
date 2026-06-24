@@ -19,9 +19,21 @@ require "rubocop/rake_task"
 
 RuboCop::RakeTask.new
 
-require "yard"
+require "rdoc/task"
 
-YARD::Rake::YardocTask.new
+RDoc::Task.new do |rdoc|
+  rdoc.generator = "aliki"
+  rdoc.main = "README.md"
+  rdoc.options << "--template-stylesheets=docs/rdoc-overrides.css"
+  rdoc.rdoc_dir = "doc"
+  rdoc.title = "AMQP::Client API"
+  rdoc.rdoc_files.include(
+    "README.md",
+    "LICENSE.txt",
+    "CHANGELOG.md",
+    "lib/**/*.rb"
+  )
+end
 
 # Release helper methods
 def current_version

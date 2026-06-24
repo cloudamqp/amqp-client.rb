@@ -12,25 +12,31 @@ module AMQP
     # Represents a single established AMQP connection
     class Connection
       # Establish a connection to an AMQP broker
-      # @param uri [String] URL on the format amqp://username:password@hostname/vhost, use amqps:// for encrypted connection
-      # @param read_loop_thread [Boolean] If true run {#read_loop} in a background thread,
-      #   otherwise the user have to run it explicitly, without {#read_loop} the connection won't function
-      # @param codec_registry [MessageCodecRegistry] Registry for message codecs
-      # @param strict_coding [Boolean] Whether to raise errors on unsupported codecs
-      # @param name [String, nil] Instance identifier embedded in thread names
+      # * <tt>uri</tt> (<tt>String</tt>) - URL on the format amqp://username:password@hostname/vhost, use amqps:// for
+      #   encrypted connection
+      # * <tt>read_loop_thread</tt> (<tt>Boolean</tt>) - If true run #read_loop in a background thread,
+      #   otherwise the user have to run it explicitly, without #read_loop the connection won't function
+      # * <tt>codec_registry</tt> (<tt>MessageCodecRegistry</tt>) - Registry for message codecs
+      # * <tt>strict_coding</tt> (<tt>Boolean</tt>) - Whether to raise errors on unsupported codecs
+      # * <tt>name</tt> (<tt>String, nil</tt>) - Instance identifier embedded in thread names
       #   (e.g. "amqp.read_loop[name] host:port") and lifecycle log prefixes.
-      #   Usually sourced from the URL's `?name=` query param by {Client}.
-      # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
+      #   Usually sourced from the URL's `?name=` query param by Client.
+      # * <tt>connection_name</tt> (<tt>Boolean</tt>, default: <tt>PROGRAM_NAME</tt>) - Set a name for the connection to be
+      #   able to identify
       #   the client from the broker
-      # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
-      # @option options [Float] connect_timeout (30) TCP connection timeout
-      # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
-      # @option options [Integer] frame_max (131_072) Maximum frame size,
+      # * <tt>verify_peer</tt> (<tt>Boolean</tt>, default: <tt>true</tt>) - Verify broker's TLS certificate, set to false
+      #   for self-signed certs
+      # * <tt>connect_timeout</tt> (<tt>Float</tt>, default: <tt>30</tt>) - TCP connection timeout
+      # * <tt>heartbeat</tt> (<tt>Integer</tt>, default: <tt>0</tt>) - Heartbeat timeout, defaults to 0 and relies on TCP
+      #   keepalive instead
+      # * <tt>frame_max</tt> (<tt>Integer</tt>, default: <tt>131_072</tt>) - Maximum frame size,
       #    the smallest of the client's and the broker's values will be used
-      # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
+      # * <tt>channel_max</tt> (<tt>Integer</tt>, default: <tt>2048</tt>) - Maxium number of channels the client will be
+      #   allowed to have open.
       #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
-      # @option options [String] keepalive (60:10:3) TCP keepalive setting, 60s idle, 10s interval between probes, 3 probes
-      # @return [Connection]
+      # * <tt>keepalive</tt> (<tt>String</tt>, default: <tt>60:10:3</tt>) - TCP keepalive setting, 60s idle, 10s interval
+      #   between probes, 3 probes
+      # Returns <tt>Connection</tt>.
       def initialize(uri = "", read_loop_thread: true, codec_registry: nil, strict_coding: false, name: nil, **options)
         uri = URI.parse(uri)
         tls = uri.scheme == "amqps"
@@ -75,7 +81,7 @@ module AMQP
       # Build a thread name for a role attached to this connection.
       # Format: "amqp.<role>[<name>] <host>:<port>[ <detail>]" — the `[<name>]`
       # segment is only present when the connection has a `name:`.
-      # @api private
+      # Internal API.
       def thread_name(role:, detail: nil)
         suffix = @name ? "[#{@name}]" : ""
         base = "amqp.#{role}#{suffix} #{@host}:#{@port}"
@@ -85,42 +91,43 @@ module AMQP
       # Indicates that the server is blocking publishes.
       # If the client keeps publishing the server will stop reading from the socket.
       # Use the #on_blocked callback to get notified when the server is resource constrained.
-      # @see #on_blocked
-      # @see #on_unblocked
-      # @return [Bool]
+      # See #on_blocked.
+      # See #on_unblocked.
+      # Returns <tt>Bool</tt>.
       def blocked?
         !@blocked.nil?
       end
 
-      # Alias for {#initialize}
-      # @see #initialize
-      # @deprecated
+      # Alias for #initialize
+      # See #initialize.
+      # Deprecated.
       def self.connect(uri, read_loop_thread: true, **)
         new(uri, read_loop_thread:, **)
       end
 
       # The max frame size negotiated between the client and the broker
-      # @return [Integer]
+      # Returns <tt>Integer</tt>.
       attr_reader :frame_max
 
       # The codec registry for message encoding/decoding
-      # @return [MessageCodecRegistry, nil]
+      # Returns <tt>MessageCodecRegistry, nil</tt>.
       attr_reader :codec_registry
 
       # Whether to use strict coding (raise errors on unsupported codecs)
-      # @return [Boolean]
+      # Returns <tt>Boolean</tt>.
       attr_reader :strict_coding
 
       # Custom inspect
-      # @return [String]
-      # @api private
+      # Returns <tt>String</tt>.
+      # Internal API.
       def inspect
         "#<#{self.class} @closed=#{@closed} channel_count=#{@channels.size}>"
       end
 
       # Open an AMQP channel
-      # @param id [Integer, nil] If nil a new channel will be opened, otherwise an already open channel might be reused
-      # @return [Channel]
+      # * <tt>id</tt> (<tt>Integer, nil</tt>) - If nil a new channel will be opened, otherwise an already open channel might
+      #   be reused
+      # Returns <tt>Channel</tt>.
       def channel(id = nil)
         raise ArgumentError, "Channel ID cannot be 0" if id&.zero?
 
@@ -142,8 +149,8 @@ module AMQP
       end
 
       # Declare a new channel, yield, and then close the channel
-      # @yield [Channel]
-      # @return [Object] Whatever was returned by the block
+      # Yields <tt>Channel</tt>.
+      # Returns <tt>Object</tt> - Whatever was returned by the block
       def with_channel
         ch = channel
         begin
@@ -154,9 +161,9 @@ module AMQP
       end
 
       # Gracefully close a connection
-      # @param reason [String] A reason to close the connection can be logged by the broker
-      # @param code [Integer]
-      # @return [nil]
+      # * <tt>reason</tt> (<tt>String</tt>) - A reason to close the connection can be logged by the broker
+      # * <tt>code</tt> (<tt>Integer</tt>) -
+      # Returns <tt>nil</tt>.
       def close(reason: "", code: 200)
         return if @closed
 
@@ -172,9 +179,9 @@ module AMQP
       end
 
       # Update authentication secret, for example when an OAuth backend is used
-      # @param secret [String] The new secret
-      # @param reason [String] A reason to update it
-      # @return [nil]
+      # * <tt>secret</tt> (<tt>String</tt>) - The new secret
+      # * <tt>reason</tt> (<tt>String</tt>) - A reason to update it
+      # Returns <tt>nil</tt>.
       def update_secret(secret, reason:)
         write_bytes FrameBytes.update_secret(secret, reason)
         expect(:update_secret_ok)
@@ -182,35 +189,33 @@ module AMQP
       end
 
       # True if the connection is closed
-      # @return [Boolean]
+      # Returns <tt>Boolean</tt>.
       def closed?
         !@closed.nil?
       end
 
-      # @!group Callbacks
+      # :section: Callbacks
 
       # Callback called when client is blocked by the broker
-      # @yield [String] reason to why the connection is being blocked
-      # @return [nil]
+      # Yields <tt>String</tt> - reason to why the connection is being blocked
+      # Returns <tt>nil</tt>.
       def on_blocked(&blk)
         @on_blocked = blk
         nil
       end
 
       # Callback called when client is unblocked by the broker
-      # @yield
-      # @return [nil]
+      # Yields to the block.
+      # Returns <tt>nil</tt>.
       def on_unblocked(&blk)
         @on_unblocked = blk
         nil
       end
 
-      # @!endgroup
-
       # Write byte array(s) directly to the socket (thread-safe)
-      # @param bytes [String] One or more byte arrays
-      # @return [Integer] number of bytes written
-      # @api private
+      # * <tt>bytes</tt> (<tt>String</tt>) - One or more byte arrays
+      # Returns <tt>Integer</tt> - number of bytes written
+      # Internal API.
       def write_bytes(*bytes)
         @write_lock.synchronize do
           @socket.write(*bytes)
@@ -224,7 +229,7 @@ module AMQP
 
       # Reads from the socket, required for any kind of progress.
       # Blocks until the connection is closed. Normally run as a background thread automatically.
-      # @return [nil]
+      # Returns <tt>nil</tt>.
       def read_loop
         # read more often than write so that channel errors crop up early
         Thread.current.priority += 1
@@ -516,8 +521,8 @@ module AMQP
       end
 
       # Connect to the host/port, optionally establish a TLS connection
-      # @return [Socket]
-      # @return [OpenSSL::SSL::SSLSocket]
+      # Returns <tt>Socket</tt>.
+      # Returns <tt>OpenSSL::SSL::SSLSocket</tt>.
       def open_socket(host, port, tls, options)
         connect_timeout = options.fetch(:connect_timeout, 30).to_f
         socket = Socket.tcp(host, port, connect_timeout:)
@@ -543,7 +548,7 @@ module AMQP
       end
 
       # Negotiate a connection
-      # @return [Array<Integer, Integer, Integer>] channel_max, frame_max, heartbeat
+      # Returns <tt>Array<Integer, Integer, Integer></tt> - channel_max, frame_max, heartbeat
       def establish(socket, user, password, vhost, options)
         channel_max, frame_max, heartbeat = nil
         socket.write "AMQP\x00\x00\x09\x01"
@@ -607,7 +612,7 @@ module AMQP
       end
 
       # Enable TCP keepalive, which is preferred to heartbeats
-      # @return [void]
+      # Returns <tt>void</tt>.
       def enable_tcp_keepalive(socket, idle = 60, interval = 10, count = 3)
         socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true)
         if Socket.const_defined?(:TCP_KEEPIDLE) # linux/bsd
@@ -625,8 +630,8 @@ module AMQP
       end
 
       # Fetch the AMQP port number from ENV
-      # @return [Integer] A port number
-      # @return [nil] When the environment variable AMQP_PORT isn't set
+      # Returns <tt>Integer</tt> - A port number
+      # Returns <tt>nil</tt> - When the environment variable AMQP_PORT isn't set
       def port_from_env
         return unless (port = ENV.fetch("AMQP_PORT", nil))
 

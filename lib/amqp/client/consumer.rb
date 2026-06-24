@@ -6,7 +6,7 @@ module AMQP
     class Consumer
       attr_reader :queue, :id, :channel_id, :prefetch, :block, :basic_consume_args
 
-      # @api private
+      # Internal API.
       def initialize(client:, channel_id:, id:, block:, **settings)
         @client = client
         @channel_id = channel_id
@@ -19,26 +19,26 @@ module AMQP
       end
 
       # Cancel the consumer
-      # @return [self]
+      # Returns <tt>self</tt>.
       def cancel
         @client.cancel_consumer(self)
         self
       end
 
       # True if the consumer is cancelled/closed
-      # @return [Boolean]
+      # Returns <tt>Boolean</tt>.
       def closed?
         @consume_ok.msg_q.closed?
       end
 
       # Return the consumer tag
-      # @return [String]
+      # Returns <tt>String</tt>.
       def tag
         @consume_ok.consumer_tag
       end
 
       # Update the consumer with new metadata after reconnection
-      # @api private
+      # Internal API.
       def update_consume_ok(consume_ok)
         @consume_ok = consume_ok
       end

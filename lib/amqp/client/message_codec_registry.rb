@@ -11,10 +11,10 @@ module AMQP
       end
 
       # Register a parser for a content_type
-      # @param content_type [String] The content_type to match
-      # @param parser [Object] The parser object,
+      # * <tt>content_type</tt> (<tt>String</tt>) - The content_type to match
+      # * <tt>parser</tt> (<tt>Object</tt>) - The parser object,
       #   must respond to parse(data, properties) and serialize(obj, properties)
-      # @return [self]
+      # Returns <tt>self</tt>.
       def register_parser(content_type:, parser:)
         validate_parser!(parser)
         @parsers[content_type] = parser
@@ -22,10 +22,10 @@ module AMQP
       end
 
       # Register a coder for a specific content_encoding
-      # @param content_encoding [String] The content_encoding to match
-      # @param coder [Object] The coder object,
+      # * <tt>content_encoding</tt> (<tt>String</tt>) - The content_encoding to match
+      # * <tt>coder</tt> (<tt>Object</tt>) - The coder object,
       #   must respond to encode(data, properties) and decode(data, properties)
-      # @return [self]
+      # Returns <tt>self</tt>.
       def register_coder(content_encoding:, coder:)
         validate_coder!(coder)
         @coders[content_encoding] = coder
@@ -33,33 +33,33 @@ module AMQP
       end
 
       # Find parser handler based on message properties
-      # @param content_type [String] The content_type to match
-      # @return [Object, nil] The parser object or nil if not found
+      # * <tt>content_type</tt> (<tt>String</tt>) - The content_type to match
+      # Returns <tt>Object, nil</tt> - The parser object or nil if not found
       def find_parser(content_type)
         @parsers[content_type]
       end
 
       # Find coder handler based on content_encoding
-      # @param content_encoding [String] The content_encoding to match
-      # @return [Object, nil] The coder object or nil if not found
+      # * <tt>content_encoding</tt> (<tt>String</tt>) - The content_encoding to match
+      # Returns <tt>Object, nil</tt> - The coder object or nil if not found
       def find_coder(content_encoding)
         @coders[content_encoding]
       end
 
       # Introspection helper to list all registered content types
-      # @return [Array<String>] List of registered content types
+      # Returns <tt>Array<String></tt> - List of registered content types
       def list_content_types
         @parsers.keys
       end
 
       # Introspection helper to list all registered content encodings
-      # @return [Array<String>] List of registered content encodings
+      # Returns <tt>Array<String></tt> - List of registered content encodings
       def list_content_encodings
         @coders.keys
       end
 
       # Enable built-in parsers for common content types
-      # @return [self]
+      # Returns <tt>self</tt>.
       def enable_builtin_parsers
         register_parser(content_type: "text/plain", parser: Parsers::Plain)
         register_parser(content_type: "application/json", parser: Parsers::JSONParser)
@@ -67,7 +67,7 @@ module AMQP
       end
 
       # Enable built-in coders for common content encodings
-      # @return [self]
+      # Returns <tt>self</tt>.
       def enable_builtin_coders
         register_coder(content_encoding: "gzip", coder: Coders::Gzip)
         register_coder(content_encoding: "deflate", coder: Coders::Deflate)
@@ -75,7 +75,7 @@ module AMQP
       end
 
       # Enable all built-in codecs (parsers and coders)
-      # @return [self]
+      # Returns <tt>self</tt>.
       def enable_builtin_codecs
         enable_builtin_parsers.enable_builtin_coders
       end

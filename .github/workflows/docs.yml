@@ -13,11 +13,10 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
         with:
+          bundler-cache: true
           ruby-version: ruby
-      - name: Install yard
-        run: gem install yard
       - name: Generate docs
-        run: yard doc
+        run: bundle exec rake rdoc
       - name: Deploy docs
         uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
         with:

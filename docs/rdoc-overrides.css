@@ -1,0 +1,37 @@
+/*
+ * RDoc's Aliki theme enables the right-hand table of contents at 1280px.
+ * AMQP::Client class pages have wide method content, so the default grid can
+ * let the content column keep its intrinsic width and push the header controls
+ * off screen. Keep the three-column layout, but allow the center column to
+ * shrink; code examples and method bodies can wrap or scroll internally.
+ */
+@media (min-width: 1280px) and (max-width: 1399px) {
+  body.has-toc {
+    grid-template:
+      "header header header" var(--layout-header-height)
+      "nav main toc" 1fr
+      "nav footer toc" auto /
+      var(--layout-sidebar-width)
+      minmax(0, 1fr)
+      minmax(var(--layout-toc-width-min), var(--layout-toc-width-max));
+  }
+
+  main {
+    min-width: 0;
+  }
+
+  header.top-navbar {
+    min-width: 0;
+  }
+
+  header.top-navbar .navbar-brand {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  header.top-navbar .navbar-search {
+    width: min(var(--layout-search-width), 36vw);
+    min-width: 16rem;
+  }
+}

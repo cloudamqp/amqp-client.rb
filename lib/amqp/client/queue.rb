@@ -9,49 +9,50 @@ module AMQP
       attr_reader :name
 
       # Should only be initialized from the Client
-      # @api private
+      # Internal API.
       def initialize(client, name)
         @client = client
         @name = name
       end
 
       # Publish to the queue, wait for confirm
-      # @param body [Object] The message body
+      # * <tt>body</tt> (<tt>Object</tt>) - The message body
       #   will be encoded if any matching codec is found in the client's codec registry
-      # @option (see Client#publish)
-      # @raise (see Client#publish)
-      # @return [Queue] self
+      # Options are the same as Client#publish.
+      # Raises the same as Client#publish.
+      # Returns <tt>Queue</tt> - self
       def publish(body, **properties)
         @client.publish(body, exchange: "", routing_key: @name, **properties)
         self
       end
 
       # Publish to the queue, without waiting for confirm
-      # @param (see Queue#publish)
-      # @option (see Queue#publish)
-      # @raise (see Queue#publish)
-      # @return [Queue] self
+      # Parameters are the same as Queue#publish.
+      # Options are the same as Queue#publish.
+      # Raises the same as Queue#publish.
+      # Returns <tt>Queue</tt> - self
       def publish_and_forget(body, **properties)
         @client.publish_and_forget(body, exchange: "", routing_key: @name, **properties)
         self
       end
 
       # Subscribe/consume from the queue
-      # @param no_ack [Boolean] If true, messages are automatically acknowledged by the server upon delivery.
+      # * <tt>no_ack</tt> (<tt>Boolean</tt>) - If true, messages are automatically acknowledged by the server upon delivery.
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
       #   an exception, the message is rejected and can be optionally requeued.
       #   You can of course handle the ack/reject in the block yourself. (Default: false)
-      # @param exclusive [Boolean] When true only a single consumer can consume from the queue at a time
-      # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
-      # @param worker_threads [Integer] Number of threads processing messages,
+      # * <tt>exclusive</tt> (<tt>Boolean</tt>) - When true only a single consumer can consume from the queue at a time
+      # * <tt>prefetch</tt> (<tt>Integer</tt>) - Specify how many messages to prefetch for consumers with no_ack is false
+      # * <tt>worker_threads</tt> (<tt>Integer</tt>) - Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked
-      # @param requeue_on_reject [Boolean] If true, messages that are rejected due to an exception in the block
+      # * <tt>requeue_on_reject</tt> (<tt>Boolean</tt>) - If true, messages that are rejected due to an exception in the
+      #   block
       #   will be requeued. Only relevant if no_ack is false. (Default: true)
-      # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
+      # * <tt>on_cancel</tt> (<tt>Proc</tt>) - Optional proc that will be called if the consumer is cancelled by the broker
       #   The proc will be called with the consumer tag as the only argument
-      # @param arguments [Hash] Custom arguments to the consumer
-      # @yield [Message] Delivered message from the queue
-      # @return [Consumer] The consumer object, which can be used to cancel the consumer
+      # * <tt>arguments</tt> (<tt>Hash</tt>) - Custom arguments to the consumer
+      # Yields <tt>Message</tt> - Delivered message from the queue
+      # Returns <tt>Consumer</tt> - The consumer object, which can be used to cancel the consumer
       def subscribe(no_ack: false, exclusive: false, prefetch: 1, worker_threads: 1, requeue_on_reject: true,
                     on_cancel: nil, arguments: {})
         @client.subscribe(@name, no_ack:, exclusive:, prefetch:, worker_threads:, on_cancel:, arguments:) do |message|
@@ -64,17 +65,19 @@ module AMQP
       end
 
       # Get a message from the queue
-      # @param no_ack [Boolean] When false the message has to be manually acknowledged (or rejected) (default: false)
-      # @return [Message, nil] The message from the queue or nil if the queue is empty
+      # * <tt>no_ack</tt> (<tt>Boolean</tt>) - When false the message has to be manually acknowledged (or rejected)
+      #   (default: false)
+      # Returns <tt>Message, nil</tt> - The message from the queue or nil if the queue is empty
       def get(no_ack: false)
         @client.get(@name, no_ack:)
       end
 
       # Bind the queue to an exchange
-      # @param exchange [String, Exchange] Name of the exchange to bind to, or the exchange object itself
-      # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
-      # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
-      # @return [self]
+      # * <tt>exchange</tt> (<tt>String, Exchange</tt>) - Name of the exchange to bind to, or the exchange object itself
+      # * <tt>binding_key</tt> (<tt>String</tt>) - Binding key on which messages that match might be routed (depending on
+      #   exchange type)
+      # * <tt>arguments</tt> (<tt>Hash</tt>) - Message headers to match on (only relevant for header exchanges)
+      # Returns <tt>self</tt>.
       def bind(exchange, binding_key: "", arguments: {})
         exchange = exchange.name unless exchange.is_a?(String)
         @client.bind(queue: @name, exchange:, binding_key:, arguments:)
@@ -82,10 +85,10 @@ module AMQP
       end
 
       # Unbind the queue from an exchange
-      # @param exchange [String, Exchange] Name of the exchange to unbind from, or the exchange object itself
-      # @param binding_key [String] Binding key which the queue is bound to the exchange with
-      # @param arguments [Hash] Arguments matching the binding that's being removed
-      # @return [self]
+      # * <tt>exchange</tt> (<tt>String, Exchange</tt>) - Name of the exchange to unbind from, or the exchange object itself
+      # * <tt>binding_key</tt> (<tt>String</tt>) - Binding key which the queue is bound to the exchange with
+      # * <tt>arguments</tt> (<tt>Hash</tt>) - Arguments matching the binding that's being removed
+      # Returns <tt>self</tt>.
       def unbind(exchange, binding_key: "", arguments: {})
         exchange = exchange.name unless exchange.is_a?(String)
         @client.unbind(queue: @name, exchange:, binding_key:, arguments:)
@@ -93,14 +96,14 @@ module AMQP
       end
 
       # Purge/empty the queue
-      # @return [self]
+      # Returns <tt>self</tt>.
       def purge
         @client.purge(@name)
         self
       end
 
       # Delete the queue
-      # @return [nil]
+      # Returns <tt>nil</tt>.
       def delete
         @client.delete_queue(@name)
         nil

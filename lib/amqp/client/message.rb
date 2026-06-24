@@ -4,7 +4,7 @@ module AMQP
   class Client
     # A message delivered from the broker
     class Message
-      # @api private
+      # Internal API.
       def initialize(channel, consumer_tag, delivery_tag, exchange, routing_key, redelivered)
         @channel = channel
         @consumer_tag = consumer_tag
@@ -21,36 +21,36 @@ module AMQP
       DeliveryInfo = Struct.new(:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key, :channel)
 
       # The channel the message was deliviered to
-      # @return [Connection::Channel]
+      # Returns <tt>Connection::Channel</tt>.
       attr_reader :channel
 
       # The tag of the consumer the message was deliviered to
-      # @return [String]
-      # @return [nil] If the message was polled and not deliviered to a consumer
+      # Returns <tt>String</tt>.
+      # Returns <tt>nil</tt> - If the message was polled and not deliviered to a consumer
       attr_reader :consumer_tag
 
       # The delivery tag of the message, used for acknowledge or reject the message
-      # @return [Integer]
+      # Returns <tt>Integer</tt>.
       attr_reader :delivery_tag
 
       # Name of the exchange the message was published to
-      # @return [String]
+      # Returns <tt>String</tt>.
       attr_reader :exchange
 
       # The routing key the message was published with
-      # @return [String]
+      # Returns <tt>String</tt>.
       attr_reader :routing_key
 
       # True if the message have been delivered before
-      # @return [Boolean]
+      # Returns <tt>Boolean</tt>.
       attr_reader :redelivered
 
       # Message properties
-      # @return [Properties]
+      # Returns <tt>Properties</tt>.
       attr_accessor :properties
 
       # The message body
-      # @return [String]
+      # Returns <tt>String</tt>.
       attr_accessor :body
 
       def delivery_info
@@ -65,7 +65,7 @@ module AMQP
       end
 
       # Acknowledge the message
-      # @return [nil]
+      # Returns <tt>nil</tt>.
       def ack
         return if @ack_or_reject_sent
 
@@ -75,8 +75,9 @@ module AMQP
       end
 
       # Reject the message
-      # @param requeue [Boolean] If true the message will be put back into the queue again, ready to be redelivered
-      # @return [nil]
+      # * <tt>requeue</tt> (<tt>Boolean</tt>) - If true the message will be put back into the queue again, ready to be
+      #   redelivered
+      # Returns <tt>nil</tt>.
       def reject(requeue: false)
         return if @ack_or_reject_sent
 
@@ -85,20 +86,20 @@ module AMQP
         nil
       end
 
-      # @see #exchange
-      # @deprecated
-      # @!attribute [r] exchange_name
-      # @return [String]
+      # See #exchange.
+      # Deprecated.
+      # Attribute: <tt>exchange_name</tt>
+      # Returns <tt>String</tt>.
       def exchange_name
         @exchange
       end
 
-      # @!group Message coding
+      # :section: Message coding
 
       # Parse the message body based on content_type and content_encoding
-      # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
-      # @raise [Error::UnsupportedContentType] If the content type is not supported
-      # @return [Object] The parsed message body
+      # Raises <tt>Error::UnsupportedContentEncoding</tt> - If the content encoding is not supported
+      # Raises <tt>Error::UnsupportedContentType</tt> - If the content type is not supported
+      # Returns <tt>Object</tt> - The parsed message body
       def parse
         return @parsed unless @parsed.nil?
 
@@ -117,8 +118,8 @@ module AMQP
       end
 
       # Decode the message body based on content_encoding
-      # @raise [Error::UnsupportedContentEncoding] If the content encoding is not supported
-      # @return [String] The decoded message body
+      # Raises <tt>Error::UnsupportedContentEncoding</tt> - If the content encoding is not supported
+      # Returns <tt>String</tt> - The decoded message body
       def decode
         registry = @channel.connection.codec_registry
         strict = @channel.connection.strict_coding
@@ -132,13 +133,11 @@ module AMQP
 
         @body
       end
-
-      # @!endgroup
     end
 
     # A published message returned by the broker due to some error
     class ReturnMessage
-      # @api private
+      # Internal API.
       def initialize(reply_code, reply_text, exchange, routing_key)
         @reply_code = reply_code
         @reply_text = reply_text
@@ -149,27 +148,27 @@ module AMQP
       end
 
       # Error code
-      # @return [Integer]
+      # Returns <tt>Integer</tt>.
       attr_reader :reply_code
 
       # Description on why the message was returned
-      # @return [String]
+      # Returns <tt>String</tt>.
       attr_reader :reply_text
 
       # Name of the exchange the message was published to
-      # @return [String]
+      # Returns <tt>String</tt>.
       attr_reader :exchange
 
       # The routing key the message was published with
-      # @return [String]
+      # Returns <tt>String</tt>.
       attr_reader :routing_key
 
       # Message properties
-      # @return [Properties]
+      # Returns <tt>Properties</tt>.
       attr_accessor :properties
 
       # The message body
-      # @return [String]
+      # Returns <tt>String</tt>.
       attr_accessor :body
     end
   end

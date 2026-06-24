@@ -196,6 +196,9 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`.
 
+Generate the API documentation with `bundle exec rake rdoc`. The generated site is
+written to `doc/`, using the same RDoc options as CI.
+
 ### TLS tests
 
 `rake test` excludes the TLS tests because they need a broker with TLS enabled. `bin/test-tls` runs them against a throwaway broker without disturbing anything you already have set up: it generates a self-signed certificate, starts the broker as your user from a temporary directory on non-default ports (25672/25671), runs the `_tls` tests, then shuts it down. With no argument it tests both brokers in turn:

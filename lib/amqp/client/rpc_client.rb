@@ -4,7 +4,7 @@ module AMQP
   class Client
     # Reusable RPC client, when RPC performance is important
     class RPCClient
-      # @param channel [AMQP::Client::Connection::Channel] the channel to use for the RPC calls
+      # * <tt>channel</tt> (<tt>AMQP::Client::Connection::Channel</tt>) - the channel to use for the RPC calls
       def initialize(channel)
         @ch = channel
         @correlation_id = 0
@@ -13,7 +13,7 @@ module AMQP
       end
 
       # Start listening for responses from the RPC calls
-      # @return [self]
+      # Returns <tt>self</tt>.
       def start
         @ch.basic_consume("amq.rabbitmq.reply-to") do |msg|
           @messages.push msg
@@ -22,12 +22,12 @@ module AMQP
       end
 
       # Do a RPC call, sends a messages, waits for a response
-      # @param method [String, Symbol] name of the method to call (i.e. queue name on the server side)
-      # @param arguments [String] arguments/body to the call
-      # @param timeout [Numeric, nil] Number of seconds to wait for a response
-      # @option (see Client#publish)
-      # @raise [Timeout::Error] if no response is received within the timeout period
-      # @return [String] Returns the result from the call
+      # * <tt>method</tt> (<tt>String, Symbol</tt>) - name of the method to call (i.e. queue name on the server side)
+      # * <tt>arguments</tt> (<tt>String</tt>) - arguments/body to the call
+      # * <tt>timeout</tt> (<tt>Numeric, nil</tt>) - Number of seconds to wait for a response
+      # Options are the same as Client#publish.
+      # Raises <tt>Timeout::Error</tt> - if no response is received within the timeout period
+      # Returns <tt>String</tt> - Returns the result from the call
       def call(method, arguments, timeout: nil, **properties)
         correlation_id = @lock.synchronize { @correlation_id += 1 }.to_s(36)
         @ch.basic_publish(arguments, exchange: "", routing_key: method.to_s,
