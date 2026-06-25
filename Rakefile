@@ -19,22 +19,24 @@ require "rubocop/rake_task"
 
 RuboCop::RakeTask.new
 
-require "rdoc/task"
-require_relative "docs/rdoc_lavinmq_theme"
+if RUBY_ENGINE == "ruby"
+  require "rdoc/task"
+  require_relative "docs/rdoc_lavinmq_theme"
 
-RDoc::Task.new do |rdoc|
-  rdoc.generator = "aliki"
-  rdoc.main = "README.md"
-  rdoc.options << "--template-stylesheets=docs/rdoc-overrides.css"
-  rdoc.options << "--copy-files=docs/rdoc-assets"
-  rdoc.rdoc_dir = "doc"
-  rdoc.title = "AMQP::Client API"
-  rdoc.rdoc_files.include(
-    "README.md",
-    "LICENSE.txt",
-    "CHANGELOG.md",
-    "lib/**/*.rb"
-  )
+  RDoc::Task.new do |rdoc|
+    rdoc.generator = "aliki"
+    rdoc.main = "README.md"
+    rdoc.options << "--template-stylesheets=docs/rdoc-overrides.css"
+    rdoc.options << "--copy-files=docs/rdoc-assets"
+    rdoc.rdoc_dir = "doc"
+    rdoc.title = "AMQP::Client API"
+    rdoc.rdoc_files.include(
+      "README.md",
+      "LICENSE.txt",
+      "CHANGELOG.md",
+      "lib/**/*.rb"
+    )
+  end
 end
 
 # Release helper methods
