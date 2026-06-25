@@ -31,11 +31,11 @@ module AMQP
     #   self-signed certs
     # * <tt>heartbeat</tt> (<tt>Integer</tt>, default: <tt>0</tt>) - Heartbeat timeout, defaults to 0 and relies on TCP
     #   keepalive instead
-    # * <tt>frame_max</tt> (<tt>Integer</tt>, default: <tt>131_072</tt>) - Maximum frame size,
-    #    the smallest of the client's and the broker's values will be used
+    # * <tt>frame_max</tt> (<tt>Integer</tt>, default: <tt>131_072</tt>) - Maximum frame size; the smallest of the
+    #   client's and the broker's values will be used
     # * <tt>channel_max</tt> (<tt>Integer</tt>, default: <tt>2048</tt>) - Maximum number of channels the client will be
     #   allowed to have open.
-    #   Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.
+    #   Maximum allowed is 65_536. The smallest of the client's and the broker's values will be used.
     # * <tt>logger</tt> (<tt>#info, #warn, #error</tt>, default: <tt>nil</tt>) - Logger for #start lifecycle events
     #   (connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
     #   written to stderr via Kernel#warn for backwards compatibility.

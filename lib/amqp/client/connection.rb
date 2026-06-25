@@ -29,11 +29,11 @@ module AMQP
       # * <tt>connect_timeout</tt> (<tt>Float</tt>, default: <tt>30</tt>) - TCP connection timeout
       # * <tt>heartbeat</tt> (<tt>Integer</tt>, default: <tt>0</tt>) - Heartbeat timeout, defaults to 0 and relies on TCP
       #   keepalive instead
-      # * <tt>frame_max</tt> (<tt>Integer</tt>, default: <tt>131_072</tt>) - Maximum frame size,
-      #    the smallest of the client's and the broker's values will be used
-      # * <tt>channel_max</tt> (<tt>Integer</tt>, default: <tt>2048</tt>) - Maxium number of channels the client will be
+      # * <tt>frame_max</tt> (<tt>Integer</tt>, default: <tt>131_072</tt>) - Maximum frame size; the smallest of the
+      #   client's and the broker's values will be used
+      # * <tt>channel_max</tt> (<tt>Integer</tt>, default: <tt>2048</tt>) - Maximum number of channels the client will be
       #   allowed to have open.
-      #   Maxium allowed is 65_536.  The smallest of the client's and the broker's value will be used.
+      #   Maximum allowed is 65_536. The smallest of the client's and the broker's values will be used.
       # * <tt>keepalive</tt> (<tt>String</tt>, default: <tt>60:10:3</tt>) - TCP keepalive setting, 60s idle, 10s interval
       #   between probes, 3 probes
       # Returns <tt>Connection</tt>.
