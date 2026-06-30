@@ -212,7 +212,7 @@ The LavinMQ flow-control test starts a private LavinMQ instance configured to re
 RUN_LAVINMQ_FLOW_CONTROL_TESTS=1 bundle exec rake test
 ```
 
-Current LavinMQ releases hardcode their control socket at `/tmp/lavinmqctl.sock`, so the helper clears that socket before startup. A LavinMQ you already have running keeps serving AMQP but loses its `lavinmqctl` socket until restarted. The workaround can be removed when LavinMQ 2.9.0 is released with https://github.com/cloudamqp/lavinmq/pull/2029. CI opts in for the LavinMQ test jobs.
+CI opts in for the LavinMQ test jobs.
 
 ### TLS tests
 

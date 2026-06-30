@@ -130,10 +130,8 @@ module ReadLoopHelpers
 end
 
 # Boots a throwaway LavinMQ instance for tests that need broker behaviour we
-# can't toggle on the shared server. These tests are opt-in because starting a
-# second LavinMQ currently requires clearing the hardcoded control socket path.
+# can't toggle on the shared server. These tests are opt-in.
 module LavinMQServer
-  LAVINMQ_CONTROL_SOCKET = "/tmp/lavinmqctl.sock"
   LAVINMQ_FLOW_CONTROL_OPT_IN = "RUN_LAVINMQ_FLOW_CONTROL_TESTS"
   LAVINMQ_STARTUP_ATTEMPTS = 3
   LAVINMQ_STARTUP_TIMEOUT = 10
@@ -161,7 +159,6 @@ module LavinMQServer
     yield amqp_port
   ensure
     stop_process(pid, waiter)
-    clear_lavinmq_control_socket(required: false)
     FileUtils.remove_entry(dir) if dir
   end
 
@@ -169,7 +166,6 @@ module LavinMQServer
     LAVINMQ_STARTUP_ATTEMPTS.times do |attempt|
       amqp_port = free_tcp_port
       config = write_low_disk_lavinmq_config(dir, attempt + 1)
-      clear_lavinmq_control_socket(required: true)
       pid = spawn_lavinmq(exe, config, amqp_port)
       waiter = Process.detach(pid)
       return [pid, waiter, amqp_port] if wait_for_tcp("127.0.0.1", amqp_port, waiter:)
@@ -201,16 +197,6 @@ module LavinMQServer
     return if %w[1 true].include?(ENV[LAVINMQ_FLOW_CONTROL_OPT_IN])
 
     skip "set #{LAVINMQ_FLOW_CONTROL_OPT_IN}=1 to run LavinMQ flow-control tests"
-  end
-
-  # LavinMQ < 2.9.0 hardcodes its control socket at /tmp/lavinmqctl.sock and
-  # aborts at startup if it can't recreate it. This can be removed when LavinMQ
-  # 2.9.0 is released with https://github.com/cloudamqp/lavinmq/pull/2029.
-  def clear_lavinmq_control_socket(required:)
-    return if system("rm", "-f", LAVINMQ_CONTROL_SOCKET, out: File::NULL, err: File::NULL)
-    return if system("sudo", "-n", "rm", "-f", LAVINMQ_CONTROL_SOCKET, out: File::NULL, err: File::NULL)
-
-    skip "requires removing #{LAVINMQ_CONTROL_SOCKET}" if required
   end
 
   def lavinmq_executable
