@@ -508,6 +508,18 @@ h3.signature .aliases {
   color: var(--lavin-muted);
 }
 
+.inheritanceTree,
+.toggleDefines {
+  background: var(--lavin-panel-2);
+  border-left-color: var(--lavin-stroke);
+  color: var(--lavin-green);
+}
+
+.inheritanceTree:hover,
+.toggleDefines:hover {
+  background: var(--lavin-green-soft);
+}
+
 .source_code {
   background: var(--lavin-code);
   border-color: var(--lavin-stroke);
@@ -518,8 +530,12 @@ h3.signature .aliases {
 
 .source_code pre,
 .docstring pre.code,
+.summary_desc pre.code,
+#filecontents pre.code,
 .tags pre.example {
   background: var(--lavin-code);
+  border-color: var(--lavin-stroke);
+  border-radius: 0.45rem;
   color: var(--lavin-ink);
   font-family: var(--lavin-font-mono);
   font-size: 0.88rem;
@@ -530,6 +546,88 @@ h3.signature .aliases {
   background: var(--lavin-panel-2);
   border-right: 1px solid var(--lavin-stroke);
   color: var(--lavin-muted);
+}
+
+pre.code {
+  color: var(--lavin-ink);
+}
+
+pre.code a,
+#content pre.code .object_link a,
+#content .summary_desc pre.code .id > .object_link a,
+#content .docstring pre.code .id > .object_link a,
+#content #filecontents pre.code .id > .object_link a,
+#content .summary_desc pre.code .const > .object_link a,
+#content .docstring pre.code .const > .object_link a,
+#content #filecontents pre.code .const > .object_link a {
+  background: transparent;
+  border-bottom-color: color-mix(in srgb, var(--lavin-green) 48%, transparent);
+  color: var(--lavin-green-strong);
+}
+
+[data-theme="dark"] pre.code .info.file {
+  color: #a7a29a;
+}
+
+[data-theme="dark"] pre.code .val,
+[data-theme="dark"] pre.code .tstring_content,
+[data-theme="dark"] pre.code .heredoc_beg,
+[data-theme="dark"] pre.code .heredoc_end,
+[data-theme="dark"] pre.code .qwords_beg,
+[data-theme="dark"] pre.code .qwords_end,
+[data-theme="dark"] pre.code .qwords_sep,
+[data-theme="dark"] pre.code .words_beg,
+[data-theme="dark"] pre.code .words_end,
+[data-theme="dark"] pre.code .words_sep,
+[data-theme="dark"] pre.code .qsymbols_beg,
+[data-theme="dark"] pre.code .qsymbols_end,
+[data-theme="dark"] pre.code .qsymbols_sep,
+[data-theme="dark"] pre.code .symbols_beg,
+[data-theme="dark"] pre.code .symbols_end,
+[data-theme="dark"] pre.code .symbols_sep,
+[data-theme="dark"] pre.code .tstring,
+[data-theme="dark"] pre.code .dstring,
+[data-theme="dark"] pre.code .regexp,
+[data-theme="dark"] .dregexp {
+  color: #9ee6bc;
+}
+
+[data-theme="dark"] pre.code .fid,
+[data-theme="dark"] pre.code .rubyid_new,
+[data-theme="dark"] pre.code .rubyid_to_s,
+[data-theme="dark"] pre.code .rubyid_to_sym,
+[data-theme="dark"] pre.code .rubyid_to_f,
+[data-theme="dark"] pre.code .dot + pre.code .id,
+[data-theme="dark"] pre.code .rubyid_to_i pre.code .rubyid_each,
+[data-theme="dark"] pre.code .ivar {
+  color: #91d7f2;
+}
+
+[data-theme="dark"] pre.code .comment {
+  color: #8f9d94;
+}
+
+[data-theme="dark"] pre.code .const,
+[data-theme="dark"] pre.code .constant {
+  color: #cab6ff;
+}
+
+[data-theme="dark"] pre.code .label,
+[data-theme="dark"] pre.code .symbol {
+  color: #f2c38f;
+}
+
+[data-theme="dark"] pre.code .kw,
+[data-theme="dark"] pre.code .rubyid_require,
+[data-theme="dark"] pre.code .rubyid_extend,
+[data-theme="dark"] pre.code .rubyid_include {
+  color: #8fb4ff;
+}
+
+[data-theme="dark"] pre.code .gvar,
+[data-theme="dark"] pre.code .rubyid_backref,
+[data-theme="dark"] pre.code .rubyid_nth_ref {
+  color: #b5c0ff;
 }
 
 .docstring table th,
@@ -553,6 +651,43 @@ h3.signature .aliases {
 .docstring table th,
 #filecontents table th {
   background: var(--lavin-panel);
+}
+
+li.r1 {
+  background: var(--lavin-panel-2);
+}
+
+li.r2 {
+  background: var(--lavin-panel);
+}
+
+#listing ul small {
+  color: var(--lavin-muted);
+}
+
+#toc {
+  background: var(--lavin-panel);
+  border-color: var(--lavin-stroke);
+  box-shadow: -2px 2px 12px rgb(0 0 0 / 16%);
+  color: var(--lavin-ink);
+}
+
+#toc.hidden,
+#toc.hidden:hover {
+  background: var(--lavin-panel);
+}
+
+#toc .title {
+  color: var(--lavin-ink);
+}
+
+#toc a,
+#toc a:visited {
+  color: var(--lavin-green);
+}
+
+[data-theme="dark"] #toc {
+  box-shadow: -2px 2px 18px rgb(0 0 0 / 36%);
 }
 
 body:has(#full_list) {
