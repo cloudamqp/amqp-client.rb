@@ -104,8 +104,12 @@
   --shadow-sm: 0 1px 2px rgb(29 25 25 / 8%);
   --shadow-md: 0 8px 24px rgb(29 25 25 / 10%);
   --shadow-lg: 0 16px 36px rgb(29 25 25 / 12%);
-  --layout-sidebar-width: 300px;
-  --layout-content-max-width: 820px;
+  --layout-sidebar-width: 260px;
+  --layout-sidebar-width-min: 260px;
+  --layout-sidebar-width-max: 14%;
+  --layout-toc-width-min: 220px;
+  --layout-toc-width-max: 16%;
+  --layout-content-max-width: 1120px;
 }
 
 [data-theme="dark"] {
@@ -280,7 +284,7 @@ nav {
 }
 
 nav .nav-section {
-  padding: 0 var(--space-5);
+  padding: 0 var(--space-4);
 }
 
 nav h2,
@@ -290,9 +294,9 @@ nav h3 {
   border-radius: 0.5rem;
   color: var(--color-text-primary);
   font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
-  margin-bottom: var(--space-3);
-  padding: 0.65rem 0.75rem;
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-2);
+  padding: 0.5rem 0.625rem;
 }
 
 nav h2 svg,
@@ -321,6 +325,8 @@ nav code,
 
 main {
   color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+  padding: var(--space-8) var(--space-6);
 }
 
 main h1[class] {
@@ -336,7 +342,7 @@ main h1[class]::after {
   display: block;
   width: 4rem;
   height: 0.25rem;
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
   background: var(--color-accent-primary);
   border-radius: 999px;
 }
@@ -350,6 +356,20 @@ main h6 {
   color: var(--color-text-primary);
   font-family: var(--font-family-heading);
   letter-spacing: 0;
+}
+
+main h1.page-title {
+  margin-bottom: var(--space-5);
+}
+
+main h1.page-title .page-title-name {
+  font-size: var(--font-size-2xl);
+}
+
+main header h2,
+main header h3 {
+  margin: var(--space-5) 0 var(--space-3);
+  padding-top: var(--space-2);
 }
 
 main a {
@@ -374,7 +394,8 @@ pre,
 main .method-source-code pre {
   background: var(--color-code-bg);
   border-color: var(--color-code-border);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
+  padding: var(--space-3);
 }
 
 table {
@@ -400,21 +421,34 @@ main .method-section h3 {
 main .method-detail {
   background: var(--color-background-secondary);
   border: 1px dashed var(--color-border-default);
-  border-radius: 0.75rem;
-  margin: var(--space-5) 0;
-  padding: var(--space-5);
+  border-radius: 0.5rem;
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
   box-shadow: var(--shadow-sm);
 }
 
 main .method-detail:target {
   border-color: var(--color-accent-primary);
+  margin-left: 0;
+  padding-left: var(--space-3);
   box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
+main .method-header {
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
 main .method-heading {
-  border-bottom: 1px solid var(--color-border-subtle);
-  margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-4);
-  padding: var(--space-4) var(--space-5);
+  align-items: baseline;
+  border-bottom: 0;
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-2);
+  line-height: var(--line-height-normal);
+  margin: 0;
+  padding: 0;
 }
 
 main .method-heading .method-name {
@@ -423,6 +457,7 @@ main .method-heading .method-name {
 
 main .method-heading .method-args {
   color: var(--color-text-tertiary);
+  font-size: inherit;
 }
 
 main .method-source-toggle summary,
@@ -430,7 +465,8 @@ main .method-source-toggle summary,
   background: var(--color-accent-subtle);
   border-radius: 0.45rem;
   color: var(--color-accent-primary);
-  padding: 0.35rem 0.65rem;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.55rem;
 }
 
 main .method-source-toggle summary:hover {
@@ -441,6 +477,32 @@ main .method-description,
 main .method-description p,
 main .method-description li {
   color: var(--color-text-secondary);
+}
+
+main .method-header ~ .method-description {
+  margin-top: var(--space-3);
+  padding-left: 0;
+}
+
+main .method-description {
+  line-height: var(--line-height-normal);
+}
+
+main .method-description p {
+  margin: 0 0 var(--space-2);
+}
+
+main .method-description ul {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-6);
+}
+
+main .method-description li {
+  margin: 0.2rem 0;
+}
+
+main li > p {
+  margin: 0.15rem 0;
 }
 
 main .method-description strong {
