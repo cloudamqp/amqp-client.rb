@@ -81,6 +81,25 @@
     updateToggle(button);
   }
 
+  function expandItem(item) {
+    if (!item) return;
+
+    item.classList.remove("collapsed");
+
+    const toggle = item.querySelector(":scope > .item > a.toggle");
+    if (toggle) toggle.setAttribute("aria-expanded", "true");
+  }
+
+  function expandClientNamespace() {
+    const client = document.getElementById("object_AMQP::Client");
+
+    if (!client) return;
+
+    expandItem(document.getElementById("object_AMQP"));
+    expandItem(client);
+    client.querySelectorAll("li").forEach(expandItem);
+  }
+
   function ready(callback) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", callback, { once: true });
@@ -106,4 +125,5 @@
   });
 
   ready(installToggle);
+  ready(expandClientNamespace);
 })();

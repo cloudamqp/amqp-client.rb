@@ -161,7 +161,7 @@ a:visited,
 }
 
 #menu {
-  color: var(--lavin-muted);
+  color: color-mix(in srgb, var(--lavin-muted) 82%, var(--lavin-ink));
   flex: 1 1 auto;
   font-family: var(--lavin-font-heading);
   font-size: 0.95rem;
@@ -169,9 +169,26 @@ a:visited,
   min-width: 0;
 }
 
+#menu .title {
+  color: var(--lavin-ink);
+}
+
 #menu .title,
 #menu a {
   white-space: nowrap;
+}
+
+#menu a,
+#menu a:visited {
+  border-bottom: 1px dotted color-mix(in srgb, var(--lavin-green) 55%, var(--lavin-stroke));
+  color: var(--lavin-green);
+  text-decoration: none;
+}
+
+#menu a:hover {
+  background: transparent;
+  border-bottom-color: var(--lavin-green-strong);
+  color: var(--lavin-green-strong);
 }
 
 #search {
