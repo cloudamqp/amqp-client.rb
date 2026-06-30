@@ -49,25 +49,13 @@ module TimeoutEveryTestCase
   end
 end
 
-module SkipSudoTestCase
-  def skip_if_no_sudo
-    skip "requires sudo" unless %w[1 true].include?(ENV["RUN_SUDO_TESTS"])
-  end
-end
+module RabbitMQBlockedTestCase
+  RABBITMQ_BLOCKED_TESTS_OPT_IN = "RUN_RABBITMQ_BLOCKED_TESTS"
 
-# For tests that exercise RabbitMQ-only broker behaviour (e.g. Connection.Blocked,
-# which LavinMQ doesn't implement). rabbitmqctl on PATH is the signal that we're
-# running against RabbitMQ; its apt package installs it under /usr/sbin.
-module SkipRabbitMQTestCase
-  def skip_unless_rabbitmqctl
-    return if rabbitmqctl?
+  def skip_unless_rabbitmq_blocked_tests
+    return if %w[1 true].include?(ENV[RABBITMQ_BLOCKED_TESTS_OPT_IN])
 
-    skip "requires RabbitMQ; rabbitmqctl not found"
-  end
-
-  def rabbitmqctl?
-    search = ENV["PATH"].to_s.split(File::PATH_SEPARATOR) + %w[/usr/sbin /usr/local/sbin /sbin]
-    search.any? { |dir| File.executable?(File.join(dir, "rabbitmqctl")) }
+    skip "set #{RABBITMQ_BLOCKED_TESTS_OPT_IN}=1 to run RabbitMQ Connection.Blocked tests"
   end
 end
 
@@ -305,8 +293,7 @@ end
 $VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase
-Minitest::Test.prepend SkipSudoTestCase
-Minitest::Test.prepend SkipRabbitMQTestCase
+Minitest::Test.prepend RabbitMQBlockedTestCase
 Minitest::Test.prepend FakeServer
 Minitest::Test.prepend ThreadHelpers
 Minitest::Test.prepend ReadLoopHelpers

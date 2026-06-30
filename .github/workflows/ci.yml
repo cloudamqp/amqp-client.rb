@@ -110,13 +110,15 @@ jobs:
         run: bundle exec rake
 
   rabbitmq-tests:
-    name: "RabbitMQ / ${{ matrix.ruby }} (sudo: ${{ matrix.sudo }})"
+    name: "RabbitMQ / ${{ matrix.ruby }} (blocked: ${{ matrix.blocked_tests }})"
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      RUN_RABBITMQ_BLOCKED_TESTS: ${{ matrix.blocked_tests }}
     strategy:
       fail-fast: false
       matrix:
-        sudo:
+        blocked_tests:
           - true
         ruby:
           - "3.3"
@@ -125,10 +127,10 @@ jobs:
         include:
           - ruby: jruby
             allow-failure: false
-            sudo: false
+            blocked_tests: false
           - ruby: truffleruby
             allow-failure: false
-            sudo: false
+            blocked_tests: false
     steps:
       - name: Configure dpkg to skip building man pages
         run: |
@@ -153,8 +155,6 @@ jobs:
         if: ${{ matrix.ruby != 'jruby' }}
         continue-on-error: ${{ matrix.allow-failure || false }}
         run: bundle exec rake
-        env:
-          RUN_SUDO_TESTS: ${{ matrix.sudo }}
 
   rabbitmq-tls:
     name: RabbitMQ TLS / ${{ matrix.ruby }}
