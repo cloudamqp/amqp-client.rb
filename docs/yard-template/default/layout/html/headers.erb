@@ -1,0 +1,30 @@
+<meta charset="<%= charset %>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  <%= h @page_title %>
+  <% if options.title && @page_title != options.title %>
+    &mdash; <%= h options.title %>
+  <% end %>
+</title>
+<script type="text/javascript">
+  (function () {
+    var theme = "light";
+
+    try {
+      theme = window.localStorage.getItem("lavinmq-docs-theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    } catch (_error) {}
+
+    document.documentElement.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
+  })();
+</script>
+<% stylesheets.each do |stylesheet| %>
+  <link rel="stylesheet" href="<%= mtime_url(stylesheet) %>" type="text/css">
+<% end %>
+<% lavinmq_root = url_for(''); lavinmq_root += '/' unless lavinmq_root.empty? %>
+<link rel="stylesheet" href="<%= lavinmq_root %>lavinmq/lavinmq-yard.css" type="text/css">
+<%= erb :script_setup %>
+<% javascripts.each do |javascript| %>
+  <script type="text/javascript" charset="utf-8" src="<%= mtime_url(javascript) %>"></script>
+<% end %>
+<script type="text/javascript" charset="utf-8" src="<%= lavinmq_root %>lavinmq/lavinmq-yard.js"></script>
