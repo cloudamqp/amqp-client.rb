@@ -90,6 +90,15 @@
     if (toggle) toggle.setAttribute("aria-expanded", "true");
   }
 
+  function collapseItem(item) {
+    if (!item) return;
+
+    item.classList.add("collapsed");
+
+    const toggle = item.querySelector(":scope > .item > a.toggle");
+    if (toggle) toggle.setAttribute("aria-expanded", "false");
+  }
+
   function expandClientNamespace() {
     const client = document.getElementById("object_AMQP::Client");
 
@@ -97,7 +106,7 @@
 
     expandItem(document.getElementById("object_AMQP"));
     expandItem(client);
-    client.querySelectorAll("li").forEach(expandItem);
+    client.querySelectorAll("li").forEach(collapseItem);
   }
 
   function ready(callback) {
@@ -115,6 +124,8 @@
   window.addEventListener("message", (event) => {
     if (event.data?.type === MESSAGE_TYPE) {
       applyTheme(event.data.theme, { store: false });
+    } else if (event.data?.action === "expand") {
+      setTimeout(expandClientNamespace, 0);
     }
   });
 
