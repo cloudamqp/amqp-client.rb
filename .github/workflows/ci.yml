@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+      - uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           bundler-cache: true
           ruby-version: ruby
@@ -40,7 +40,7 @@ jobs:
       - name: Install LavinMQ
         uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+      - uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
@@ -68,7 +68,7 @@ jobs:
       - name: Install LavinMQ
         uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+      - uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
@@ -98,7 +98,7 @@ jobs:
       - name: Start LavinMQ
         run: brew services start lavinmq
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+      - uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
@@ -135,7 +135,7 @@ jobs:
       - name: Verify RabbitMQ started correctly
         run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+      - uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
@@ -171,7 +171,7 @@ jobs:
       - name: Install RabbitMQ
         run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+      - uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
@@ -199,7 +199,7 @@ jobs:
       - name: Start RabbitMQ
         run: brew services start rabbitmq
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+      - uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
