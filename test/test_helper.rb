@@ -185,11 +185,15 @@ module LavinMQServer
   end
 
   def spawn_lavinmq(exe, config, amqp_port)
+    control_socket = File.join(File.dirname(config), "lavinmqctl.sock")
+
     spawn(exe, "--config", config,
           "--amqp-port", amqp_port.to_s, "--amqps-port", "-1",
           "--http-port", "-1", "--https-port", "-1",
           "--mqtt-port", "-1", "--mqtts-port", "-1",
-          "--metrics-http-port", "-1", "--bind", "127.0.0.1",
+          "--metrics-http-port", "-1",
+          "--control-unix-path", control_socket,
+          "--bind", "127.0.0.1",
           out: File::NULL, err: File::NULL)
   end
 
