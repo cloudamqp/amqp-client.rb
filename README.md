@@ -198,14 +198,14 @@ To install this gem onto your local machine, run `bundle exec rake install`.
 
 ### TLS tests
 
-`rake test` excludes the TLS tests because they need a broker with TLS enabled. `bin/test-tls` runs them against a throwaway broker without disturbing anything you already have set up: it generates a self-signed certificate, starts the broker as your user from a temporary directory on non-default ports (25672/25671), runs the `_tls` tests, then shuts it down. With no argument it tests both brokers in turn:
+`rake test` excludes the TLS tests because they need a broker with TLS enabled. `bin/test-tls` runs them against a throwaway broker without disturbing anything you already have set up: it generates a self-signed certificate, starts the broker as your user from a temporary directory on non-default ports (21672/21671), runs the `_tls` tests, then shuts it down. With no argument it tests both brokers in turn:
 
 ```bash
 bin/test-tls            # both brokers
 bin/test-tls lavinmq    # or a single broker: lavinmq or rabbitmq
 ```
 
-It never uses the system service, writes under `/etc`, or stops a broker you are already running, so it is safe to use alongside a local RabbitMQ/LavinMQ on the default ports. (LavinMQ is one exception: it hardcodes its control socket at `/tmp/lavinmqctl.sock`, which the script must clear, so a LavinMQ you already have running keeps serving AMQP but loses its `lavinmqctl` socket until restarted.) The broker is installed if missing (LavinMQ from CloudAMQP's packagecloud repo, which is removed again if the script added it); that install is the only step needing `sudo`. An installed broker package is left in place afterwards — only the apt repo is cleaned up. The certificate directory is `CERT_DIR` (default `/tmp/amqp-tls`) and the ports are `TEST_AMQP_PORT`/`TEST_AMQPS_PORT`. Requires a Linux host. The TLS jobs in the CI workflow call this same script, so CI exercises it too.
+It never uses the system service, writes under `/etc`, stops a broker you are already running, or touches the default LavinMQ control socket. The broker is installed if missing (LavinMQ from CloudAMQP's packagecloud repo, which is removed again if the script added it); that install is the only step needing `sudo`. An installed broker package is left in place afterwards — only the apt repo is cleaned up. The certificate directory is `CERT_DIR` (default `/tmp/amqp-tls`) and the ports are `TEST_AMQP_PORT`/`TEST_AMQPS_PORT`. Requires a Linux host. The TLS jobs in the CI workflow call this same script, so CI exercises it too.
 
 ### Release Process
 
