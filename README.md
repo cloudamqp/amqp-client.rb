@@ -212,7 +212,7 @@ The LavinMQ flow-control test starts a private LavinMQ instance configured to re
 RUN_LAVINMQ_FLOW_CONTROL_TESTS=1 bundle exec rake test
 ```
 
-CI opts in for the LavinMQ test jobs.
+CI opts in for the Linux LavinMQ test jobs.
 
 ### TLS tests
 
