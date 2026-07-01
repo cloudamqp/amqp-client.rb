@@ -108,7 +108,7 @@ jobs:
         run: bundle exec rake
 
   rabbitmq-tests:
-    name: "RabbitMQ / ${{ matrix.ruby }} (blocked: ${{ matrix.blocked_tests }})"
+    name: RabbitMQ / ${{ matrix.ruby }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -143,13 +143,13 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
-      - name: Run tests (excluding TLS tests) (JRuby)
+      - name: "Run tests (excluding TLS tests, blocked: ${{ matrix.blocked_tests }}) (JRuby)"
         if: ${{ matrix.ruby == 'jruby' }}
         continue-on-error: ${{ matrix.allow-failure || false }}
         run: bundle exec rake
         env:
           JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
-      - name: Run tests (excluding TLS tests)
+      - name: "Run tests (excluding TLS tests, blocked: ${{ matrix.blocked_tests }})"
         if: ${{ matrix.ruby != 'jruby' }}
         continue-on-error: ${{ matrix.allow-failure || false }}
         run: bundle exec rake
