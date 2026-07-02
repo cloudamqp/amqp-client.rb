@@ -129,8 +129,7 @@ module ReadLoopHelpers
   end
 end
 
-# Boots a throwaway LavinMQ instance for tests that need broker behaviour we
-# can't toggle on the shared server. These tests are opt-in.
+# Boots a throwaway LavinMQ instance for tests that need specific broker configuration. These tests are opt-in.
 module LavinMQServer
   LAVINMQ_FLOW_CONTROL_OPT_IN = "RUN_LAVINMQ_FLOW_CONTROL_TESTS"
   LAVINMQ_STARTUP_ATTEMPTS = 3
