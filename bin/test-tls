@@ -186,7 +186,7 @@ start_lavinmq() {
   lavinmq -c "$work_dir/lavinmq.ini" -D "$work_dir/data" --bind 127.0.0.1 \
     --amqp-port "$amqp_port" --amqps-port "$amqps_port" \
     --http-port 21673 --https-port 21674 --metrics-http-port 21675 \
-    --mqtt-port 21676 --mqtts-port 21677 \
+    --mqtt-port 21676 --mqtts-port 21677 --clustering-port 21678 \
     --control-unix-path "$work_dir/lavinmqctl.sock" \
     --cert "$CERT" --key "$KEY" >"$work_dir/broker.log" 2>&1 &
   broker_pid=$!
