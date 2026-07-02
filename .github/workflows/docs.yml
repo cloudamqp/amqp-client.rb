@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - v*
+  workflow_dispatch:
+  schedule:
+    # Build docs semi-monthly so broken docs generation is caught before a
+    # release tries to publish it.
+    - cron: "0 3 1,15 * *"
 
 jobs:
   docs:
@@ -13,12 +18,13 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
+          bundler-cache: true
           ruby-version: ruby
-      - name: Install yard
-        run: gem install yard
       - name: Generate docs
-        run: yard doc
+        run: bundle exec rake rdoc
       - name: Deploy docs
+        if: >-
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
         with:
           branch: gh-pages

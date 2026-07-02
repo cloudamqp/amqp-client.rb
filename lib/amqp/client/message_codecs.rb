@@ -45,7 +45,7 @@ module AMQP
       # has carried for decades and that Zlib::Deflate.new(level, -MAX_WBITS)
       # exists for.
       #
-      # @example Override the built-in deflate coder
+      # === Example: Override the built-in deflate coder
       #   AMQP::Client.configure do |config|
       #     config.enable_builtin_codecs
       #     config.register_coder(content_encoding: "deflate",

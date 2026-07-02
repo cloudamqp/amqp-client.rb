@@ -8,7 +8,7 @@ module AMQP
     # Generate binary data for different frames
     # Each frame type implemented as a method
     # Having a class for each frame type is more expensive in terms of CPU and memory
-    # @api private
+    # Internal API.
     module FrameBytes # rubocop:disable Metrics/ModuleLength
       def self.connection_start_ok(response, properties)
         prop_tbl = Table.encode(properties)

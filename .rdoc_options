@@ -1,0 +1,8 @@
+---
+encoding: UTF-8
+main_page: README.md
+markup: rdoc
+output_decoration: true
+title: AMQP::Client API
+visibility: :protected
+warn_missing_rdoc_ref: true

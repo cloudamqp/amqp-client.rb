@@ -11,28 +11,32 @@ require_relative "client/message_codec_registry"
 require_relative "client/configuration"
 
 # AMQP 0-9-1 Protocol, this library only implements the Client
-# @see Client
+# See Client.
 module AMQP
   # AMQP 0-9-1 Client
-  # @see Connection
+  # See Connection.
   class Client
     # Class-level codec registry
     @codec_registry = MessageCodecRegistry.new
     # Class-level configuration
     @config = Configuration.new(@codec_registry)
 
-    # Create a new Client object, this won't establish a connection yet, use {#connect} or {#start} for that
-    # @param uri [String] URL on the format amqp://username:password@hostname/vhost,
+    # Create a new Client object, this won't establish a connection yet, use #connect or #start for that
+    # * <tt>uri</tt> (<tt>String</tt>) - URL on the format amqp://username:password@hostname/vhost,
     #   use amqps:// for encrypted connection
-    # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
+    # * <tt>connection_name</tt> (<tt>Boolean</tt>, default: <tt>PROGRAM_NAME</tt>) - Set a name for the connection to be
+    #   able to identify
     #   the client from the broker
-    # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
-    # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
-    # @option options [Integer] frame_max (131_072) Maximum frame size,
-    #    the smallest of the client's and the broker's values will be used
-    # @option options [Integer] channel_max (2048) Maximum number of channels the client will be allowed to have open.
-    #   Maximum allowed is 65_536.  The smallest of the client's and the broker's value will be used.
-    # @option options [#info, #warn, #error] logger (nil) Logger for {#start} lifecycle events
+    # * <tt>verify_peer</tt> (<tt>Boolean</tt>, default: <tt>true</tt>) - Verify broker's TLS certificate, set to false for
+    #   self-signed certs
+    # * <tt>heartbeat</tt> (<tt>Integer</tt>, default: <tt>0</tt>) - Heartbeat timeout, defaults to 0 and relies on TCP
+    #   keepalive instead
+    # * <tt>frame_max</tt> (<tt>Integer</tt>, default: <tt>131_072</tt>) - Maximum frame size; the smallest of the
+    #   client's and the broker's values will be used
+    # * <tt>channel_max</tt> (<tt>Integer</tt>, default: <tt>2048</tt>) - Maximum number of channels the client will be
+    #   allowed to have open.
+    #   Maximum allowed is 65_536. The smallest of the client's and the broker's values will be used.
+    # * <tt>logger</tt> (<tt>#info, #warn, #error</tt>, default: <tt>nil</tt>) - Logger for #start lifecycle events
     #   (connected/reconnected/disconnected/reconnect errors). When nil, reconnect errors are
     #   written to stderr via Kernel#warn for backwards compatibility.
     def initialize(uri = "", **options)
@@ -54,12 +58,12 @@ module AMQP
       @stopped = false
     end
 
-    # @!group Connect and disconnect
+    # :section: Connect and disconnect
 
     # Establishes and returns a new AMQP connection
-    # @see Connection#initialize
-    # @return [Connection]
-    # @example
+    # See Connection#initialize.
+    # Returns <tt>Connection</tt>.
+    # === Example
     #   connection = AMQP::Client.new("amqps://server.rmq.cloudamqp.com", connection_name: "My connection").connect
     def connect(read_loop_thread: true)
       Connection.new(@uri, read_loop_thread:, name: @name,
@@ -67,8 +71,8 @@ module AMQP
     end
 
     # Opens an AMQP connection using the high level API, will try to reconnect if successfully connected at first
-    # @return [self]
-    # @example
+    # Returns <tt>self</tt>.
+    # === Example
     #   amqp = AMQP::Client.new("amqps://server.rmq.cloudamqp.com")
     #   amqp.start
     #   amqp.queue("foobar")
@@ -125,7 +129,7 @@ module AMQP
     end
 
     # Close the currently open connection and stop the supervision / reconnection logic.
-    # @return [nil]
+    # Returns <tt>nil</tt>.
     def stop
       return if @stopped && !@supervisor_started
 
@@ -138,25 +142,24 @@ module AMQP
     end
 
     # Check if the client is connected
-    # @return [Boolean] true if connected or currently trying to connect, false otherwise
+    # Returns <tt>Boolean</tt> - true if connected or currently trying to connect, false otherwise
     def started?
       @supervisor_started && !@stopped
     end
 
-    # @!endgroup
-    # @!group High level objects
+    # :section: High level objects
 
     # Declare a queue
-    # @param name [String] Name of the queue
-    # @param durable [Boolean] If true the queue will survive broker restarts,
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the queue
+    # * <tt>durable</tt> (<tt>Boolean</tt>) - If true the queue will survive broker restarts,
     #   messages in the queue will only survive if they are published as persistent
-    # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
+    # * <tt>auto_delete</tt> (<tt>Boolean</tt>) - If true the queue will be deleted when the last consumer stops consuming
     #   (it won't be deleted until at least one consumer has consumed from it)
-    # @param exclusive [Boolean] If true the queue will be deleted when the connection is closed
-    # @param passive [Boolean] If true an exception will be raised if the queue doesn't already exists
-    # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
-    # @return [Queue]
-    # @example
+    # * <tt>exclusive</tt> (<tt>Boolean</tt>) - If true the queue will be deleted when the connection is closed
+    # * <tt>passive</tt> (<tt>Boolean</tt>) - If true an exception will be raised if the queue doesn't already exists
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Custom arguments, such as queue-ttl etc.
+    # Returns <tt>Queue</tt>.
+    # === Example
     #   amqp = AMQP::Client.new.start
     #   q = amqp.queue("foobar")
     #   q.publish("body")
@@ -172,14 +175,15 @@ module AMQP
     end
 
     # Declare an exchange and return a high level Exchange object
-    # @param name [String] Name of the exchange
-    # @param type [String] Type of the exchange, one of "direct", "fanout", "topic", "headers" or custom exchange type
-    # @param durable [Boolean] If true the exchange will survive broker restarts
-    # @param auto_delete [Boolean] If true the exchange will be deleted when the last queue is unbound
-    # @param internal [Boolean] If true the exchange will not accept directly published messages
-    # @param arguments [Hash] Custom arguments such as alternate-exchange etc.
-    # @return [Exchange]
-    # @example
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the exchange
+    # * <tt>type</tt> (<tt>String</tt>) - Type of the exchange, one of "direct", "fanout", "topic", "headers" or custom
+    #   exchange type
+    # * <tt>durable</tt> (<tt>Boolean</tt>) - If true the exchange will survive broker restarts
+    # * <tt>auto_delete</tt> (<tt>Boolean</tt>) - If true the exchange will be deleted when the last queue is unbound
+    # * <tt>internal</tt> (<tt>Boolean</tt>) - If true the exchange will not accept directly published messages
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Custom arguments such as alternate-exchange etc.
+    # Returns <tt>Exchange</tt>.
+    # === Example
     #   amqp = AMQP::Client.new.start
     #   x = amqp.exchange("my.hash.exchange", type: "x-consistent-hash")
     #   x.publish("body", routing_key: "routing-key")
@@ -193,9 +197,9 @@ module AMQP
     end
 
     # Declare a direct exchange and return a high level Exchange object
-    # @param name [String] Name of the exchange (defaults to "amq.direct")
-    # @see #exchange for other parameters
-    # @return [Exchange]
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the exchange (defaults to "amq.direct")
+    # See #exchange for other parameters.
+    # Returns <tt>Exchange</tt>.
     def direct_exchange(name = "amq.direct", **)
       return exchange(name, type: "direct", **) unless name.empty?
 
@@ -205,71 +209,70 @@ module AMQP
       end
     end
 
-    # @deprecated
-    # @see #direct_exchange
+    # Deprecated.
+    # See #direct_exchange.
     alias direct direct_exchange
 
     # Return a high level Exchange object for the default direct exchange
-    # @see #direct for parameters
-    # @return [Exchange]
+    # See #direct for parameters.
+    # Returns <tt>Exchange</tt>.
     def default_exchange(**)
       direct("", **)
     end
 
-    # @deprecated
-    # @see #default_exchange
+    # Deprecated.
+    # See #default_exchange.
     alias default default_exchange
 
     # Declare a fanout exchange and return a high level Exchange object
-    # @param name [String] Name of the exchange (defaults to "amq.fanout")
-    # @see #exchange for other parameters
-    # @return [Exchange]
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the exchange (defaults to "amq.fanout")
+    # See #exchange for other parameters.
+    # Returns <tt>Exchange</tt>.
     def fanout_exchange(name = "amq.fanout", **)
       exchange(name, type: "fanout", **)
     end
 
-    # @deprecated
-    # @see #fanout_exchange
+    # Deprecated.
+    # See #fanout_exchange.
     alias fanout fanout_exchange
 
     # Declare a topic exchange and return a high level Exchange object
-    # @param name [String] Name of the exchange (defaults to "amq.topic")
-    # @see #exchange for other parameters
-    # @return [Exchange]
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the exchange (defaults to "amq.topic")
+    # See #exchange for other parameters.
+    # Returns <tt>Exchange</tt>.
     def topic_exchange(name = "amq.topic", **)
       exchange(name, type: "topic", **)
     end
 
-    # @deprecated
-    # @see #topic_exchange
+    # Deprecated.
+    # See #topic_exchange.
     alias topic topic_exchange
 
     # Declare a headers exchange and return a high level Exchange object
-    # @param name [String] Name of the exchange (defaults to "amq.headers")
-    # @see #exchange for other parameters
-    # @return [Exchange]
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the exchange (defaults to "amq.headers")
+    # See #exchange for other parameters.
+    # Returns <tt>Exchange</tt>.
     def headers_exchange(name = "amq.headers", **)
       exchange(name, type: "headers", **)
     end
 
-    # @deprecated
-    # @see #headers_exchange
+    # Deprecated.
+    # See #headers_exchange.
     alias headers headers_exchange
 
-    # @!endgroup
-    # @!group Publish
+    # :section: Publish
 
     # Publish a (persistent) message and wait for confirmation
-    # @param body [Object] The message body
+    # * <tt>body</tt> (<tt>Object</tt>) - The message body
     #   will be encoded if any matching codec is found in the client's codec registry
-    # @param exchange [String] Name of the exchange to publish to
-    # @param routing_key [String] Routing key for the message
-    # @option (see Connection::Channel#basic_publish_confirm)
-    # @return [nil]
-    # @raise (see Connection::Channel#basic_publish_confirm)
-    # @raise [Error::PublishNotConfirmed] If the message was not confirmed by the broker
-    # @raise [Error::UnsupportedContentType] If content type is unsupported
-    # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
+    # * <tt>exchange</tt> (<tt>String</tt>) - Name of the exchange to publish to
+    # * <tt>routing_key</tt> (<tt>String</tt>) - Routing key for the message
+    # Options are the same as Connection::Channel#basic_publish_confirm.
+    # Returns <tt>nil</tt>.
+    # Raises the same as Connection::Channel#basic_publish_confirm.
+    # Raises <tt>Error::PublishNotConfirmed</tt> - If the message was not confirmed by the broker
+    # Raises <tt>Error::UnsupportedContentType</tt> - If content type is unsupported
+    # Raises <tt>Error::UnsupportedContentEncoding</tt> - If content encoding is unsupported
     def publish(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties[:delivery_mode] ||= 2
@@ -283,12 +286,12 @@ module AMQP
     end
 
     # Publish a (persistent) message but don't wait for a confirmation
-    # @param (see Connection::Channel#basic_publish)
-    # @option (see Connection::Channel#basic_publish)
-    # @return (see Connection::Channel#basic_publish)
-    # @raise (see Connection::Channel#basic_publish)
-    # @raise [Error::UnsupportedContentType] If content type is unsupported
-    # @raise [Error::UnsupportedContentEncoding] If content encoding is unsupported
+    # Parameters are the same as Connection::Channel#basic_publish.
+    # Options are the same as Connection::Channel#basic_publish.
+    # Returns the same as Connection::Channel#basic_publish.
+    # Raises the same as Connection::Channel#basic_publish.
+    # Raises <tt>Error::UnsupportedContentType</tt> - If content type is unsupported
+    # Raises <tt>Error::UnsupportedContentEncoding</tt> - If content encoding is unsupported
     def publish_and_forget(body, exchange:, routing_key: "", **properties)
       with_connection do |conn|
         properties[:delivery_mode] ||= 2
@@ -299,25 +302,27 @@ module AMQP
     end
 
     # Wait for unconfirmed publishes
-    # @return [Boolean] True if successful, false if any message negatively acknowledged
+    # Returns <tt>Boolean</tt> - True if successful, false if any message negatively acknowledged
     def wait_for_confirms
       with_connection do |conn|
         conn.channel(1).wait_for_confirms
       end
     end
 
-    # @!group Queue actions
+    # :section: Queue actions
 
     # Consume messages from a queue
-    # @param queue [String] Name of the queue to subscribe to
-    # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected) (default: false)
-    # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false (default: 1)
-    # @param worker_threads [Integer] Number of threads processing messages (default: 1)
-    # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
+    # * <tt>queue</tt> (<tt>String</tt>) - Name of the queue to subscribe to
+    # * <tt>no_ack</tt> (<tt>Boolean</tt>) - When false messages have to be manually acknowledged (or rejected) (default:
+    #   false)
+    # * <tt>prefetch</tt> (<tt>Integer</tt>) - Specify how many messages to prefetch for consumers with no_ack is false
+    #   (default: 1)
+    # * <tt>worker_threads</tt> (<tt>Integer</tt>) - Number of threads processing messages (default: 1)
+    # * <tt>on_cancel</tt> (<tt>Proc</tt>) - Optional proc that will be called if the consumer is cancelled by the broker
     #   The proc will be called with the consumer tag as the only argument
-    # @param arguments [Hash] Custom arguments to the consumer
-    # @yield [Message] Delivered message from the queue
-    # @return [Consumer] The consumer object, which can be used to cancel the consumer
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Custom arguments to the consumer
+    # Yields <tt>Message</tt> - Delivered message from the queue
+    # Returns <tt>Consumer</tt> - The consumer object, which can be used to cancel the consumer
     def subscribe(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1,
                   on_cancel: nil, arguments: {}, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
@@ -340,9 +345,10 @@ module AMQP
     end
 
     # Get a message from a queue
-    # @param queue [String] Name of the queue to get the message from
-    # @param no_ack [Boolean] When false the message has to be manually acknowledged (or rejected) (default: false)
-    # @return [Message, nil] The message from the queue or nil if the queue is empty
+    # * <tt>queue</tt> (<tt>String</tt>) - Name of the queue to get the message from
+    # * <tt>no_ack</tt> (<tt>Boolean</tt>) - When false the message has to be manually acknowledged (or rejected) (default:
+    #   false)
+    # Returns <tt>Message, nil</tt> - The message from the queue or nil if the queue is empty
     def get(queue, no_ack: false)
       with_connection do |conn|
         conn.with_channel do |ch|
@@ -352,11 +358,12 @@ module AMQP
     end
 
     # Bind a queue to an exchange
-    # @param queue [String] Name of the queue to bind
-    # @param exchange [String] Name of the exchange to bind to
-    # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
-    # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
-    # @return [nil]
+    # * <tt>queue</tt> (<tt>String</tt>) - Name of the queue to bind
+    # * <tt>exchange</tt> (<tt>String</tt>) - Name of the exchange to bind to
+    # * <tt>binding_key</tt> (<tt>String</tt>) - Binding key on which messages that match might be routed (depending on
+    #   exchange type)
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Message headers to match on (only relevant for header exchanges)
+    # Returns <tt>nil</tt>.
     def bind(queue:, exchange:, binding_key: "", arguments: {})
       with_connection do |conn|
         conn.channel(1).queue_bind(queue, exchange:, binding_key:, arguments:)
@@ -364,11 +371,11 @@ module AMQP
     end
 
     # Unbind a queue from an exchange
-    # @param queue [String] Name of the queue to unbind
-    # @param exchange [String] Name of the exchange to unbind from
-    # @param binding_key [String] Binding key which the queue is bound to the exchange with
-    # @param arguments [Hash] Arguments matching the binding that's being removed
-    # @return [nil]
+    # * <tt>queue</tt> (<tt>String</tt>) - Name of the queue to unbind
+    # * <tt>exchange</tt> (<tt>String</tt>) - Name of the exchange to unbind from
+    # * <tt>binding_key</tt> (<tt>String</tt>) - Binding key which the queue is bound to the exchange with
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Arguments matching the binding that's being removed
+    # Returns <tt>nil</tt>.
     def unbind(queue:, exchange:, binding_key: "", arguments: {})
       with_connection do |conn|
         conn.channel(1).queue_unbind(queue, exchange:, binding_key:, arguments:)
@@ -376,8 +383,8 @@ module AMQP
     end
 
     # Purge a queue
-    # @param queue [String] Name of the queue
-    # @return [nil]
+    # * <tt>queue</tt> (<tt>String</tt>) - Name of the queue
+    # Returns <tt>nil</tt>.
     def purge(queue)
       with_connection do |conn|
         conn.channel(1).queue_purge(queue)
@@ -385,10 +392,11 @@ module AMQP
     end
 
     # Delete a queue
-    # @param name [String] Name of the queue
-    # @param if_unused [Boolean] Only delete if the queue doesn't have consumers, raises a ChannelClosed error otherwise
-    # @param if_empty [Boolean] Only delete if the queue is empty, raises a ChannelClosed error otherwise
-    # @return [Integer] Number of messages in the queue when deleted
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the queue
+    # * <tt>if_unused</tt> (<tt>Boolean</tt>) - Only delete if the queue doesn't have consumers, raises a ChannelClosed
+    #   error otherwise
+    # * <tt>if_empty</tt> (<tt>Boolean</tt>) - Only delete if the queue is empty, raises a ChannelClosed error otherwise
+    # Returns <tt>Integer</tt> - Number of messages in the queue when deleted
     def delete_queue(name, if_unused: false, if_empty: false)
       with_connection do |conn|
         msgs = conn.channel(1).queue_delete(name, if_unused:, if_empty:)
@@ -397,15 +405,15 @@ module AMQP
       end
     end
 
-    # @!endgroup
-    # @!group Exchange actions
+    # :section: Exchange actions
 
     # Bind an exchange to an exchange
-    # @param source [String] Name of the exchange to bind to
-    # @param destination [String] Name of the exchange to bind
-    # @param binding_key [String] Binding key on which messages that match might be routed (depending on exchange type)
-    # @param arguments [Hash] Message headers to match on (only relevant for header exchanges)
-    # @return [nil]
+    # * <tt>source</tt> (<tt>String</tt>) - Name of the exchange to bind to
+    # * <tt>destination</tt> (<tt>String</tt>) - Name of the exchange to bind
+    # * <tt>binding_key</tt> (<tt>String</tt>) - Binding key on which messages that match might be routed (depending on
+    #   exchange type)
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Message headers to match on (only relevant for header exchanges)
+    # Returns <tt>nil</tt>.
     def exchange_bind(source:, destination:, binding_key: "", arguments: {})
       with_connection do |conn|
         conn.channel(1).exchange_bind(destination:, source:, binding_key:, arguments:)
@@ -413,11 +421,11 @@ module AMQP
     end
 
     # Unbind an exchange from an exchange
-    # @param source [String] Name of the exchange to unbind from
-    # @param destination [String] Name of the exchange to unbind
-    # @param binding_key [String] Binding key which the exchange is bound to the exchange with
-    # @param arguments [Hash] Arguments matching the binding that's being removed
-    # @return [nil]
+    # * <tt>source</tt> (<tt>String</tt>) - Name of the exchange to unbind from
+    # * <tt>destination</tt> (<tt>String</tt>) - Name of the exchange to unbind
+    # * <tt>binding_key</tt> (<tt>String</tt>) - Binding key which the exchange is bound to the exchange with
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Arguments matching the binding that's being removed
+    # Returns <tt>nil</tt>.
     def exchange_unbind(source:, destination:, binding_key: "", arguments: {})
       with_connection do |conn|
         conn.channel(1).exchange_unbind(destination:, source:, binding_key:, arguments:)
@@ -425,8 +433,8 @@ module AMQP
     end
 
     # Delete an exchange
-    # @param name [String] Name of the exchange
-    # @return [nil]
+    # * <tt>name</tt> (<tt>String</tt>) - Name of the exchange
+    # Returns <tt>nil</tt>.
     def delete_exchange(name)
       with_connection do |conn|
         conn.channel(1).exchange_delete(name)
@@ -435,20 +443,19 @@ module AMQP
       end
     end
 
-    # @!endgroup
-    # @!group RPC
+    # :section: RPC
 
     # Create a RPC server for a single method/function/procedure
-    # @param method [String, Symbol] name of the RPC method to host (i.e. queue name on the server side)
-    # @param worker_threads [Integer] number of threads that process requests
-    # @param durable [Boolean] If true the queue will survive broker restarts
-    # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
+    # * <tt>method</tt> (<tt>String, Symbol</tt>) - name of the RPC method to host (i.e. queue name on the server side)
+    # * <tt>worker_threads</tt> (<tt>Integer</tt>) - number of threads that process requests
+    # * <tt>durable</tt> (<tt>Boolean</tt>) - If true the queue will survive broker restarts
+    # * <tt>auto_delete</tt> (<tt>Boolean</tt>) - If true the queue will be deleted when the last consumer stops consuming
     #   (it won't be deleted until at least one consumer has consumed from it)
-    # @param arguments [Hash] Custom arguments, such as queue-ttl etc.
-    # @yield Block that processes the RPC request messages
-    # @yieldparam [String] The body of the request message
-    # @yieldreturn [String] The response message body
-    # @return (see #subscribe)
+    # * <tt>arguments</tt> (<tt>Hash</tt>) - Custom arguments, such as queue-ttl etc.
+    # Yields to the block - Block that processes the RPC request messages
+    # Yields <tt>String</tt> - The body of the request message
+    # The block should return <tt>String</tt> - The response message body
+    # Returns the same as #subscribe.
     def rpc_server(method, worker_threads: 1, durable: true, auto_delete: false, arguments: {}, &_)
       queue(method.to_s, durable:, auto_delete:, arguments:)
         .subscribe(prefetch: worker_threads, worker_threads:) do |msg|
@@ -467,12 +474,12 @@ module AMQP
     end
 
     # Do a RPC call, sends a messages, waits for a response
-    # @param method [String, Symbol] name of the RPC method to call (i.e. queue name on the server side)
-    # @param arguments [String] arguments/body to the call
-    # @param timeout [Numeric, nil] Number of seconds to wait for a response
-    # @option (see Client#publish)
-    # @return [String] Returns the result from the call
-    # @raise [Timeout::Error] if no response is received within the timeout period
+    # * <tt>method</tt> (<tt>String, Symbol</tt>) - name of the RPC method to call (i.e. queue name on the server side)
+    # * <tt>arguments</tt> (<tt>String</tt>) - arguments/body to the call
+    # * <tt>timeout</tt> (<tt>Numeric, nil</tt>) - Number of seconds to wait for a response
+    # Options are the same as Client#publish.
+    # Returns <tt>String</tt> - Returns the result from the call
+    # Raises <tt>Timeout::Error</tt> - if no response is received within the timeout period
     def rpc_call(method, arguments, timeout: nil, **properties)
       ch = with_connection(&:channel)
       begin
@@ -489,20 +496,19 @@ module AMQP
     end
 
     # Create a reusable RPC client
-    # @return [RPCClient]
+    # Returns <tt>RPCClient</tt>.
     def rpc_client
       ch = with_connection(&:channel)
       RPCClient.new(ch).start
     end
 
-    # @!endgroup
-    # @!group Message coding
+    # :section: Message coding
 
     class << self
       # Configure the AMQP::Client class-level settings
-      # @yield [Configuration] Yields the configuration object for modification
-      # @return [Configuration] The configuration object
-      # @example
+      # Yields <tt>Configuration</tt> - Yields the configuration object for modification
+      # Returns <tt>Configuration</tt> - The configuration object
+      # === Example
       #   AMQP::Client.configure do |config|
       #     config.default_content_type = "application/json"
       #     config.strict_coding = true
@@ -513,16 +519,16 @@ module AMQP
       end
 
       # Get the class-level configuration
-      # @return [Configuration]
+      # Returns <tt>Configuration</tt>.
       attr_reader :config
 
       # Get the class-level codec registry
-      # @return [MessageCodecRegistry]
+      # Returns <tt>MessageCodecRegistry</tt>.
       attr_reader :codec_registry
 
       # We need to set the subclass's configuration and codec registry
       # because these are class instance variables, hence not inherited.
-      # @api private
+      # Internal API.
       def inherited(subclass)
         super
         subclass_codec_registry = @codec_registry.dup
@@ -536,22 +542,20 @@ module AMQP
     end
 
     # Get the codec registry for this instance
-    # @return [MessageCodecRegistry]
+    # Returns <tt>MessageCodecRegistry</tt>.
     attr_reader :codec_registry
 
     # Get/set if condig should be strict, i.e. if the client should raise on unknown codecs
     attr_accessor :strict_coding
 
     # Get/set the default content_type to use when publishing messages
-    # @return [String, nil]
+    # Returns <tt>String, nil</tt>.
     attr_accessor :default_content_type
 
     # Get/set the default content_encoding to use when publishing messages
-    # @return [String, nil]
+    # Returns <tt>String, nil</tt>.
     attr_accessor :default_content_encoding
 
-    # @!endgroup
-    #
     def with_connection
       conn = nil
       loop do
@@ -567,7 +571,7 @@ module AMQP
       end
     end
 
-    # @api private
+    # Internal API.
     def cancel_consumer(consumer)
       @consumers.delete(consumer.id)
       with_connection do |conn|

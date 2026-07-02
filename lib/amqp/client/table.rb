@@ -3,11 +3,11 @@
 module AMQP
   class Client
     # Encode and decode an AMQP table to/from hash, only used internally
-    # @api private
+    # Internal API.
     module Table
       # Encodes a hash into a byte array
-      # @param hash [Hash]
-      # @return [String] Byte array
+      # * <tt>hash</tt> (<tt>Hash</tt>) -
+      # Returns <tt>String</tt> - Byte array
       def self.encode(hash)
         return "" if hash.nil? || hash.empty?
 
@@ -23,7 +23,7 @@ module AMQP
       end
 
       # Decodes an AMQP table into a hash
-      # @return [Hash<String, Object>]
+      # Returns <tt>Hash<String, Object></tt>.
       def self.decode(bytes)
         hash = {}
         pos = 0
@@ -40,8 +40,8 @@ module AMQP
       end
 
       # Encoding a single value in a table
-      # @return [nil]
-      # @api private
+      # Returns <tt>nil</tt>.
+      # Internal API.
       def self.encode_field(value, arr, fmt)
         case value
         when Integer
@@ -87,8 +87,8 @@ module AMQP
       end
 
       # Decodes a single value
-      # @return [Array<Integer, Object>] Bytes read and the parsed value
-      # @api private
+      # Returns <tt>Array<Integer, Object></tt> - Bytes read and the parsed value
+      # Internal API.
       def self.decode_field(bytes, pos)
         type = bytes[pos]
         pos += 1

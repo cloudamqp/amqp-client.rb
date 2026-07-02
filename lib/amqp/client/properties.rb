@@ -27,7 +27,7 @@ module AMQP
       # rubocop:enable Metrics/ParameterLists
 
       # Properties as a Hash
-      # @return [Hash] Properties
+      # Returns <tt>Hash</tt> - Properties
       def to_h
         {
           content_type:,
@@ -49,7 +49,7 @@ module AMQP
       alias to_hash to_h
 
       # Returns true if two Property objects holds the same information
-      # @return [Boolean]
+      # Returns <tt>Boolean</tt>.
       def ==(other)
         return false unless other.is_a? self.class
 
@@ -57,51 +57,51 @@ module AMQP
       end
 
       # Content type of the message body
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :content_type
       # Content encoding of the body
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :content_encoding
       # Headers, for applications and header exchange routing
-      # @return [Hash<String, Object>, nil]
+      # Returns <tt>Hash<String, Object>, nil</tt>.
       attr_accessor :headers
       # Message persistent level
-      # @note The exchange and queue have to durable as well for the message to be persistent
-      # @return [1] Transient message
-      # @return [2] Persistent message
-      # @return [nil] Not specified (implicitly transient)
+      # NOTE: The exchange and queue have to durable as well for the message to be persistent
+      # Returns <tt>1</tt> - Transient message
+      # Returns <tt>2</tt> - Persistent message
+      # Returns <tt>nil</tt> - Not specified (implicitly transient)
       attr_accessor :delivery_mode
       # A priority of the message (between 0 and 255)
-      # @return [Integer, nil]
+      # Returns <tt>Integer, nil</tt>.
       attr_accessor :priority
       # Message correlation id, commonly used to correlate RPC requests and responses
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :correlation_id
       # Queue to reply RPC responses to
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :reply_to
       # Number of seconds the message will stay in the queue
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :expiration
       # Application message identifier
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :message_id
       # Message timestamp, often indicates when the message was originally generated
-      # @return [Date, nil]
+      # Returns <tt>Date, nil</tt>.
       attr_accessor :timestamp
       # Message type name
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :type
       # The user that published the message
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :user_id
       # Name of application that generated the message
-      # @return [String, nil]
+      # Returns <tt>String, nil</tt>.
       attr_accessor :app_id
 
       # Encode properties into a byte array
-      # @param properties [Hash]
-      # @return [String] byte array
+      # * <tt>properties</tt> (<tt>Hash</tt>) -
+      # Returns <tt>String</tt> - byte array
       def self.encode(properties)
         return "\x00\x00" if properties.empty?
 
@@ -221,7 +221,7 @@ module AMQP
       end
 
       # Decode a byte array
-      # @return [Properties]
+      # Returns <tt>Properties</tt>.
       def self.decode(bytes, pos = 0)
         p = new
         flags = bytes.byteslice(pos, 2).unpack1("S>")
