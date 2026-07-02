@@ -50,12 +50,12 @@ module TimeoutEveryTestCase
 end
 
 module RabbitMQBlockedTestCase
-  RABBITMQ_BLOCKED_TESTS_OPT_IN = "RUN_RABBITMQ_BLOCKED_TESTS"
+  RABBITMQ_CONNECTION_BLOCKED_TESTS_OPT_IN = "RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS"
 
-  def skip_unless_rabbitmq_blocked_tests
-    return if %w[1 true].include?(ENV[RABBITMQ_BLOCKED_TESTS_OPT_IN])
+  def skip_unless_rabbitmq_connection_blocked_tests
+    return if %w[1 true].include?(ENV[RABBITMQ_CONNECTION_BLOCKED_TESTS_OPT_IN])
 
-    skip "set #{RABBITMQ_BLOCKED_TESTS_OPT_IN}=1 to run RabbitMQ Connection.Blocked tests"
+    skip "set #{RABBITMQ_CONNECTION_BLOCKED_TESTS_OPT_IN}=1 to run RabbitMQ Connection.Blocked tests"
   end
 end
 

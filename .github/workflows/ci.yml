@@ -112,11 +112,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      RUN_RABBITMQ_BLOCKED_TESTS: ${{ matrix.blocked_tests }}
+      RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS: ${{ matrix.connection_blocked_tests }}
     strategy:
       fail-fast: false
       matrix:
-        blocked_tests:
+        connection_blocked_tests:
           - true
         ruby:
           - "3.3"
@@ -125,10 +125,10 @@ jobs:
         include:
           - ruby: jruby
             allow-failure: false
-            blocked_tests: false
+            connection_blocked_tests: false
           - ruby: truffleruby
             allow-failure: false
-            blocked_tests: false
+            connection_blocked_tests: false
     steps:
       - name: Configure dpkg to skip building man pages
         run: |
@@ -143,13 +143,13 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
-      - name: "Run tests (excluding TLS tests, blocked: ${{ matrix.blocked_tests }}) (JRuby)"
+      - name: "Run tests (no TLS, Connection.Blocked: ${{ matrix.connection_blocked_tests }}) (JRuby)"
         if: ${{ matrix.ruby == 'jruby' }}
         continue-on-error: ${{ matrix.allow-failure || false }}
         run: bundle exec rake
         env:
           JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
-      - name: "Run tests (excluding TLS tests, blocked: ${{ matrix.blocked_tests }})"
+      - name: "Run tests (no TLS, Connection.Blocked: ${{ matrix.connection_blocked_tests }})"
         if: ${{ matrix.ruby != 'jruby' }}
         continue-on-error: ${{ matrix.allow-failure || false }}
         run: bundle exec rake

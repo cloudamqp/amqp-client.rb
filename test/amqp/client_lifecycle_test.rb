@@ -465,7 +465,7 @@ class AMQPClientLifecycleTest < Minitest::Test
   # RabbitMQ-only: exercises Connection.Blocked. LavinMQ doesn't implement it
   # (its low-resource back-pressure is a 406 channel error instead).
   def test_it_can_be_blocked
-    skip_unless_rabbitmq_blocked_tests
+    skip_unless_rabbitmq_connection_blocked_tests
     begin
       ch = @connection.channel
       system("sudo rabbitmqctl set_vm_memory_high_watermark 0.001")
@@ -518,7 +518,7 @@ class AMQPClientLifecycleTest < Minitest::Test
 
   # RabbitMQ-only: exercises the Connection.Blocked/Unblocked callbacks.
   def test_blocked_handler
-    skip_unless_rabbitmq_blocked_tests
+    skip_unless_rabbitmq_connection_blocked_tests
     begin
       q = Queue.new
       @connection.on_blocked do |reason|

@@ -198,10 +198,10 @@ To install this gem onto your local machine, run `bundle exec rake install`.
 
 ### RabbitMQ Connection.Blocked tests
 
-The RabbitMQ `Connection.Blocked` tests change the broker memory watermark with `sudo rabbitmqctl`. They are skipped unless `RUN_RABBITMQ_BLOCKED_TESTS` is set to `1` or `true`:
+The RabbitMQ `Connection.Blocked` tests change the broker memory watermark with `sudo rabbitmqctl`. They are skipped unless `RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS` is set to `1` or `true`:
 
 ```bash
-RUN_RABBITMQ_BLOCKED_TESTS=1 bundle exec rake test
+RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS=1 bundle exec rake test
 ```
 
 ### LavinMQ flow-control tests
