@@ -16,4 +16,34 @@ class AMQPLavinMQFlowControlTest < Minitest::Test
       end
     end
   end
+
+  def test_low_disk_lavinmq_startup_error_includes_broker_output
+    Dir.mktmpdir("fake-lavinmq") do |dir|
+      exe = File.join(dir, "lavinmq")
+      File.write(exe, <<~RUBY)
+        #!/usr/bin/env ruby
+        puts "fake stdout"
+        warn "fake stderr"
+        exit 42
+      RUBY
+      FileUtils.chmod(0o755, exe)
+
+      error = assert_raises(RuntimeError) do
+        send(:start_low_disk_lavinmq, exe, dir)
+      end
+
+      expected = Regexp.new(
+        [
+          "lavinmq did not start after 3 attempts",
+          "at=error attempt=1",
+          "reason=exited exit_status=42",
+          "fake stdout",
+          "fake stderr"
+        ].join(".*"),
+        Regexp::MULTILINE
+      )
+
+      assert_match expected, error.message
+    end
+  end
 end

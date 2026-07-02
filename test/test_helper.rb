@@ -129,11 +129,13 @@ module ReadLoopHelpers
   end
 end
 
-# Boots a throwaway LavinMQ instance for tests that need specific broker configuration. These tests are opt-in.
+# Boots a throwaway LavinMQ instance for tests that need specific broker
+# configuration. These tests are opt-in.
 module LavinMQServer
   LAVINMQ_FLOW_CONTROL_OPT_IN = "RUN_LAVINMQ_FLOW_CONTROL_TESTS"
   LAVINMQ_STARTUP_ATTEMPTS = 3
   LAVINMQ_STARTUP_TIMEOUT = 10
+  LAVINMQ_STARTUP_LOG_LINES = 80
   PROCESS_SHUTDOWN_TIMEOUT = 5
 
   # Yields the AMQP port of a private LavinMQ that believes it is out of disk
@@ -162,17 +164,23 @@ module LavinMQServer
   end
 
   def start_low_disk_lavinmq(exe, dir)
+    failures = []
+
     LAVINMQ_STARTUP_ATTEMPTS.times do |attempt|
       amqp_port = free_tcp_port
       config = write_low_disk_lavinmq_config(dir, attempt + 1)
-      pid = spawn_lavinmq(exe, config, amqp_port)
+      stdout = File.join(File.dirname(config), "lavinmq.stdout.log")
+      stderr = File.join(File.dirname(config), "lavinmq.stderr.log")
+      pid = spawn_lavinmq(exe, config, amqp_port, stdout:, stderr:)
       waiter = Process.detach(pid)
       return [pid, waiter, amqp_port] if wait_for_tcp("127.0.0.1", amqp_port, waiter:)
 
+      status = waiter.join(0)&.value
       stop_process(pid, waiter)
+      failures << lavinmq_startup_failure(attempt + 1, amqp_port, config, stdout, stderr, status)
     end
 
-    raise "lavinmq did not start after #{LAVINMQ_STARTUP_ATTEMPTS} attempts"
+    raise "lavinmq did not start after #{LAVINMQ_STARTUP_ATTEMPTS} attempts\n\n#{failures.join("\n\n")}"
   end
 
   def write_low_disk_lavinmq_config(dir, attempt)
@@ -183,7 +191,7 @@ module LavinMQServer
     config
   end
 
-  def spawn_lavinmq(exe, config, amqp_port)
+  def spawn_lavinmq(exe, config, amqp_port, stdout:, stderr:)
     control_socket = File.join(File.dirname(config), "lavinmqctl.sock")
 
     spawn(exe, "--config", config,
@@ -191,9 +199,35 @@ module LavinMQServer
           "--http-port", "-1", "--https-port", "-1",
           "--mqtt-port", "-1", "--mqtts-port", "-1",
           "--metrics-http-port", "-1",
+          "--clustering-port", "0",
           "--control-unix-path", control_socket,
           "--bind", "127.0.0.1",
-          out: File::NULL, err: File::NULL)
+          out: [stdout, "w"], err: [stderr, "w"])
+  end
+
+  def lavinmq_startup_failure(attempt, amqp_port, config, stdout, stderr, status)
+    [
+      "at=error attempt=#{attempt} amqp_port=#{amqp_port} config=#{config} #{lavinmq_startup_reason(status)}",
+      lavinmq_log_excerpt("stdout", stdout),
+      lavinmq_log_excerpt("stderr", stderr)
+    ].join("\n")
+  end
+
+  def lavinmq_startup_reason(status)
+    return "reason=startup_timeout timeout=#{LAVINMQ_STARTUP_TIMEOUT}s" unless status
+    return "reason=exited exit_status=#{status.exitstatus}" if status.exited?
+    return "reason=signaled termsig=#{status.termsig}" if status.signaled?
+
+    "reason=unknown process_status=#{status}"
+  end
+
+  def lavinmq_log_excerpt(stream, path)
+    lines = File.readlines(path, chomp: true).last(LAVINMQ_STARTUP_LOG_LINES)
+    return "#{stream}=empty path=#{path}" if lines.empty?
+
+    "#{stream}=#{path} tail_lines=#{lines.length}\n#{lines.join("\n")}"
+  rescue SystemCallError => e
+    "#{stream}=unreadable path=#{path} error=#{e.class}:#{e.message}"
   end
 
   def skip_unless_lavinmq_flow_control_tests
