@@ -196,6 +196,24 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`.
 
+### RabbitMQ Connection.Blocked tests
+
+The RabbitMQ `Connection.Blocked` tests change the broker memory watermark with `sudo rabbitmqctl`. They are skipped unless `RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS` is set to `1` or `true`:
+
+```bash
+RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS=1 bundle exec rake test
+```
+
+### LavinMQ flow-control tests
+
+The LavinMQ flow-control test starts a private LavinMQ instance configured to reject publishes due to low disk space. It is skipped unless `RUN_LAVINMQ_FLOW_CONTROL_TESTS` is set to `1` or `true`:
+
+```bash
+RUN_LAVINMQ_FLOW_CONTROL_TESTS=1 bundle exec rake test
+```
+
+CI opts in for the Linux LavinMQ test jobs.
+
 ### TLS tests
 
 `rake test` excludes the TLS tests because they need a broker with TLS enabled. `bin/test-tls` runs them against a throwaway broker without disturbing anything you already have set up: it generates a self-signed certificate, starts the broker as your user from a temporary directory on non-default ports (21672/21671), runs the `_tls` tests, then shuts it down. With no argument it tests both brokers in turn:

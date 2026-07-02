@@ -26,6 +26,8 @@ jobs:
     name: LavinMQ / ${{ matrix.ruby }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      RUN_LAVINMQ_FLOW_CONTROL_TESTS: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -106,13 +108,15 @@ jobs:
         run: bundle exec rake
 
   rabbitmq-tests:
-    name: "RabbitMQ / ${{ matrix.ruby }} (sudo: ${{ matrix.sudo }})"
+    name: RabbitMQ / ${{ matrix.ruby }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS: ${{ matrix.connection_blocked_tests }}
     strategy:
       fail-fast: false
       matrix:
-        sudo:
+        connection_blocked_tests:
           - true
         ruby:
           - "3.3"
@@ -121,10 +125,10 @@ jobs:
         include:
           - ruby: jruby
             allow-failure: false
-            sudo: false
+            connection_blocked_tests: false
           - ruby: truffleruby
             allow-failure: false
-            sudo: false
+            connection_blocked_tests: false
     steps:
       - name: Configure dpkg to skip building man pages
         run: |
@@ -139,18 +143,16 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: ${{ matrix.ruby }}
-      - name: Run tests (excluding TLS tests) (JRuby)
+      - name: "Run tests (no TLS, Connection.Blocked: ${{ matrix.connection_blocked_tests }}) (JRuby)"
         if: ${{ matrix.ruby == 'jruby' }}
         continue-on-error: ${{ matrix.allow-failure || false }}
         run: bundle exec rake
         env:
           JAVA_OPTS: "-Djava.net.preferIPv4Stack=true"
-      - name: Run tests (excluding TLS tests)
+      - name: "Run tests (no TLS, Connection.Blocked: ${{ matrix.connection_blocked_tests }})"
         if: ${{ matrix.ruby != 'jruby' }}
         continue-on-error: ${{ matrix.allow-failure || false }}
         run: bundle exec rake
-        env:
-          RUN_SUDO_TESTS: ${{ matrix.sudo }}
 
   rabbitmq-tls:
     name: RabbitMQ TLS / ${{ matrix.ruby }}

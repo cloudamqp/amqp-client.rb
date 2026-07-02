@@ -49,13 +49,20 @@ module TimeoutEveryTestCase
   end
 end
 
-module SkipSudoTestCase
-  def skip_if_no_sudo
-    skip "requires sudo" unless %w[1 true].include?(ENV["RUN_SUDO_TESTS"])
+module RabbitMQConnectionBlockedTestCase
+  RABBITMQ_CONNECTION_BLOCKED_TESTS_OPT_IN = "RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS"
+
+  def skip_unless_rabbitmq_connection_blocked_tests
+    return if %w[1 true].include?(ENV[RABBITMQ_CONNECTION_BLOCKED_TESTS_OPT_IN])
+
+    skip "set #{RABBITMQ_CONNECTION_BLOCKED_TESTS_OPT_IN}=1 to run RabbitMQ Connection.Blocked tests"
   end
 end
 
 require "socket"
+require "tmpdir"
+require "fileutils"
+
 module FakeServer
   def with_fake_server(host: "127.0.0.1")
     server = TCPServer.new(host, 0)
@@ -122,6 +129,171 @@ module ReadLoopHelpers
   end
 end
 
+# Boots a throwaway LavinMQ instance for tests that need specific broker
+# configuration. These tests are opt-in.
+module LavinMQServer
+  LAVINMQ_FLOW_CONTROL_OPT_IN = "RUN_LAVINMQ_FLOW_CONTROL_TESTS"
+  LAVINMQ_STARTUP_ATTEMPTS = 3
+  LAVINMQ_STARTUP_TIMEOUT = 10
+  LAVINMQ_STARTUP_LOG_LINES = 80
+  PROCESS_SHUTDOWN_TIMEOUT = 5
+
+  # Yields the AMQP port of a private LavinMQ that believes it is out of disk
+  # space (free_disk_min above any real free space), so it applies flow control
+  # and rejects publishes/declarations with PRECONDITION_FAILED.
+  def with_low_disk_lavinmq(&)
+    skip_unless_lavinmq_flow_control_tests
+
+    exe = lavinmq_executable
+    skip "lavinmq executable not found" unless exe
+
+    boot_low_disk_lavinmq(exe, &)
+  end
+
+  private
+
+  # Spawn a private LavinMQ with free_disk_min above real free space, yield its
+  # AMQP port, then tear it down.
+  def boot_low_disk_lavinmq(exe)
+    dir = Dir.mktmpdir("lavinmq-lowdisk")
+    pid, waiter, amqp_port = start_low_disk_lavinmq(exe, dir)
+    yield amqp_port
+  ensure
+    stop_process(pid, waiter)
+    FileUtils.remove_entry(dir) if dir
+  end
+
+  def start_low_disk_lavinmq(exe, dir)
+    failures = []
+
+    LAVINMQ_STARTUP_ATTEMPTS.times do |attempt|
+      amqp_port = free_tcp_port
+      config = write_low_disk_lavinmq_config(dir, attempt + 1)
+      stdout = File.join(File.dirname(config), "lavinmq.stdout.log")
+      stderr = File.join(File.dirname(config), "lavinmq.stderr.log")
+      pid = spawn_lavinmq(exe, config, amqp_port, stdout:, stderr:)
+      waiter = Process.detach(pid)
+      return [pid, waiter, amqp_port] if wait_for_tcp("127.0.0.1", amqp_port, waiter:)
+
+      status = waiter.join(0)&.value
+      stop_process(pid, waiter)
+      failures << lavinmq_startup_failure(attempt + 1, amqp_port, config, stdout, stderr, status)
+    end
+
+    raise "lavinmq did not start after #{LAVINMQ_STARTUP_ATTEMPTS} attempts\n\n#{failures.join("\n\n")}"
+  end
+
+  def write_low_disk_lavinmq_config(dir, attempt)
+    attempt_dir = File.join(dir, "attempt-#{attempt}")
+    FileUtils.mkdir_p(attempt_dir)
+    config = File.join(attempt_dir, "lavinmq.ini")
+    File.write(config, "[main]\ndata_dir = #{attempt_dir}/data\nfree_disk_min = 1000000000000000\n")
+    config
+  end
+
+  def spawn_lavinmq(exe, config, amqp_port, stdout:, stderr:)
+    control_socket = File.join(File.dirname(config), "lavinmqctl.sock")
+
+    spawn(exe, "--config", config,
+          "--amqp-port", amqp_port.to_s, "--amqps-port", "-1",
+          "--http-port", "-1", "--https-port", "-1",
+          "--mqtt-port", "-1", "--mqtts-port", "-1",
+          "--metrics-http-port", "-1",
+          "--clustering-port", "0",
+          "--control-unix-path", control_socket,
+          "--bind", "127.0.0.1",
+          out: [stdout, "w"], err: [stderr, "w"])
+  end
+
+  def lavinmq_startup_failure(attempt, amqp_port, config, stdout, stderr, status)
+    [
+      "at=error attempt=#{attempt} amqp_port=#{amqp_port} config=#{config} #{lavinmq_startup_reason(status)}",
+      lavinmq_log_excerpt("stdout", stdout),
+      lavinmq_log_excerpt("stderr", stderr)
+    ].join("\n")
+  end
+
+  def lavinmq_startup_reason(status)
+    return "reason=startup_timeout timeout=#{LAVINMQ_STARTUP_TIMEOUT}s" unless status
+    return "reason=exited exit_status=#{status.exitstatus}" if status.exited?
+    return "reason=signaled termsig=#{status.termsig}" if status.signaled?
+
+    "reason=unknown process_status=#{status}"
+  end
+
+  def lavinmq_log_excerpt(stream, path)
+    lines = File.readlines(path, chomp: true).last(LAVINMQ_STARTUP_LOG_LINES)
+    return "#{stream}=empty path=#{path}" if lines.empty?
+
+    "#{stream}=#{path} tail_lines=#{lines.length}\n#{lines.join("\n")}"
+  rescue SystemCallError => e
+    "#{stream}=unreadable path=#{path} error=#{e.class}:#{e.message}"
+  end
+
+  def skip_unless_lavinmq_flow_control_tests
+    return if %w[1 true].include?(ENV[LAVINMQ_FLOW_CONTROL_OPT_IN])
+
+    skip "set #{LAVINMQ_FLOW_CONTROL_OPT_IN}=1 to run LavinMQ flow-control tests"
+  end
+
+  def lavinmq_executable
+    ENV["PATH"].to_s.split(File::PATH_SEPARATOR).each do |dir|
+      exe = File.join(dir, "lavinmq")
+      return exe if File.executable?(exe)
+    end
+    nil
+  end
+
+  # Probe a port for the child process to bind. It is available when probed, but
+  # not reserved after this method returns.
+  def free_tcp_port
+    server = TCPServer.new("127.0.0.1", 0)
+    server.addr[1]
+  ensure
+    server&.close
+  end
+
+  def wait_for_tcp(host, port, timeout: LAVINMQ_STARTUP_TIMEOUT, waiter: nil)
+    deadline = monotonic_now + timeout
+    loop do
+      return false if waiter&.join(0)
+
+      Socket.tcp(host, port, connect_timeout: 1).close
+      return false if waiter&.join(0)
+
+      return true
+    rescue SystemCallError
+      return false if waiter&.join(0)
+      return false if monotonic_now > deadline
+
+      sleep 0.1
+    end
+  end
+
+  def monotonic_now
+    Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  end
+
+  def stop_process(pid, waiter = nil)
+    return unless pid
+
+    waiter ||= Process.detach(pid)
+    signal_process(pid, "TERM")
+    return if waiter.join(PROCESS_SHUTDOWN_TIMEOUT)
+
+    signal_process(pid, "KILL")
+    waiter.join(PROCESS_SHUTDOWN_TIMEOUT)
+  rescue Errno::ECHILD
+    nil
+  end
+
+  def signal_process(pid, signal)
+    Process.kill(signal, pid)
+  rescue Errno::ESRCH
+    nil
+  end
+end
+
 # Socket stand-in that hands out preset byte chunks across successive reads,
 # so tests can drive the handshake parser deterministically (no real network,
 # no timing). Used to reproduce frame headers that arrive split across reads.
@@ -144,7 +316,8 @@ end
 $VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase
-Minitest::Test.prepend SkipSudoTestCase
+Minitest::Test.prepend RabbitMQConnectionBlockedTestCase
 Minitest::Test.prepend FakeServer
 Minitest::Test.prepend ThreadHelpers
 Minitest::Test.prepend ReadLoopHelpers
+Minitest::Test.prepend LavinMQServer
