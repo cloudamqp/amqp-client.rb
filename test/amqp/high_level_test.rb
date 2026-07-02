@@ -385,6 +385,8 @@ class HighLevelTest < Minitest::Test
     assert_instance_of AMQP::Client::Message, msg
     assert_equal "test message body", msg.body
     assert_equal "test.get.message", msg.routing_key
+  ensure
+    q&.delete
   end
 
   def test_queue_get_returns_nil_when_empty
@@ -393,6 +395,8 @@ class HighLevelTest < Minitest::Test
     msg = q.get(no_ack: true)
 
     assert_nil msg, "Expected get to return nil for empty queue"
+  ensure
+    q&.delete
   end
 
   def test_client_get_method
@@ -403,6 +407,8 @@ class HighLevelTest < Minitest::Test
 
     assert_instance_of AMQP::Client::Message, msg
     assert_equal "client get test", msg.body
+  ensure
+    q&.delete
   end
 
   def test_exclusive_queue_deleted_on_connection_close
@@ -474,5 +480,7 @@ class HighLevelTest < Minitest::Test
     q2 = @client.queue("test.passive.exists", passive: true)
 
     assert_equal "test.passive.exists", q2.name
+  ensure
+    q&.delete
   end
 end
