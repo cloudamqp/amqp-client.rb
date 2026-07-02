@@ -49,7 +49,7 @@ module TimeoutEveryTestCase
   end
 end
 
-module RabbitMQBlockedTestCase
+module RabbitMQConnectionBlockedTestCase
   RABBITMQ_CONNECTION_BLOCKED_TESTS_OPT_IN = "RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS"
 
   def skip_unless_rabbitmq_connection_blocked_tests
@@ -316,7 +316,7 @@ end
 $VERBOSE = nil unless ENV["DEBUG"] == "true"
 
 Minitest::Test.prepend TimeoutEveryTestCase
-Minitest::Test.prepend RabbitMQBlockedTestCase
+Minitest::Test.prepend RabbitMQConnectionBlockedTestCase
 Minitest::Test.prepend FakeServer
 Minitest::Test.prepend ThreadHelpers
 Minitest::Test.prepend ReadLoopHelpers
