@@ -75,6 +75,56 @@ class HighLevelTest < Minitest::Test
     @client.publish("", exchange: "amq.topic", routing_key: "foo.bar")
   end
 
+  def test_server_named_queue_gets_broker_assigned_name_from_empty_string
+    q = @client.queue("")
+
+    refute_empty q.name
+  ensure
+    q&.delete
+  end
+
+  def test_server_named_queue_gets_broker_assigned_name_from_nil
+    q = @client.queue(nil)
+
+    refute_empty q.name
+  ensure
+    q&.delete
+  end
+
+  def test_server_named_queue_publish_subscribe
+    msgs = Queue.new
+    q = @client.queue(nil)
+    q.subscribe(no_ack: true) { |msg| msgs << msg }
+
+    q.publish("hello")
+    msg = msgs.pop(timeout: 2)
+
+    assert_equal "hello", msg.body
+    assert_equal q.name, msg.routing_key
+  ensure
+    q&.delete
+  end
+
+  def test_server_named_queue_consumer_is_dropped_on_reconnect
+    q = @client.queue(nil)
+    consumer = q.subscribe(no_ack: true) { |_msg| nil }
+    result = Queue.new
+
+    thread = Thread.new do
+      q2 = @client.queue("test.server.named.after.reconnect", auto_delete: true)
+      q2.publish("ok")
+      result << q2.get(no_ack: true)&.body
+    ensure
+      q2&.delete
+    end
+    @client.with_connection(&:close)
+
+    assert_equal "ok", result.pop(timeout: 5)
+    refute_includes @client.instance_variable_get(:@consumers).values, consumer
+  ensure
+    thread&.kill&.join
+  end
+
   def test_it_can_bind_unbind_exchanges
     msgs = Queue.new
     e = @client.exchange("test.exchange", type: "fanout", auto_delete: true)
@@ -463,6 +513,52 @@ class HighLevelTest < Minitest::Test
     consumer.cancel
   end
 
+  def test_subscribe_with_explicit_consumer_tag
+    q = @client.queue("test.consumer.tag.explicit", auto_delete: true)
+    msgs = Queue.new
+
+    consumer = q.subscribe(no_ack: true, consumer_tag: "my-named-consumer") do |msg|
+      msgs.push msg
+    end
+
+    assert_equal "my-named-consumer", consumer.tag
+
+    q.publish("hi")
+    msg = msgs.pop(timeout: 2)
+
+    assert_equal "my-named-consumer", msg.delivery_info.consumer_tag
+  ensure
+    consumer&.cancel
+    q&.delete
+  end
+
+  def test_client_subscribe_with_explicit_consumer_tag
+    q = @client.queue("test.consumer.tag.client.explicit", auto_delete: true)
+    msgs = Queue.new
+
+    consumer = @client.subscribe(q.name, no_ack: true, consumer_tag: "my-client-consumer") do |msg|
+      msgs.push msg
+    end
+
+    assert_equal "my-client-consumer", consumer.tag
+
+    q.publish("hi")
+    msg = msgs.pop(timeout: 2)
+
+    assert_equal "my-client-consumer", msg.delivery_info.consumer_tag
+  ensure
+    consumer&.cancel
+    q&.delete
+  end
+
+  def test_subscribe_with_broker_generated_consumer_tag_from_nil
+    assert_broker_generated_consumer_tag(nil)
+  end
+
+  def test_subscribe_with_broker_generated_consumer_tag_from_empty_string
+    assert_broker_generated_consumer_tag("")
+  end
+
   def test_passive_queue_raises_if_not_exists
     # Try to declare a queue with passive: true when it doesn't exist
     # Should raise an error because the queue doesn't exist
@@ -481,6 +577,27 @@ class HighLevelTest < Minitest::Test
 
     assert_equal "test.passive.exists", q2.name
   ensure
+    q&.delete
+  end
+
+  private
+
+  def assert_broker_generated_consumer_tag(consumer_tag)
+    q = @client.queue("test.consumer.tag.#{consumer_tag.nil? ? 'nil' : 'empty'}", auto_delete: true)
+    msgs = Queue.new
+
+    consumer = q.subscribe(no_ack: true, consumer_tag:) do |msg|
+      msgs.push msg
+    end
+
+    refute_empty consumer.tag
+
+    q.publish("hi")
+    msg = msgs.pop(timeout: 2)
+
+    assert_equal consumer.tag, msg.delivery_info.consumer_tag
+  ensure
+    consumer&.cancel
     q&.delete
   end
 end

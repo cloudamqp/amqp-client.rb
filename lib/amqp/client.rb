@@ -82,9 +82,9 @@ module AMQP
         @stopped = false
         initial_conn = connect(read_loop_thread: false)
         log_lifecycle(:info, "connected")
-        supervisor = Thread.new(initial_conn) do |conn| # rubocop:disable Metrics/BlockLength
+        supervisor = Thread.new(initial_conn) do |conn|
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
-          loop do # rubocop:disable Metrics/BlockLength
+          loop do
             break if @stopped
 
             unless conn
@@ -92,22 +92,7 @@ module AMQP
               log_lifecycle(:info, "reconnected")
             end
 
-            setup = Thread.new do
-              # restore connection in another thread, read_loop have to run
-              conn.channel(1) # reserve channel 1 for publishes
-              @consumers.each_value do |consumer|
-                ch = conn.channel
-                ch.basic_qos(consumer.prefetch)
-                consume_ok = ch.basic_consume(consumer.queue,
-                                              **consumer.basic_consume_args,
-                                              &consumer.block)
-                # Update the consumer with new channel and consume_ok metadata
-                consumer.update_consume_ok(consume_ok)
-              end
-              @connq << conn
-              # Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
-              @consumers.delete_if { |_, c| c.closed? }
-            end
+            setup = Thread.new { restore_connection(conn) }
             setup.name = thread_name("reconnect_setup")
             conn.read_loop # blocks until connection is closed, then reconnect
             log_lifecycle(:warn, "disconnected")
@@ -147,7 +132,7 @@ module AMQP
     # @!group High level objects
 
     # Declare a queue
-    # @param name [String] Name of the queue
+    # @param name [String, nil] Name of the queue. Pass nil or "" for a server-named queue.
     # @param durable [Boolean] If true the queue will survive broker restarts,
     #   messages in the queue will only survive if they are published as persistent
     # @param auto_delete [Boolean] If true the queue will be deleted when the last consumer stops consuming
@@ -161,7 +146,12 @@ module AMQP
     #   q = amqp.queue("foobar")
     #   q.publish("body")
     def queue(name, durable: true, auto_delete: false, exclusive: false, passive: false, arguments: {})
-      raise ArgumentError, "Currently only supports named, durable queues" if name.empty?
+      if server_named_queue?(name)
+        queue_ok = with_connection do |conn|
+          conn.channel(1).queue_declare("", durable:, auto_delete:, exclusive:, passive:, arguments:)
+        end
+        return Queue.new(self, queue_ok.queue_name)
+      end
 
       @queues.fetch(name) do
         with_connection do |conn|
@@ -316,10 +306,11 @@ module AMQP
     # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
     #   The proc will be called with the consumer tag as the only argument
     # @param arguments [Hash] Custom arguments to the consumer
+    # @param consumer_tag [String, nil] Custom consumer tag. Pass nil or "" to let the broker generate one.
     # @yield [Message] Delivered message from the queue
     # @return [Consumer] The consumer object, which can be used to cancel the consumer
     def subscribe(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1,
-                  on_cancel: nil, arguments: {}, &blk)
+                  on_cancel: nil, arguments: {}, consumer_tag: nil, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 
       with_connection do |conn|
@@ -330,7 +321,9 @@ module AMQP
           @consumers.delete(consumer_id)
           on_cancel&.call(tag)
         end
-        basic_consume_args = { exclusive:, no_ack:, worker_threads:, on_cancel: on_cancel_proc, arguments: }
+        tag = consumer_tag.nil? ? "" : consumer_tag
+        basic_consume_args = { tag:, exclusive:, no_ack:, worker_threads:,
+                               on_cancel: on_cancel_proc, arguments: }
         consume_ok = ch.basic_consume(queue, **basic_consume_args, &blk)
         consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, block: blk,
                                 queue:, consume_ok:, prefetch:, basic_consume_args:)
@@ -614,6 +607,28 @@ module AMQP
 
     def lifecycle_prefix
       @name ? "AMQP::Client[#{@name}]" : "AMQP::Client"
+    end
+
+    def restore_connection(conn)
+      conn.channel(1)
+      # Snapshot because @consumers can mutate while recovery is running.
+      @consumers.values.each do |consumer| # rubocop:disable Style/HashEachMethods
+        ch = conn.channel
+        ch.basic_qos(consumer.prefetch)
+        consume_ok = ch.basic_consume(consumer.queue,
+                                      **consumer.basic_consume_args,
+                                      &consumer.block)
+        consumer.update_consume_ok(consume_ok)
+        @consumers.delete(consumer.id) if consumer.closed?
+      rescue Error::ChannelClosed => e
+        log_lifecycle(:warn, "failed to resubscribe consumer for #{consumer.queue}: #{e.message}")
+        @consumers.delete(consumer.id)
+      end
+      @connq << conn
+    end
+
+    def server_named_queue?(name)
+      name.nil? || name.empty?
     end
 
     def default_content_properties

@@ -37,6 +37,9 @@ amqp = AMQP::Client.new("amqp://localhost").start
 # Declares a durable queue
 myqueue = amqp.queue("myqueue")
 
+# Declares a server-named exclusive auto-delete queue
+temporary_queue = amqp.queue(nil)
+
 # Declares a topic exchange
 ex = amqp.topic_exchange("myexchange")
 
@@ -57,6 +60,11 @@ myqueue.subscribe do |msg|
   msg.ack
 rescue => e
   msg.reject
+end
+
+# Pass consumer_tag: to name a consumer, or nil/"" to let the broker name it
+consumer = myqueue.subscribe(consumer_tag: "worker-1") do |msg|
+  puts msg.body
 end
 
 # Publish directly to the queue, message will be serialized to json automatically

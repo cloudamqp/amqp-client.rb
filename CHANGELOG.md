@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Added: `Client#queue(nil)` and `Client#queue("")` declare a server-named queue and return a `Queue` with the broker-assigned name.
+- Added: `consumer_tag:` keyword argument on `Client#subscribe` and `Queue#subscribe`; pass nil or "" to let the broker generate the tag.
+
 ## [2.1.0] - 2026-06-23
 
 - Changed: Dropped support for Ruby 3.2 (now requires Ruby >= 3.3).
