@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ruby/setup-ruby@8e41b362d2589a22a44c1cfa214b3c83052c195b # v1.318.0
         with:
           bundler-cache: true
@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Install LavinMQ
         uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ruby/setup-ruby@8e41b362d2589a22a44c1cfa214b3c83052c195b # v1.318.0
         with:
           bundler-cache: true
@@ -69,7 +69,7 @@ jobs:
     steps:
       - name: Install LavinMQ
         uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ruby/setup-ruby@8e41b362d2589a22a44c1cfa214b3c83052c195b # v1.318.0
         with:
           bundler-cache: true
@@ -99,7 +99,7 @@ jobs:
           brew install lavinmq
       - name: Start LavinMQ
         run: brew services start lavinmq
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ruby/setup-ruby@8e41b362d2589a22a44c1cfa214b3c83052c195b # v1.318.0
         with:
           bundler-cache: true
@@ -138,7 +138,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
       - name: Verify RabbitMQ started correctly
         run: while true; do sudo rabbitmq-diagnostics status 2>/dev/null && break; echo -n .; sleep 2; done
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ruby/setup-ruby@8e41b362d2589a22a44c1cfa214b3c83052c195b # v1.318.0
         with:
           bundler-cache: true
@@ -172,7 +172,7 @@ jobs:
           echo 'path-exclude /usr/share/man/*' | sudo tee -a /etc/dpkg/dpkg.cfg.d/01_nodoc
       - name: Install RabbitMQ
         run: sudo apt-get update && sudo apt-get install -y rabbitmq-server
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ruby/setup-ruby@8e41b362d2589a22a44c1cfa214b3c83052c195b # v1.318.0
         with:
           bundler-cache: true
@@ -200,7 +200,7 @@ jobs:
         run: brew install rabbitmq
       - name: Start RabbitMQ
         run: brew services start rabbitmq
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ruby/setup-ruby@8e41b362d2589a22a44c1cfa214b3c83052c195b # v1.318.0
         with:
           bundler-cache: true
