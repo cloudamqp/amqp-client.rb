@@ -8,3 +8,10 @@ updates:
       # the 1st and 15th of each month.
       interval: "cron"
       cronjob: "0 6 1,15 * *"
+    groups:
+      # codeql-action/init and codeql-action/analyze are separate dependencies to
+      # Dependabot, but analyze refuses to load a config file written by a
+      # different version of init, so they must be bumped in the same PR.
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
