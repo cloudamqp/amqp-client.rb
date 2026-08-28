@@ -214,6 +214,19 @@ class HighLevelTest < Minitest::Test
     assert_equal :tick, counts.pop(timeout: 5)
   end
 
+  def test_on_connect_can_use_client_api_without_deadlocking
+    @client&.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", on_connect: ->(c) { c.topic_exchange("oc.setup") }).start
+    x = @client.topic_exchange("oc.setup")
+    q = @client.queue("oc.setup.q", auto_delete: true).bind(x, binding_key: "foo")
+    x.publish("ping", routing_key: "foo")
+
+    assert_equal "ping", q.get(no_ack: true).body
+  ensure
+    q&.delete
+    x&.delete
+  end
+
   def test_on_connect_error_is_logged_and_connection_stays_usable
     io = StringIO.new
     logger = Logger.new(io)
