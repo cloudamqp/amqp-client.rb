@@ -3,6 +3,7 @@
 - Added: `Client#queue(nil)` and `Client#queue("")` declare a server-named queue and return a `Queue` with the broker-assigned name.
 - Added: `consumer_tag:` keyword argument on `Client#subscribe` and `Queue#subscribe`; pass nil or "" to let the broker generate the tag.
 - Added: `on_connect:` constructor option for `AMQP::Client`. The callback runs with the client after each successful supervised connection or reconnection, after consumer recovery.
+- Added: `max_retries:` and `on_failed:` constructor options for `AMQP::Client`. When `max_retries:` is set, the supervisor gives up and calls `on_failed:` with the triggering error after that many consecutive failed reconnect attempts, instead of retrying forever.
 
 ## [2.1.0] - 2026-06-23
 

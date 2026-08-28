@@ -89,6 +89,15 @@ amqp = AMQP::Client.new("amqp://localhost", on_connect: ->(client) {
 }).start
 ```
 
+Pass `max_retries:` and `on_failed:` to stop retrying and get notified after a
+run of consecutive failed reconnect attempts, instead of retrying forever:
+
+```ruby
+amqp = AMQP::Client.new("amqp://localhost",
+  max_retries: 10,
+  on_failed: ->(err) { logger.error("AMQP gave up reconnecting: #{err}") }).start
+```
+
 #### Configuration
 
 Configure class-level defaults and enable built-in codecs using the `configure` method:

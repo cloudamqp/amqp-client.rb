@@ -37,10 +37,17 @@ module AMQP
     #   written to stderr via Kernel#warn for backwards compatibility.
     # @param on_connect [Proc, nil] Optional callback invoked with the client after each successful
     #   (re)connection, after consumer recovery.
-    def initialize(uri = "", on_connect: nil, **options)
+    # @param on_failed [Proc, nil] Optional callback invoked with the triggering error once
+    #   reconnection has given up after max_retries consecutive failed attempts. The supervisor
+    #   stops after calling it, same as after {#stop}.
+    # @param max_retries [Integer, nil] Number of consecutive reconnect attempts to allow before
+    #   giving up and calling on_failed. Defaults to nil, retrying forever.
+    def initialize(uri = "", on_connect: nil, on_failed: nil, max_retries: nil, **options)
       @uri = uri
       @options = options
       @on_connect = on_connect
+      @on_failed = on_failed
+      @max_retries = max_retries
       @logger = options[:logger]
       @name = parse_name(uri)
       @queues = {}
@@ -87,11 +94,13 @@ module AMQP
         log_lifecycle(:info, "connected")
         supervisor = Thread.new(initial_conn) do |conn|
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
+          reconnect_attempts = 0
           loop do
             break if @stopped
 
             unless conn
               conn = connect(read_loop_thread: false)
+              reconnect_attempts = 0
               log_lifecycle(:info, "reconnected")
             end
 
@@ -100,6 +109,9 @@ module AMQP
             conn.read_loop # blocks until connection is closed, then reconnect
             log_lifecycle(:warn, "disconnected")
           rescue Error => e
+            reconnect_attempts += 1
+            break if give_up_reconnecting?(reconnect_attempts, e)
+
             log_reconnect_error(e)
             sleep @options[:reconnect_interval] || 1
           ensure
@@ -606,6 +618,15 @@ module AMQP
       end
     end
 
+    def log_give_up(reconnect_attempts, err)
+      message = "gave up reconnecting after #{reconnect_attempts} attempts: #{err.inspect}"
+      if @logger
+        @logger.error("#{lifecycle_prefix}: #{message}")
+      else
+        warn "AMQP-Client #{message}"
+      end
+    end
+
     def thread_name(role)
       @name ? "amqp.#{role}[#{@name}]" : "amqp.#{role}"
     end
@@ -657,6 +678,29 @@ module AMQP
     # Scoped per instance so a thread touching two Client objects can't cross-wire connections.
     def reserved_conn_key
       :"amqp_client_conn_#{object_id}"
+    end
+
+    # Reports whether the supervisor should give up after this reconnect failure, logging and
+    # calling on_failed as a side effect when it does.
+    def give_up_reconnecting?(reconnect_attempts, err)
+      return false unless @max_retries && reconnect_attempts > @max_retries
+
+      @stopped = true
+      log_give_up(reconnect_attempts, err)
+      run_on_failed_hook(err)
+      true
+    end
+
+    def run_on_failed_hook(err)
+      return unless @on_failed
+
+      @on_failed.call(err)
+    rescue StandardError => e
+      if @logger
+        log_lifecycle(:warn, "on_failed raised: #{e.class}: #{e.message}")
+      else
+        warn "AMQP-Client on_failed error: #{e.inspect}"
+      end
     end
 
     def default_content_properties
