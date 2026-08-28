@@ -9,6 +9,14 @@ class OnFailedTest < Minitest::Test
     @client&.stop
   end
 
+  def test_max_retries_rejects_non_integer
+    assert_raises(ArgumentError) { AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", max_retries: "3") }
+  end
+
+  def test_max_retries_rejects_negative_integer
+    assert_raises(ArgumentError) { AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", max_retries: -1) }
+  end
+
   def test_on_failed_fires_after_max_retries_and_stops_supervisor
     failed = Queue.new
     @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", max_retries: 2, reconnect_interval: 0,
@@ -29,6 +37,8 @@ class OnFailedTest < Minitest::Test
       err = failed.pop(timeout: 2)
 
       assert_match(/simulated failure/, err.message)
+      # 1 initial connect + 2 failed reconnect attempts (max_retries) before giving up
+      assert_equal 3, attempts
     end
 
     refute_predicate @client, :started?
@@ -63,7 +73,10 @@ class OnFailedTest < Minitest::Test
 
   def test_reconnect_attempts_reset_after_a_successful_reconnect
     failed = Queue.new
-    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", max_retries: 1, reconnect_interval: 0,
+    # max_retries: 2 tolerates one failed attempt per cycle below without giving up; if the
+    # counter didn't reset after a successful reconnect, the second cycle's failure would push
+    # the (wrongly accumulated) count over the limit and trigger a spurious give-up.
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", max_retries: 2, reconnect_interval: 0,
                                                            on_failed: ->(err) { failed << err })
     original_connect = @client.method(:connect)
     fail_next = false
