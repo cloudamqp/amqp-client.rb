@@ -2,6 +2,8 @@
 
 A modern AMQP 0-9-1 Ruby client. Very fast (just as fast as the Java client, and >2x than other Ruby clients), fully thread-safe, blocking operations and straight-forward error handling.
 
+It works with any broker that speaks AMQP 0-9-1, including RabbitMQ, LavinMQ, Amazon MQ for RabbitMQ, CloudAMQP and Apache Qpid Broker-J.
+
 It's small, and without any dependencies. Other Ruby clients are about several times bigger. But without trading functionality.
 
 It's safe by default, messages are published as persistent, and is waiting for confirmation from the broker. That can of course be disabled if performance is a priority.

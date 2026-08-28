@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["team@cloudamqp.com"]
 
   spec.summary       = "AMQP 0-9-1 client"
-  spec.description   = "Modern AMQP 0-9-1 Ruby client"
+  spec.description   = "A modern, fast, thread-safe and dependency-free AMQP 0-9-1 Ruby client, for RabbitMQ, LavinMQ and any other AMQP 0-9-1 broker"
   spec.homepage      = "https://github.com/cloudamqp/amqp-client.rb"
   spec.license       = "MIT"
   spec.required_ruby_version = Gem::Requirement.new(">= 3.3.0")
