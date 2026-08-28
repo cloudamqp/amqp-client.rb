@@ -43,6 +43,10 @@ module AMQP
     # @param max_retries [Integer, nil] Number of consecutive reconnect attempts to allow before
     #   giving up and calling on_failed. Defaults to nil, retrying forever.
     def initialize(uri = "", on_connect: nil, on_failed: nil, max_retries: nil, **options)
+      if max_retries && (!max_retries.is_a?(Integer) || max_retries.negative?)
+        raise ArgumentError, "max_retries must be a non-negative Integer or nil"
+      end
+
       @uri = uri
       @options = options
       @on_connect = on_connect
@@ -683,7 +687,7 @@ module AMQP
     # Reports whether the supervisor should give up after this reconnect failure, logging and
     # calling on_failed as a side effect when it does.
     def give_up_reconnecting?(reconnect_attempts, err)
-      return false unless @max_retries && reconnect_attempts > @max_retries
+      return false unless @max_retries && reconnect_attempts >= @max_retries
 
       @stopped = true
       log_give_up(reconnect_attempts, err)
