@@ -39,8 +39,9 @@ module AMQP
 
       # Update the consumer with new metadata after reconnection
       # @api private
-      def update_consume_ok(consume_ok)
+      def update_consume_ok(consume_ok, channel_id)
         @consume_ok = consume_ok
+        @channel_id = channel_id
       end
     end
   end
