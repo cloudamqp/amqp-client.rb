@@ -549,6 +549,8 @@ module AMQP
     # @!endgroup
     #
     def with_connection
+      return yield Thread.current[reserved_conn_key] if Thread.current[reserved_conn_key]
+
       conn = nil
       loop do
         conn = @connq.pop
@@ -627,17 +629,20 @@ module AMQP
         log_lifecycle(:warn, "failed to resubscribe consumer for #{consumer.queue}: #{e.message}")
         @consumers.delete(consumer.id)
       end
+      run_on_connect_hook(conn)
       @connq << conn
-      run_on_connect_hook
     end
 
     def server_named_queue?(name)
       name.nil? || name.empty?
     end
 
-    def run_on_connect_hook
+    # Thread-local (not an ivar) so the hook can call back into the client's API without
+    # deadlocking, and overlapping reconnects can't clobber each other's reservation.
+    def run_on_connect_hook(conn)
       return unless @on_connect
 
+      Thread.current[reserved_conn_key] = conn
       @on_connect.call(self)
     rescue StandardError => e
       if @logger
@@ -645,6 +650,13 @@ module AMQP
       else
         warn "AMQP-Client on_connect error: #{e.inspect}"
       end
+    ensure
+      Thread.current[reserved_conn_key] = nil
+    end
+
+    # Scoped per instance so a thread touching two Client objects can't cross-wire connections.
+    def reserved_conn_key
+      :"amqp_client_conn_#{object_id}"
     end
 
     def default_content_properties
