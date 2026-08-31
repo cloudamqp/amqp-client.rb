@@ -6,7 +6,7 @@
 <title>
   Class: AMQP::Client
   
-    &mdash; Documentation by YARD 0.9.44
+    &mdash; Documentation by YARD 0.9.45
   
 </title>
 
@@ -153,7 +153,7 @@
 
 </div>
         </dt>
-        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>2.1.0</span><span class='tstring_end'>&quot;</span></span></pre></dd>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>2.2.0</span><span class='tstring_end'>&quot;</span></span></pre></dd>
       
     </dl>
   
@@ -772,7 +772,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#subscribe-instance_method" title="#subscribe (instance method)">#<strong>subscribe</strong>(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1, on_cancel: nil, arguments: {}) {|Message| ... } &#x21d2; Consumer </a>
+      <a href="#subscribe-instance_method" title="#subscribe (instance method)">#<strong>subscribe</strong>(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1, on_cancel: nil, arguments: {}, consumer_tag: nil) {|Message| ... } &#x21d2; Consumer </a>
     
 
     
@@ -1000,7 +1000,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(uri = &quot;&quot;, **options)  &#x21d2; Client </a>
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(uri = &quot;&quot;, on_connect: nil, on_failed: nil, max_retries: nil, **options)  &#x21d2; Client </a>
     
 
     
@@ -1053,7 +1053,7 @@
     <div class="method_details first">
   <h3 class="signature first" id="initialize-instance_method">
   
-    #<strong>initialize</strong>(uri = &quot;&quot;, **options)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client (class)">Client</a></span></tt> 
+    #<strong>initialize</strong>(uri = &quot;&quot;, on_connect: nil, on_failed: nil, max_retries: nil, **options)  &#x21d2; <tt><span class='object_link'><a href="" title="AMQP::Client (class)">Client</a></span></tt> 
   
 
   
@@ -1088,6 +1088,58 @@ use amqps:// for encrypted connection</p></div>
   
     <li>
       
+        <span class='name'>on_connect</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Optional callback invoked with the client after each successful
+(re)connection, after consumer recovery.</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>on_failed</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Optional callback invoked with the triggering error once
+reconnection has given up after max_retries consecutive failed attempts. The supervisor
+stops after calling it, same as after <span class='object_link'><a href="#stop-instance_method" title="AMQP::Client#stop (method)">#stop</a></span>.</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>max_retries</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Number of consecutive reconnect attempts to allow before
+giving up and calling on_failed. Defaults to nil, retrying forever.</p></div>
+      
+    </li>
+  
+    <li>
+      
         <span class='name'>options</span>
       
       
@@ -1103,6 +1155,12 @@ use amqps:// for encrypted connection</p></div>
 </ul>
 
   
+    
+    
+    
+    
+    
+    
     
     
     
@@ -1209,13 +1267,6 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-38
-39
-40
-41
-42
-43
-44
 45
 46
 47
@@ -1226,14 +1277,35 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
 52
 53
 54
-55</pre>
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 45</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>on_connect:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>on_failed:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_retries:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_max_retries'>max_retries</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='op'>!</span><span class='id identifier rubyid_max_retries'>max_retries</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_max_retries'>max_retries</span><span class='period'>.</span><span class='id identifier rubyid_negative?'>negative?</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>max_retries must be a non-negative Integer or nil</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
   <span class='ivar'>@uri</span> <span class='op'>=</span> <span class='id identifier rubyid_uri'>uri</span>
   <span class='ivar'>@options</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span>
+  <span class='ivar'>@on_connect</span> <span class='op'>=</span> <span class='id identifier rubyid_on_connect'>on_connect</span>
+  <span class='ivar'>@on_failed</span> <span class='op'>=</span> <span class='id identifier rubyid_on_failed'>on_failed</span>
+  <span class='ivar'>@max_retries</span> <span class='op'>=</span> <span class='id identifier rubyid_max_retries'>max_retries</span>
   <span class='ivar'>@logger</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span>
   <span class='ivar'>@name</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_name'>parse_name</span><span class='lparen'>(</span><span class='id identifier rubyid_uri'>uri</span><span class='rparen'>)</span>
   <span class='ivar'>@queues</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
@@ -1298,12 +1370,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-521
-522
-523</pre>
+533
+534
+535</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 521</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 533</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_codec_registry'>codec_registry</span>
   <span class='ivar'>@codec_registry</span>
@@ -1352,12 +1424,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-517
-518
-519</pre>
+529
+530
+531</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 517</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 529</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_config'>config</span>
   <span class='ivar'>@config</span>
@@ -1411,12 +1483,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-540
-541
-542</pre>
+552
+553
+554</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 540</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 552</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_codec_registry'>codec_registry</span>
   <span class='ivar'>@codec_registry</span>
@@ -1465,12 +1537,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-551
-552
-553</pre>
+563
+564
+565</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 551</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 563</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_content_encoding'>default_content_encoding</span>
   <span class='ivar'>@default_content_encoding</span>
@@ -1519,12 +1591,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-547
-548
-549</pre>
+559
+560
+561</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 547</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 559</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_content_type'>default_content_type</span>
   <span class='ivar'>@default_content_type</span>
@@ -1560,12 +1632,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-543
-544
-545</pre>
+555
+556
+557</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 543</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 555</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strict_coding'>strict_coding</span>
   <span class='ivar'>@strict_coding</span>
@@ -1649,13 +1721,13 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-510
-511
-512
-513</pre>
+522
+523
+524
+525</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 510</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 522</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_configure'>configure</span>
   <span class='kw'>yield</span> <span class='ivar'>@config</span> <span class='kw'>if</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1773,14 +1845,14 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-360
-361
-362
-363
-364</pre>
+372
+373
+374
+375
+376</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 360</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 372</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_bind'>bind</span><span class='lparen'>(</span><span class='label'>queue:</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -1844,13 +1916,13 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-64
-65
-66
-67</pre>
+78
+79
+80
+81</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 64</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="Client/Connection.html" title="AMQP::Client::Connection (class)">Connection</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Client/Connection.html#initialize-instance_method" title="AMQP::Client::Connection#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@uri</span><span class='comma'>,</span> <span class='label'>read_loop_thread:</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='ivar'>@name</span><span class='comma'>,</span>
@@ -1909,12 +1981,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-215
-216
-217</pre>
+224
+225
+226</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 215</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 224</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_exchange'>default_exchange</span><span class='lparen'>(</span><span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_direct'>direct</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -1979,16 +2051,16 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-430
-431
-432
-433
-434
-435
-436</pre>
+442
+443
+444
+445
+446
+447
+448</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 430</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 442</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_exchange'>delete_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2092,16 +2164,16 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-392
-393
-394
-395
-396
-397
-398</pre>
+404
+405
+406
+407
+408
+409
+410</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 392</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 404</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_queue'>delete_queue</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>if_unused:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>if_empty:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2183,17 +2255,17 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-199
-200
-201
-202
-203
-204
-205
-206</pre>
+208
+209
+210
+211
+212
+213
+214
+215</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 199</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 208</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_direct_exchange'>direct_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.direct</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>direct</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -2351,17 +2423,17 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-186
-187
-188
-189
-190
-191
-192
-193</pre>
+195
+196
+197
+198
+199
+200
+201
+202</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 186</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 195</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>internal:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='ivar'>@exchanges</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span> <span class='kw'>do</span>
@@ -2477,14 +2549,14 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-409
-410
-411
-412
-413</pre>
+421
+422
+423
+424
+425</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 409</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 421</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange_bind'>exchange_bind</span><span class='lparen'>(</span><span class='label'>source:</span><span class='comma'>,</span> <span class='label'>destination:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2597,14 +2669,14 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-421
-422
-423
-424
-425</pre>
+433
+434
+435
+436
+437</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 421</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 433</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exchange_unbind'>exchange_unbind</span><span class='lparen'>(</span><span class='label'>source:</span><span class='comma'>,</span> <span class='label'>destination:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2684,12 +2756,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-227
-228
-229</pre>
+236
+237
+238</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 227</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 236</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fanout_exchange'>fanout_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.fanout</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>fanout</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -2773,16 +2845,16 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-346
-347
-348
-349
-350
-351
-352</pre>
+358
+359
+360
+361
+362
+363
+364</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 346</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 358</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -2864,12 +2936,12 @@ written to stderr via Kernel#warn for backwards compatibility.</p></div>
       <pre class="lines">
 
 
-251
-252
-253</pre>
+260
+261
+262</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 251</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 260</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_headers_exchange'>headers_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.headers</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>headers</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -3185,20 +3257,20 @@ will be encoded if any matching codec is found in the client's codec registry</p
       <pre class="lines">
 
 
-273
-274
-275
-276
-277
-278
-279
-280
-281
 282
-283</pre>
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 273</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 282</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_publish'>publish</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>routing_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -3520,17 +3592,17 @@ will be encoded if any matching codec is found in the client's codec registry</p
       <pre class="lines">
 
 
-292
-293
-294
-295
-296
-297
-298
-299</pre>
+301
+302
+303
+304
+305
+306
+307
+308</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 292</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 301</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_publish_and_forget'>publish_and_forget</span><span class='lparen'>(</span><span class='id identifier rubyid_body'>body</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>routing_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -3600,14 +3672,14 @@ will be encoded if any matching codec is found in the client's codec registry</p
       <pre class="lines">
 
 
-381
-382
-383
-384
-385</pre>
+393
+394
+395
+396
+397</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 381</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 393</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_purge'>purge</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -3653,12 +3725,12 @@ will be encoded if any matching codec is found in the client's codec registry</p
         <span class='name'>name</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
       
       
       
         &mdash;
-        <div class='inline'><p>Name of the queue</p></div>
+        <div class='inline'><p>Name of the queue. Pass nil or &quot;&quot; for a server-named queue.</p></div>
       
     </li>
   
@@ -3759,19 +3831,6 @@ messages in the queue will only survive if they are published as persistent</p><
     </li>
   
 </ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
 
 </div><table class="source_code">
   <tr>
@@ -3779,22 +3838,32 @@ messages in the queue will only survive if they are published as persistent</p><
       <pre class="lines">
 
 
-163
-164
-165
-166
 167
 168
 169
 170
 171
-172</pre>
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 163</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 167</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_queue'>queue</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>exclusive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>passive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Currently only supports named, durable queues</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_server_named_queue?'>server_named_queue?</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_queue_ok'>queue_ok</span> <span class='op'>=</span> <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
+      <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_channel'>channel</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_queue_declare'>queue_declare</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>durable:</span><span class='comma'>,</span> <span class='label'>auto_delete:</span><span class='comma'>,</span> <span class='label'>exclusive:</span><span class='comma'>,</span> <span class='label'>passive:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="Client/Queue.html" title="AMQP::Client::Queue (class)">Queue</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_queue_ok'>queue_ok</span><span class='period'>.</span><span class='id identifier rubyid_queue_name'>queue_name</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 
   <span class='ivar'>@queues</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span> <span class='kw'>do</span>
     <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -4092,23 +4161,23 @@ messages in the queue will only survive if they are published as persistent</p><
       <pre class="lines">
 
 
-476
-477
-478
-479
-480
-481
-482
-483
-484
-485
-486
-487
 488
-489</pre>
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 476</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 488</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rpc_call'>rpc_call</span><span class='lparen'>(</span><span class='id identifier rubyid_method'>method</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_properties'>properties</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_with_connection'>with_connection</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:channel</span><span class='rparen'>)</span>
@@ -4166,13 +4235,13 @@ messages in the queue will only survive if they are published as persistent</p><
       <pre class="lines">
 
 
-493
-494
-495
-496</pre>
+505
+506
+507
+508</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 493</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 505</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rpc_client'>rpc_client</span>
   <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_with_connection'>with_connection</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:channel</span><span class='rparen'>)</span>
@@ -4356,25 +4425,25 @@ messages in the queue will only survive if they are published as persistent</p><
       <pre class="lines">
 
 
-452
-453
-454
-455
-456
-457
-458
-459
-460
-461
-462
-463
 464
 465
 466
-467</pre>
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 452</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 464</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rpc_server'>rpc_server</span><span class='lparen'>(</span><span class='id identifier rubyid_method'>method</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>durable:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>auto_delete:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid__'>_</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_queue'>queue</span><span class='lparen'>(</span><span class='id identifier rubyid_method'>method</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='comma'>,</span> <span class='label'>durable:</span><span class='comma'>,</span> <span class='label'>auto_delete:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='rparen'>)</span>
@@ -4444,20 +4513,6 @@ messages in the queue will only survive if they are published as persistent</p><
       <pre class="lines">
 
 
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
 89
 90
 91
@@ -4494,10 +4549,14 @@ messages in the queue will only survive if they are published as persistent</p><
 122
 123
 124
-125</pre>
+125
+126
+127
+128
+129</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 89</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_start'>start</span>
   <span class='kw'>return</span> <span class='kw'>self</span> <span class='kw'>if</span> <span class='id identifier rubyid_started?'>started?</span>
@@ -4509,36 +4568,26 @@ messages in the queue will only survive if they are published as persistent</p><
     <span class='ivar'>@stopped</span> <span class='op'>=</span> <span class='kw'>false</span>
     <span class='id identifier rubyid_initial_conn'>initial_conn</span> <span class='op'>=</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>false</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_log_lifecycle'>log_lifecycle</span><span class='lparen'>(</span><span class='symbol'>:info</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>connected</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_supervisor'>supervisor</span> <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_initial_conn'>initial_conn</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span> <span class='comment'># rubocop:disable Metrics/BlockLength
-</span>      <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='period'>.</span><span class='id identifier rubyid_abort_on_exception'>abort_on_exception</span> <span class='op'>=</span> <span class='kw'>true</span> <span class='comment'># Raising an unhandled exception is a bug
-</span>      <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span> <span class='comment'># rubocop:disable Metrics/BlockLength
-</span>        <span class='kw'>break</span> <span class='kw'>if</span> <span class='ivar'>@stopped</span>
+    <span class='id identifier rubyid_supervisor'>supervisor</span> <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_initial_conn'>initial_conn</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
+      <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='period'>.</span><span class='id identifier rubyid_abort_on_exception'>abort_on_exception</span> <span class='op'>=</span> <span class='kw'>true</span> <span class='comment'># Raising an unhandled exception is a bug
+</span>      <span class='id identifier rubyid_reconnect_attempts'>reconnect_attempts</span> <span class='op'>=</span> <span class='int'>0</span>
+      <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
+        <span class='kw'>break</span> <span class='kw'>if</span> <span class='ivar'>@stopped</span>
 
         <span class='kw'>unless</span> <span class='id identifier rubyid_conn'>conn</span>
           <span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='label'>read_loop_thread:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_reconnect_attempts'>reconnect_attempts</span> <span class='op'>=</span> <span class='int'>0</span>
           <span class='id identifier rubyid_log_lifecycle'>log_lifecycle</span><span class='lparen'>(</span><span class='symbol'>:info</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>reconnected</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
         <span class='kw'>end</span>
 
-        <span class='id identifier rubyid_setup'>setup</span> <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
-          <span class='comment'># restore connection in another thread, read_loop have to run
-</span>          <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_channel'>channel</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span> <span class='comment'># reserve channel 1 for publishes
-</span>          <span class='ivar'>@consumers</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_consumer'>consumer</span><span class='op'>|</span>
-            <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_channel'>channel</span>
-            <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_qos'>basic_qos</span><span class='lparen'>(</span><span class='id identifier rubyid_consumer'>consumer</span><span class='period'>.</span><span class='id identifier rubyid_prefetch'>prefetch</span><span class='rparen'>)</span>
-            <span class='id identifier rubyid_consume_ok'>consume_ok</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_consume'>basic_consume</span><span class='lparen'>(</span><span class='id identifier rubyid_consumer'>consumer</span><span class='period'>.</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span>
-                                          <span class='op'>**</span><span class='id identifier rubyid_consumer'>consumer</span><span class='period'>.</span><span class='id identifier rubyid_basic_consume_args'>basic_consume_args</span><span class='comma'>,</span>
-                                          <span class='op'>&amp;</span><span class='id identifier rubyid_consumer'>consumer</span><span class='period'>.</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
-            <span class='comment'># Update the consumer with new channel and consume_ok metadata
-</span>            <span class='id identifier rubyid_consumer'>consumer</span><span class='period'>.</span><span class='id identifier rubyid_update_consume_ok'>update_consume_ok</span><span class='lparen'>(</span><span class='id identifier rubyid_consume_ok'>consume_ok</span><span class='rparen'>)</span>
-          <span class='kw'>end</span>
-          <span class='ivar'>@connq</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_conn'>conn</span>
-          <span class='comment'># Remove consumers whose internal queues were already closed (e.g. cancelled during reconnect window)
-</span>          <span class='ivar'>@consumers</span><span class='period'>.</span><span class='id identifier rubyid_delete_if'>delete_if</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>|</span> <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_closed?'>closed?</span> <span class='rbrace'>}</span>
-        <span class='kw'>end</span>
+        <span class='id identifier rubyid_setup'>setup</span> <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_restore_connection'>restore_connection</span><span class='lparen'>(</span><span class='id identifier rubyid_conn'>conn</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
         <span class='id identifier rubyid_setup'>setup</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='id identifier rubyid_thread_name'>thread_name</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>reconnect_setup</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
         <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_read_loop'>read_loop</span> <span class='comment'># blocks until connection is closed, then reconnect
 </span>        <span class='id identifier rubyid_log_lifecycle'>log_lifecycle</span><span class='lparen'>(</span><span class='symbol'>:warn</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>disconnected</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
       <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="Client/Error.html" title="AMQP::Client::Error (class)">Error</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
+        <span class='id identifier rubyid_reconnect_attempts'>reconnect_attempts</span> <span class='op'>+=</span> <span class='int'>1</span>
+        <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_give_up_reconnecting?'>give_up_reconnecting?</span><span class='lparen'>(</span><span class='id identifier rubyid_reconnect_attempts'>reconnect_attempts</span><span class='comma'>,</span> <span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span>
+
         <span class='id identifier rubyid_log_reconnect_error'>log_reconnect_error</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span>
         <span class='id identifier rubyid_sleep'>sleep</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:reconnect_interval</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='int'>1</span>
       <span class='kw'>ensure</span>
@@ -4595,12 +4644,12 @@ messages in the queue will only survive if they are published as persistent</p><
       <pre class="lines">
 
 
-142
-143
-144</pre>
+146
+147
+148</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 142</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 146</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_started?'>started?</span>
   <span class='ivar'>@supervisor_started</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@stopped</span>
@@ -4647,19 +4696,19 @@ messages in the queue will only survive if they are published as persistent</p><
       <pre class="lines">
 
 
-129
-130
-131
-132
 133
 134
 135
 136
 137
-138</pre>
+138
+139
+140
+141
+142</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 129</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 133</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_stop'>stop</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@stopped</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@supervisor_started</span>
@@ -4679,7 +4728,7 @@ messages in the queue will only survive if they are published as persistent</p><
       <div class="method_details ">
   <h3 class="signature " id="subscribe-instance_method">
   
-    #<strong>subscribe</strong>(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1, on_cancel: nil, arguments: {}) {|Message| ... } &#x21d2; <tt><span class='object_link'><a href="Client/Consumer.html" title="AMQP::Client::Consumer (class)">Consumer</a></span></tt> 
+    #<strong>subscribe</strong>(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1, on_cancel: nil, arguments: {}, consumer_tag: nil) {|Message| ... } &#x21d2; <tt><span class='object_link'><a href="Client/Consumer.html" title="AMQP::Client::Consumer (class)">Consumer</a></span></tt> 
   
 
   
@@ -4790,6 +4839,22 @@ The proc will be called with the consumer tag as the only argument</p></div>
       
     </li>
   
+    <li>
+      
+        <span class='name'>consumer_tag</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>Custom consumer tag. Pass nil or &quot;&quot; to let the broker generate one.</p></div>
+      
+    </li>
+  
 </ul>
 
 <p class="tag_title">Yields:</p>
@@ -4844,16 +4909,6 @@ The proc will be called with the consumer tag as the only argument</p></div>
       <pre class="lines">
 
 
-321
-322
-323
-324
-325
-326
-327
-328
-329
-330
 331
 332
 333
@@ -4863,13 +4918,25 @@ The proc will be called with the consumer tag as the only argument</p></div>
 337
 338
 339
-340</pre>
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 321</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 331</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_subscribe'>subscribe</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='label'>exclusive:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>no_ack:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>prefetch:</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>worker_threads:</span> <span class='int'>1</span><span class='comma'>,</span>
-              <span class='label'>on_cancel:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
+              <span class='label'>on_cancel:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>consumer_tag:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>worker_threads have to be &gt; 0</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_worker_threads'>worker_threads</span> <span class='op'>&lt;=</span> <span class='int'>0</span>
 
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -4880,7 +4947,9 @@ The proc will be called with the consumer tag as the only argument</p></div>
       <span class='ivar'>@consumers</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_consumer_id'>consumer_id</span><span class='rparen'>)</span>
       <span class='id identifier rubyid_on_cancel'>on_cancel</span><span class='op'>&amp;.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_tag'>tag</span><span class='rparen'>)</span>
     <span class='kw'>end</span>
-    <span class='id identifier rubyid_basic_consume_args'>basic_consume_args</span> <span class='op'>=</span> <span class='lbrace'>{</span> <span class='label'>exclusive:</span><span class='comma'>,</span> <span class='label'>no_ack:</span><span class='comma'>,</span> <span class='label'>worker_threads:</span><span class='comma'>,</span> <span class='label'>on_cancel:</span> <span class='id identifier rubyid_on_cancel_proc'>on_cancel_proc</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_tag'>tag</span> <span class='op'>=</span> <span class='id identifier rubyid_consumer_tag'>consumer_tag</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span> <span class='op'>:</span> <span class='id identifier rubyid_consumer_tag'>consumer_tag</span>
+    <span class='id identifier rubyid_basic_consume_args'>basic_consume_args</span> <span class='op'>=</span> <span class='lbrace'>{</span> <span class='label'>tag:</span><span class='comma'>,</span> <span class='label'>exclusive:</span><span class='comma'>,</span> <span class='label'>no_ack:</span><span class='comma'>,</span> <span class='label'>worker_threads:</span><span class='comma'>,</span>
+                           <span class='label'>on_cancel:</span> <span class='id identifier rubyid_on_cancel_proc'>on_cancel_proc</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='rbrace'>}</span>
     <span class='id identifier rubyid_consume_ok'>consume_ok</span> <span class='op'>=</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_basic_consume'>basic_consume</span><span class='lparen'>(</span><span class='id identifier rubyid_queue'>queue</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_basic_consume_args'>basic_consume_args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_blk'>blk</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_consumer'>consumer</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Client/Consumer.html" title="AMQP::Client::Consumer (class)">Consumer</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>client:</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='label'>channel_id:</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='label'>id:</span> <span class='id identifier rubyid_consumer_id'>consumer_id</span><span class='comma'>,</span> <span class='label'>block:</span> <span class='id identifier rubyid_blk'>blk</span><span class='comma'>,</span>
                             <span class='label'>queue:</span><span class='comma'>,</span> <span class='label'>consume_ok:</span><span class='comma'>,</span> <span class='label'>prefetch:</span><span class='comma'>,</span> <span class='label'>basic_consume_args:</span><span class='rparen'>)</span>
@@ -4961,12 +5030,12 @@ The proc will be called with the consumer tag as the only argument</p></div>
       <pre class="lines">
 
 
-239
-240
-241</pre>
+248
+249
+250</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 239</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 248</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_topic_exchange'>topic_exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>amq.topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_exchange'>exchange</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>topic</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>**</span><span class='rparen'>)</span>
@@ -5077,14 +5146,14 @@ The proc will be called with the consumer tag as the only argument</p></div>
       <pre class="lines">
 
 
-372
-373
-374
-375
-376</pre>
+384
+385
+386
+387
+388</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 372</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 384</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unbind'>unbind</span><span class='lparen'>(</span><span class='label'>queue:</span><span class='comma'>,</span> <span class='label'>exchange:</span><span class='comma'>,</span> <span class='label'>binding_key:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -5136,14 +5205,14 @@ The proc will be called with the consumer tag as the only argument</p></div>
       <pre class="lines">
 
 
-303
-304
-305
-306
-307</pre>
+312
+313
+314
+315
+316</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 303</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 312</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait_for_confirms'>wait_for_confirms</span>
   <span class='id identifier rubyid_with_connection'>with_connection</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_conn'>conn</span><span class='op'>|</span>
@@ -5170,25 +5239,29 @@ The proc will be called with the consumer tag as the only argument</p></div>
       <pre class="lines">
 
 
-555
-556
-557
-558
-559
-560
-561
-562
-563
-564
-565
-566
 567
-568</pre>
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 555</span>
+      <pre class="code"><span class="info file"># File 'lib/amqp/client.rb', line 567</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_connection'>with_connection</span>
+  <span class='kw'>return</span> <span class='kw'>yield</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='id identifier rubyid_reserved_conn_key'>reserved_conn_key</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='id identifier rubyid_reserved_conn_key'>reserved_conn_key</span><span class='rbracket'>]</span>
+
   <span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='kw'>nil</span>
   <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
     <span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='ivar'>@connq</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
@@ -5212,9 +5285,9 @@ The proc will be called with the consumer tag as the only argument</p></div>
 </div>
 
       <div id="footer">
-  Generated on Tue Jun 23 15:16:12 2026 by
+  Generated on Mon Aug 31 09:27:18 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.44 (ruby-4.0.5).
+  0.9.45 (ruby-4.0.6).
 </div>
 
     </div>

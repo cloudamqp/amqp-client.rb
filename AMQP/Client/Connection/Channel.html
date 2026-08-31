@@ -6,7 +6,7 @@
 <title>
   Class: AMQP::Client::Connection::Channel
   
-    &mdash; Documentation by YARD 0.9.44
+    &mdash; Documentation by YARD 0.9.45
   
 </title>
 
@@ -124,86 +124,6 @@
 
 
 
-
-  <h2>Basic <small><a href="#" class="summary_toggle">collapse</a></small></h2>
-  <ul class="summary">
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#channel_id-instance_method" title="#channel_id (instance method)">#<strong>channel_id</strong>  &#x21d2; Integer </a>
-    
-
-    
-  </span>
-  
-  
-  
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>The channel ID.</p></div></span>
-  
-</li>
-
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#consumer_tag-instance_method" title="#consumer_tag (instance method)">#<strong>consumer_tag</strong>  &#x21d2; String </a>
-    
-
-    
-  </span>
-  
-  
-  
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>The consumer tag.</p></div></span>
-  
-</li>
-
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#worker_threads-instance_method" title="#worker_threads (instance method)">#<strong>worker_threads</strong>  &#x21d2; Array&lt;Thread&gt; </a>
-    
-
-    
-  </span>
-  
-  
-  
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Array of worker threads.</p></div></span>
-  
-</li>
-
-    
-  </ul>
 
   <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
   <ul class="summary">
@@ -928,62 +848,9 @@
     <h2>Instance Attribute Details</h2>
     
       
-      <span id="channel_id=-instance_method"></span>
-      <div class="method_details first">
-  <h3 class="signature first" id="channel_id-instance_method">
-  
-    #<strong>channel_id</strong>  &#x21d2; <tt>Integer</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Returns The channel ID.</p>
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>The channel ID</p></div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-324</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 324</span>
-
-<span class='const'><span class='object_link'><a href="Channel/ConsumeOk.html" title="AMQP::Client::Connection::Channel::ConsumeOk (class)">ConsumeOk</a></span></span> <span class='op'>=</span> <span class='const'>Data</span><span class='period'>.</span><span class='id identifier rubyid_define'>define</span><span class='lparen'>(</span><span class='symbol'>:channel_id</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='comma'>,</span> <span class='symbol'>:worker_threads</span><span class='comma'>,</span> <span class='symbol'>:msg_q</span><span class='comma'>,</span> <span class='symbol'>:on_cancel</span><span class='rparen'>)</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      
       <span id=""></span>
-      <div class="method_details ">
-  <h3 class="signature " id="connection-instance_method">
+      <div class="method_details first">
+  <h3 class="signature first" id="connection-instance_method">
   
     #<strong>connection</strong>  &#x21d2; <tt><span class='object_link'><a href="../Connection.html" title="AMQP::Client::Connection (class)">Connection</a></span></tt>  <span class="extras">(readonly)</span>
   
@@ -1029,59 +896,6 @@
 <span class='kw'>def</span> <span class='id identifier rubyid_connection'>connection</span>
   <span class='ivar'>@connection</span>
 <span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      
-      <span id="consumer_tag=-instance_method"></span>
-      <div class="method_details ">
-  <h3 class="signature " id="consumer_tag-instance_method">
-  
-    #<strong>consumer_tag</strong>  &#x21d2; <tt>String</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Returns The consumer tag.</p>
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>The consumer tag</p></div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-324</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 324</span>
-
-<span class='const'><span class='object_link'><a href="Channel/ConsumeOk.html" title="AMQP::Client::Connection::Channel::ConsumeOk (class)">ConsumeOk</a></span></span> <span class='op'>=</span> <span class='const'>Data</span><span class='period'>.</span><span class='id identifier rubyid_define'>define</span><span class='lparen'>(</span><span class='symbol'>:channel_id</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='comma'>,</span> <span class='symbol'>:worker_threads</span><span class='comma'>,</span> <span class='symbol'>:msg_q</span><span class='comma'>,</span> <span class='symbol'>:on_cancel</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -1136,59 +950,6 @@
 <span class='kw'>def</span> <span class='id identifier rubyid_id'>id</span>
   <span class='ivar'>@id</span>
 <span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      
-      <span id="worker_threads=-instance_method"></span>
-      <div class="method_details ">
-  <h3 class="signature " id="worker_threads-instance_method">
-  
-    #<strong>worker_threads</strong>  &#x21d2; <tt>Array&lt;Thread&gt;</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Returns Array of worker threads.</p>
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Array&lt;Thread&gt;</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>Array of worker threads</p></div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-324</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/amqp/client/channel.rb', line 324</span>
-
-<span class='const'><span class='object_link'><a href="Channel/ConsumeOk.html" title="AMQP::Client::Connection::Channel::ConsumeOk (class)">ConsumeOk</a></span></span> <span class='op'>=</span> <span class='const'>Data</span><span class='period'>.</span><span class='id identifier rubyid_define'>define</span><span class='lparen'>(</span><span class='symbol'>:channel_id</span><span class='comma'>,</span> <span class='symbol'>:consumer_tag</span><span class='comma'>,</span> <span class='symbol'>:worker_threads</span><span class='comma'>,</span> <span class='symbol'>:msg_q</span><span class='comma'>,</span> <span class='symbol'>:on_cancel</span><span class='rparen'>)</span></pre>
     </td>
   </tr>
 </table>
@@ -4594,9 +4355,9 @@ messages in the queue will only survive if they are published as persistent</p><
 </div>
 
       <div id="footer">
-  Generated on Tue Jun 23 15:16:13 2026 by
+  Generated on Mon Aug 31 09:27:19 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.44 (ruby-4.0.5).
+  0.9.45 (ruby-4.0.6).
 </div>
 
     </div>

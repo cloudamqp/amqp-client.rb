@@ -6,7 +6,7 @@
 <title>
   File: CHANGELOG
   
-    &mdash; Documentation by YARD 0.9.44
+    &mdash; Documentation by YARD 0.9.45
   
 </title>
 
@@ -60,6 +60,13 @@
       </div>
 
       <div id="content"><div id='filecontents'><h2 id="_Unreleased_">[Unreleased]</h2>
+<h2 id="_2_2_0____2026_08_31">[2.2.0] - 2026-08-31</h2>
+<ul>
+<li>Added: <code>Client#queue(nil)</code> and <code>Client#queue(&quot;&quot;)</code> declare a server-named queue and return a <code>Queue</code> with the broker-assigned name.</li>
+<li>Added: <code>consumer_tag:</code> keyword argument on <code>Client#subscribe</code> and <code>Queue#subscribe</code>; pass nil or &quot;&quot; to let the broker generate the tag.</li>
+<li>Added: <code>on_connect:</code> constructor option for <code>AMQP::Client</code>. The callback runs with the client after each successful supervised connection or reconnection, after consumer recovery.</li>
+<li>Added: <code>max_retries:</code> and <code>on_failed:</code> constructor options for <code>AMQP::Client</code>. When <code>max_retries:</code> is set, the supervisor gives up and calls <code>on_failed:</code> with the triggering error after that many consecutive failed reconnect attempts, instead of retrying forever.</li>
+</ul>
 <h2 id="_2_1_0____2026_06_23">[2.1.0] - 2026-06-23</h2>
 <ul>
 <li>Changed: Dropped support for Ruby 3.2 (now requires Ruby &gt;= 3.3).</li>
@@ -224,9 +231,9 @@
 </ul></div></div>
 
       <div id="footer">
-  Generated on Tue Jun 23 15:16:12 2026 by
+  Generated on Mon Aug 31 09:27:17 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.44 (ruby-4.0.5).
+  0.9.45 (ruby-4.0.6).
 </div>
 
     </div>
