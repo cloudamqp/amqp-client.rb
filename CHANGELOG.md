@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [2.2.0] - 2026-08-31
+
 - Added: `Client#queue(nil)` and `Client#queue("")` declare a server-named queue and return a `Queue` with the broker-assigned name.
 - Added: `consumer_tag:` keyword argument on `Client#subscribe` and `Queue#subscribe`; pass nil or "" to let the broker generate the tag.
 - Added: `on_connect:` constructor option for `AMQP::Client`. The callback runs with the client after each successful supervised connection or reconnection, after consumer recovery.
