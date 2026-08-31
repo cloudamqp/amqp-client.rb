@@ -567,8 +567,11 @@ class AMQPClientLifecycleTest < Minitest::Test
   def test_it_can_update_secret
     @connection.update_secret "secret", reason: "testing"
   rescue AMQP::Client::Error::ConnectionClosed => e
-    # LavinMQ only supports update-secret with the OAuth2 authentication mechanism
-    skip "Broker requires OAuth2 for update-secret" if e.message.include?("update-secret not supported")
+    # LavinMQ only supports update-secret with the OAuth2 authentication mechanism. Newer versions
+    # close with a friendly ACCESS_REFUSED reason; older ones (< 2.9) don't recognize the frame at
+    # all and close with a bare UNEXPECTED_FRAME. Match on the culprit method (10/70 =
+    # Connection.UpdateSecret), which both close frames carry, instead of the reason text.
+    skip "Broker rejected update-secret" if e.message.end_with?("(10/70)")
     raise
   end
 
