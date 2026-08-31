@@ -1,1 +1,9 @@
---no-api - LICENSE.txt CHANGELOG.md
+--template default
+--template-path docs/yard-template
+--asset docs/yard-assets:lavinmq
+--title "AMQP::Client API"
+--no-api
+lib/**/*.rb
+-
+LICENSE.txt
+CHANGELOG.md
