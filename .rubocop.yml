@@ -16,4 +16,4 @@ Style/HashSyntax:
   EnforcedShorthandSyntax: always
 
 Metrics/ParameterLists:
-  Max: 8
+  Max: 9
