@@ -96,6 +96,9 @@ jobs:
       - name: Install LavinMQ
         run: |
           brew update
+          # lavinmq depends on openssl@4, which fails to take over the preinstalled
+          # openssl@3 links ("process has already locked .../openssl@3")
+          brew unlink openssl@3 || true
           brew install lavinmq
       - name: Start LavinMQ
         run: brew services start lavinmq
