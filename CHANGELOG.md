@@ -6,6 +6,7 @@
 - Fixed: Heartbeats are now sent by idle connections and by connections that only receive, e.g. a `no_ack` consumer. Received frames, including the broker's own heartbeats, counted as activity, so such a connection rarely or never sent heartbeats and could be closed by the broker for missing them
 - Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
 - Improved: The socket is read in 64 KiB chunks and frames are sliced out of that buffer, instead of three reads (header, payload, frame end) per frame
+- Improved: A message body that fits in one frame is copied out of the read buffer in one step, and larger bodies frame by frame, instead of going through a `StringIO`
 
 ## [2.2.0] - 2026-08-31
 

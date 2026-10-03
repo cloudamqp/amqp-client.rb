@@ -256,8 +256,11 @@ module AMQP
           frame_end = buf.getbyte(pos + 7 + frame_size)
           raise Error::UnexpectedFrameEnd, frame_end if frame_end != 206
 
-          # parse the frame, will return false if a close frame was received
-          parse_frame(type, channel_id, buf.byteslice(pos + 7, frame_size)) || return
+          if type == 3 # body, copied straight from the buffer into the message body
+            @channels[channel_id].body_delivered(buf, pos + 7, frame_size)
+          elsif !parse_frame(type, channel_id, buf.byteslice(pos + 7, frame_size))
+            return # a close frame was received
+          end
           pos += frame_size + 8
         end
         nil
@@ -478,8 +481,6 @@ module AMQP
           body_size = buf.unpack1("@4 Q>")
           properties = Properties.decode(buf, 12)
           channel.header_delivered body_size, properties
-        when 3 # body
-          channel.body_delivered buf
         when 8 # heartbeat
           handle_server_heartbeat(channel_id)
         else raise Error::UnsupportedFrameType, type
