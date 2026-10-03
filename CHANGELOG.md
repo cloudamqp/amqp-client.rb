@@ -1,6 +1,8 @@
 ## [Unreleased]
 
+- Added: `Consumer#active?`, false while a consumer waits for its queue or for a reconnect
 - Added: `Error::AccessRefused#exclusive_use?` and `Error::ChannelClosed#reason`
+- Fixed: consumers refused on reconnect because their queue is in exclusive use are retried every `reconnect_interval` instead of being dropped
 
 ## [2.2.0] - 2026-08-31
 
