@@ -576,6 +576,39 @@ class HighLevelTest < Minitest::Test
     consumer1.cancel
   end
 
+  def test_subscribe_retries_while_queue_has_exclusive_consumer
+    q = @client.queue("test.exclusive.retry")
+    client2 = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    consumer1 = client2.queue("test.exclusive.retry").subscribe(exclusive: true) { |_msg| nil }
+
+    # Release the queue while the second subscribe is still retrying
+    Thread.new do
+      sleep 1
+      consumer1.cancel
+    end
+
+    consumer2 = q.subscribe(exclusive: true, retries: 5) { |_msg| nil }
+
+    assert consumer2.tag
+    consumer2.cancel
+  ensure
+    client2&.stop
+    q&.delete
+  end
+
+  def test_subscribe_raises_when_retries_are_exhausted
+    q = @client.queue("test.exclusive.exhausted")
+    client2 = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    client2.queue("test.exclusive.exhausted").subscribe(exclusive: true) { |_msg| nil }
+
+    assert_raises(AMQP::Client::Error::AccessRefused) do
+      q.subscribe(exclusive: true, retries: 1) { |_msg| nil }
+    end
+  ensure
+    client2&.stop
+    q&.delete
+  end
+
   def test_subscribe_exclusive_parameter_passed_to_client
     q = @client.queue("test.exclusive.param", auto_delete: true)
     msgs = Queue.new

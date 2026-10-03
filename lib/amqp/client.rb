@@ -326,28 +326,41 @@ module AMQP
     #   The proc will be called with the consumer tag as the only argument
     # @param arguments [Hash] Custom arguments to the consumer
     # @param consumer_tag [String, nil] Custom consumer tag. Pass nil or "" to let the broker generate one.
+    # @param retries [Integer] How many times to retry if the queue already has an
+    #   exclusive consumer, waiting 1s between attempts (default: 0, no retries)
     # @yield [Message] Delivered message from the queue
     # @return [Consumer] The consumer object, which can be used to cancel the consumer
     def subscribe(queue, exclusive: false, no_ack: false, prefetch: 1, worker_threads: 1,
-                  on_cancel: nil, arguments: {}, consumer_tag: nil, &blk)
+                  on_cancel: nil, arguments: {}, consumer_tag: nil, retries: 0, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 
-      with_connection do |conn|
-        ch = conn.channel
-        ch.basic_qos(prefetch)
-        consumer_id = @next_consumer_id += 1
-        on_cancel_proc = proc do |tag|
-          @consumers.delete(consumer_id)
-          on_cancel&.call(tag)
+      attempts = 0
+      begin
+        with_connection do |conn|
+          ch = conn.channel
+          ch.basic_qos(prefetch)
+          consumer_id = @next_consumer_id += 1
+          on_cancel_proc = proc do |tag|
+            @consumers.delete(consumer_id)
+            on_cancel&.call(tag)
+          end
+          tag = consumer_tag.nil? ? "" : consumer_tag
+          basic_consume_args = { tag:, exclusive:, no_ack:, worker_threads:,
+                                 on_cancel: on_cancel_proc, arguments: }
+          consume_ok = ch.basic_consume(queue, **basic_consume_args, &blk)
+          consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, block: blk,
+                                  queue:, consume_ok:, prefetch:, basic_consume_args:)
+          @consumers[consumer_id] = consumer
+          consumer
         end
-        tag = consumer_tag.nil? ? "" : consumer_tag
-        basic_consume_args = { tag:, exclusive:, no_ack:, worker_threads:,
-                               on_cancel: on_cancel_proc, arguments: }
-        consume_ok = ch.basic_consume(queue, **basic_consume_args, &blk)
-        consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, block: blk,
-                                queue:, consume_ok:, prefetch:, basic_consume_args:)
-        @consumers[consumer_id] = consumer
-        consumer
+      rescue Error::AccessRefused
+        # The queue's exclusive consumer belongs to someone else, typically a
+        # process that is still shutting down. Nothing is registered yet, so the
+        # reconnect supervisor cannot recover this; retry here instead.
+        raise if (attempts += 1) > retries
+
+        sleep 1
+        retry
       end
     end
 
