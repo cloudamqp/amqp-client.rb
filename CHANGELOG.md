@@ -9,6 +9,7 @@
 - Improved: A message body that fits in one frame is copied out of the read buffer in one step, and larger bodies frame by frame, instead of going through a `StringIO`
 - Improved: Frames, message properties and header tables are decoded with fewer allocations, properties are skipped entirely when none are set
 - Improved: Acking, and any other single-frame write, is about 1.7x faster on CRuby. It is written with `write_nonblock`, which does not release the GVL, so the consumer no longer hands over to the read loop thread on every ack
+- Improved: Publishing writes the body as is, instead of first copying it into a body frame
 
 ## [2.2.0] - 2026-08-31
 
