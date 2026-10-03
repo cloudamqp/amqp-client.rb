@@ -247,7 +247,6 @@ module AMQP
 
           # parse the frame, will return false if a close frame was received
           parse_frame(type, channel_id, frame_buffer) || return
-          update_last_activity
         end
         nil
       rescue *READ_EXCEPTIONS => e
@@ -461,6 +460,8 @@ module AMQP
         true
       end
 
+      # Track the last write, heartbeats only have to be sent when nothing else is.
+      # Reads don't count, the broker only sees what the client sends.
       def update_last_activity
         return unless @heartbeat&.positive?
 

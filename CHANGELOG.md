@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 - Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
+- Fixed: Heartbeats are now sent by connections that only receive, e.g. a `no_ack` consumer. Received frames counted as activity, so such a connection never sent heartbeats and could be closed by the broker for missing them
 
 ## [2.2.0] - 2026-08-31
 
