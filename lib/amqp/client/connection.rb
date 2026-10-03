@@ -230,23 +230,35 @@ module AMQP
         Thread.current.priority += 1
         socket = @socket
         frame_max = @frame_max
-        frame_start = String.new(capacity: 7)
-        frame_buffer = String.new(capacity: frame_max)
+        # Read the socket in large chunks and slice frames out of the buffer,
+        # far fewer IO calls than reading each frame header, payload and end separately
+        buf_size = [READ_BUFFER_SIZE, frame_max + 8].max # always room for a whole frame
+        buf = String.new(capacity: buf_size, encoding: Encoding::BINARY)
+        chunk = String.new(capacity: buf_size, encoding: Encoding::BINARY)
+        pos = 0
         loop do
-          socket.read(7, frame_start) || raise(IOError)
-          type, channel_id, frame_size = frame_start.unpack("C S> L>")
+          if buf.bytesize - pos < 7
+            fill_read_buffer(socket, buf, pos, 7, buf_size, chunk)
+            pos = 0
+          end
+          type = buf.getbyte(pos)
+          channel_id = buf.unpack1("S>", offset: pos + 1)
+          frame_size = buf.unpack1("L>", offset: pos + 3)
           frame_max >= frame_size ||
             raise(Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}")
 
-          # read the frame content
-          socket.read(frame_size, frame_buffer) || raise(IOError)
+          if buf.bytesize - pos < frame_size + 8
+            fill_read_buffer(socket, buf, pos, frame_size + 8, buf_size, chunk)
+            pos = 0
+          end
 
           # make sure that the frame end is correct
-          frame_end = socket.readchar.ord
+          frame_end = buf.getbyte(pos + 7 + frame_size)
           raise Error::UnexpectedFrameEnd, frame_end if frame_end != 206
 
           # parse the frame, will return false if a close frame was received
-          parse_frame(type, channel_id, frame_buffer) || return
+          parse_frame(type, channel_id, buf.byteslice(pos + 7, frame_size)) || return
+          pos += frame_size + 8
         end
         nil
       rescue *READ_EXCEPTIONS => e
@@ -276,6 +288,21 @@ module AMQP
 
       READ_EXCEPTIONS = [IOError, OpenSSL::OpenSSLError, SystemCallError,
                          RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
+
+      READ_BUFFER_SIZE = 64 * 1024
+
+      # Move the unconsumed bytes, from pos, to the start of the buffer and read from
+      # the socket until at least min_bytes are buffered. The buffer is modified in
+      # place and never grows past buf_size, so it's never reallocated.
+      # @return [nil]
+      def fill_read_buffer(socket, buf, pos, min_bytes, buf_size, chunk)
+        buf.bytesplice(0, pos, "") if pos.positive?
+        while buf.bytesize < min_bytes
+          socket.readpartial(buf_size - buf.bytesize, chunk)
+          buf << chunk
+        end
+        nil
+      end
 
       def parse_frame(type, channel_id, buf) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
         channel = @channels[channel_id]
