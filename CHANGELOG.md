@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Added: `Error::AccessRefused#exclusive_use?` and `Error::ChannelClosed#reason`
+
 ## [2.2.0] - 2026-08-31
 
 - Added: `Client#queue(nil)` and `Client#queue("")` declare a server-named queue and return a `Queue` with the broker-assigned name.
