@@ -899,6 +899,11 @@ body:has(#full_list) {
     top: auto;
   }
 
+  .nav_wrap {
+    background: transparent;
+    border-right: 0;
+  }
+
   #nav {
     background: var(--lavin-panel-2);
     border-color: var(--lavin-stroke);
