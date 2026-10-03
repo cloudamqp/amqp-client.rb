@@ -213,7 +213,15 @@ module AMQP
       # @api private
       def write_bytes(*bytes)
         @write_lock.synchronize do
-          @socket.write(*bytes)
+          if bytes.size == 1 && GVL
+            # write_nonblock doesn't release the GVL, so unlike #write it doesn't hand over
+            # to the read loop thread on every write (e.g. acks), only block if the socket buffer is full
+            data = bytes.first
+            written = @socket.write_nonblock(data, exception: false)
+            @socket.write(written.is_a?(Integer) ? data.byteslice(written..) : data) if written != data.bytesize
+          else
+            @socket.write(*bytes) # writev, without copying the strings together
+          end
           update_last_activity
         end
       rescue *READ_EXCEPTIONS => e
@@ -293,6 +301,10 @@ module AMQP
                          RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
 
       READ_BUFFER_SIZE = 64 * 1024
+
+      # Only CRuby has a GVL to keep. On JRuby write_nonblock even deadlocks, switching
+      # the socket to non-blocking waits for the read loop's blocking read to finish.
+      GVL = RUBY_ENGINE == "ruby"
 
       # Move the unconsumed bytes, from pos, to the start of the buffer and read from
       # the socket until at least min_bytes are buffered. The buffer is modified in
