@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html <%= "lang=\"#{html_lang}\"" unless html_lang.nil? %>>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="<%= charset %>">
+    <script type="text/javascript">
+      (function () {
+        var theme = "light";
+
+        try {
+          theme = window.localStorage.getItem("lavinmq-docs-theme") ||
+            (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        } catch (_error) {}
+
+        document.documentElement.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
+      })();
+    </script>
+    <% stylesheets_full_list.each do |stylesheet| %>
+      <link rel="stylesheet" href="<%= mtime_url(stylesheet) %>" type="text/css" media="screen">
+    <% end %>
+    <% lavinmq_root = url_for(''); lavinmq_root += '/' unless lavinmq_root.empty? %>
+    <link rel="stylesheet" href="<%= lavinmq_root %>lavinmq/lavinmq-yard.css" type="text/css" media="screen">
+
+    <% javascripts_full_list.each do |javascript| %>
+      <script type="text/javascript" charset="utf-8" src="<%= mtime_url(javascript) %>"></script>
+    <% end %>
+    <script type="text/javascript" charset="utf-8" src="<%= lavinmq_root %>lavinmq/lavinmq-yard.js"></script>
+
+    <title><%= @list_title %></title>
+    <base id="base_target" target="_parent">
+  </head>
+  <body>
+    <div id="content">
+      <div class="fixed_header">
+        <h1 id="full_list_header"><%= @list_title %></h1>
+        <div id="full_list_nav">
+          <% menu_lists.each do |list| %>
+            <span><a target="_self" href="<%= url_for_list list[:type] %>">
+              <%= list[:title] %>
+            </a></span>
+          <% end %>
+        </div>
+
+        <div id="search">
+          <label for="search-class">Search:</label>
+          <input id="search-class" type="text">
+        </div>
+      </div>
+
+      <ul id="full_list" class="<%= @list_class || @list_type %>">
+        <%= erb "full_list_#{@list_type}" %>
+      </ul>
+    </div>
+  </body>
+</html>
