@@ -28,4 +28,15 @@ class AMQPBodyTest < Minitest::Test
       bodies.each { |body| assert_equal body, msgs.pop.body }
     end
   end
+
+  # Frames are binary, a body in another encoding still has to go out byte for byte
+  def test_it_can_publish_non_ascii_utf8_bodies
+    ch = @connection.channel
+    q = ch.queue_declare ""
+    body = "räksmörgås ✓"
+    ch.basic_publish body, exchange: "", routing_key: q.queue_name
+    msg = ch.basic_get(q.queue_name)
+
+    assert_equal body.b, msg.body
+  end
 end

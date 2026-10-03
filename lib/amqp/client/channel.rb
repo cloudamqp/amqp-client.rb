@@ -284,9 +284,9 @@ module AMQP
             end
           end
           if body.bytesize.between?(1, body_max)
-            write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
-                        FrameBytes.header(id, body.bytesize, properties),
-                        FrameBytes.body(id, body)
+            write_bytes FrameBytes.basic_publish_with_header(id, exchange, routing_key, mandatory,
+                                                             body.bytesize, properties),
+                        body, FrameBytes::FRAME_END
             return
           end
 
