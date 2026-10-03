@@ -4,6 +4,7 @@
 - Fixed: Heartbeats are now sent by connections that only receive, e.g. a `no_ack` consumer. Received frames counted as activity, so such a connection never sent heartbeats and could be closed by the broker for missing them
 - Improved: The socket is read in 64 KiB chunks and frames are sliced out of that buffer, instead of three reads (header, payload, frame end) per frame
 - Improved: A message body that fits in one frame is used as is, and larger bodies are copied straight from the read buffer, instead of going through a `StringIO`
+- Improved: Frames, message properties and header tables are decoded with fewer allocations, properties are skipped entirely when none are set
 
 ## [2.2.0] - 2026-08-31
 
