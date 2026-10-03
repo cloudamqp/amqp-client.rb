@@ -1,6 +1,8 @@
 (() => {
   const STORAGE_KEY = "lavinmq-docs-theme";
   const MESSAGE_TYPE = "lavinmq-docs-theme";
+  // YARD shows the nav as a dropdown below this width (see style.css).
+  const MOBILE_NAV_QUERY = "(max-width: 920px)";
 
   function preferredTheme() {
     try {
@@ -109,6 +111,45 @@
     client.querySelectorAll("li").forEach(collapseItem);
   }
 
+  function mobileNavOpen() {
+    const nav = document.getElementById("nav");
+
+    return (
+      window.matchMedia(MOBILE_NAV_QUERY).matches &&
+      nav?.style.display === "block"
+    );
+  }
+
+  function closeMobileNav() {
+    document.getElementById("nav")?.removeAttribute("style");
+    document.querySelectorAll("#search a").forEach((link) => {
+      link.classList.remove("active", "inactive");
+    });
+  }
+
+  function openMobileNav(link) {
+    document.getElementById("nav").style.display = "block";
+    link.classList.add("active");
+  }
+
+  // Replaces YARD's toggle, which only closes while the frame keeps the src it
+  // was opened with, and is never rebound after in-page navigation because
+  // the copied header keeps YARD's "bound" marker.
+  function toggleMobileNav(event) {
+    const link = event.target.closest(".full_list_link");
+
+    if (!link || !window.matchMedia(MOBILE_NAV_QUERY).matches) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (mobileNavOpen()) {
+      closeMobileNav();
+    } else {
+      openMobileNav(link);
+    }
+  }
+
   function ready(callback) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", callback, { once: true });
@@ -126,8 +167,12 @@
       applyTheme(event.data.theme, { store: false });
     } else if (event.data?.action === "expand") {
       setTimeout(expandClientNamespace, 0);
+    } else if (event.data?.action === "navigate" && mobileNavOpen()) {
+      closeMobileNav();
     }
   });
+
+  document.addEventListener("click", toggleMobileNav, true);
 
   window.addEventListener("storage", (event) => {
     if (event.key === STORAGE_KEY && event.newValue) {
