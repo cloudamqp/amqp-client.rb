@@ -7,6 +7,7 @@
 - Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
 - Improved: The socket is read in 64 KiB chunks and frames are sliced out of that buffer, instead of three reads (header, payload, frame end) per frame
 - Improved: A message body that fits in one frame is copied out of the read buffer in one step, and larger bodies frame by frame, instead of going through a `StringIO`
+- Improved: Frames, message properties and header tables are decoded with fewer allocations, properties are skipped entirely when none are set
 
 ## [2.2.0] - 2026-08-31
 

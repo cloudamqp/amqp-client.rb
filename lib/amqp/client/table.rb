@@ -23,14 +23,17 @@ module AMQP
       end
 
       # Decodes an AMQP table into a hash
+      # @param bytes [String] Byte array the table is part of
+      # @param pos [Integer] Position where the table starts
+      # @param len [Integer] Length of the table
       # @return [Hash<String, Object>]
-      def self.decode(bytes)
+      def self.decode(bytes, pos = 0, len = bytes.bytesize - pos)
         hash = {}
-        pos = 0
-        while pos < bytes.bytesize
+        table_end = pos + len
+        while pos < table_end
           key_len = bytes.getbyte(pos)
           pos += 1
-          key = bytes.byteslice(pos, key_len).force_encoding("utf-8")
+          key = bytes.byteslice(pos, key_len).force_encoding(Encoding::UTF_8).freeze # Hash won't have to dup it
           pos += key_len
           len, value = decode_field(bytes, pos)
           pos += len + 1
@@ -90,19 +93,19 @@ module AMQP
       # @return [Array<Integer, Object>] Bytes read and the parsed value
       # @api private
       def self.decode_field(bytes, pos)
-        type = bytes[pos]
+        type = bytes.getbyte(pos)
         pos += 1
-        case type
-        when "S"
-          len = bytes.byteslice(pos, 4).unpack1("L>")
+        case type # matched by byte value, avoids allocating a string per field
+        when 83 # "S" long string
+          len = bytes.unpack1("L>", offset: pos)
           pos += 4
-          [4 + len, bytes.byteslice(pos, len).force_encoding("utf-8")]
-        when "F"
-          len = bytes.byteslice(pos, 4).unpack1("L>")
+          [4 + len, bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)]
+        when 70 # "F" nested table
+          len = bytes.unpack1("L>", offset: pos)
           pos += 4
-          [4 + len, decode(bytes.byteslice(pos, len))]
-        when "A"
-          len = bytes.byteslice(pos, 4).unpack1("L>")
+          [4 + len, decode(bytes, pos, len)]
+        when 65 # "A" array
+          len = bytes.unpack1("L>", offset: pos)
           pos += 4
           array_end = pos + len
           a = []
@@ -112,40 +115,40 @@ module AMQP
             a << value
           end
           [4 + len, a]
-        when "t"
+        when 116 # "t" boolean
           [1, bytes.getbyte(pos) == 1]
-        when "b"
-          [1, bytes.byteslice(pos, 1).unpack1("c")]
-        when "B"
-          [1, bytes.byteslice(pos, 1).unpack1("C")]
-        when "s"
-          [2, bytes.byteslice(pos, 2).unpack1("s>")]
-        when "u"
-          [2, bytes.byteslice(pos, 2).unpack1("S>")]
-        when "I"
-          [4, bytes.byteslice(pos, 4).unpack1("l>")]
-        when "i"
-          [4, bytes.byteslice(pos, 4).unpack1("L>")]
-        when "l"
-          [8, bytes.byteslice(pos, 8).unpack1("q>")]
-        when "f"
-          [4, bytes.byteslice(pos, 4).unpack1("g")]
-        when "d"
-          [8, bytes.byteslice(pos, 8).unpack1("G")]
-        when "D"
+        when 98 # "b" signed 8-bit
+          [1, bytes.unpack1("c", offset: pos)]
+        when 66 # "B" unsigned 8-bit
+          [1, bytes.unpack1("C", offset: pos)]
+        when 115 # "s" signed 16-bit
+          [2, bytes.unpack1("s>", offset: pos)]
+        when 117 # "u" unsigned 16-bit
+          [2, bytes.unpack1("S>", offset: pos)]
+        when 73 # "I" signed 32-bit
+          [4, bytes.unpack1("l>", offset: pos)]
+        when 105 # "i" unsigned 32-bit
+          [4, bytes.unpack1("L>", offset: pos)]
+        when 108 # "l" signed 64-bit
+          [8, bytes.unpack1("q>", offset: pos)]
+        when 102 # "f" float
+          [4, bytes.unpack1("g", offset: pos)]
+        when 100 # "d" double
+          [8, bytes.unpack1("G", offset: pos)]
+        when 68 # "D" decimal
           scale = bytes.getbyte(pos)
           pos += 1
-          value = bytes.byteslice(pos, 4).unpack1("L>")
+          value = bytes.unpack1("L>", offset: pos)
           d = value / (10**scale)
           [5, d]
-        when "x"
-          len = bytes.byteslice(pos, 4).unpack1("L>")
+        when 120 # "x" byte array
+          len = bytes.unpack1("L>", offset: pos)
           [4 + len, bytes.byteslice(pos + 4, len)]
-        when "T"
-          [8, Time.at(bytes.byteslice(pos, 8).unpack1("Q>"))]
-        when "V"
+        when 84 # "T" timestamp
+          [8, Time.at(bytes.unpack1("Q>", offset: pos))]
+        when 86 # "V" void
           [0, nil]
-        else raise ArgumentError, "unsupported table field type: #{type}"
+        else raise ArgumentError, "unsupported table field type: #{type&.chr}"
         end
       end
     end
