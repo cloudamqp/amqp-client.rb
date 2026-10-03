@@ -831,8 +831,13 @@ body:has(#full_list) {
 }
 
 #full_list li.clicked > .item a,
-#full_list li.clicked > .item a:visited {
-  color: #fff;
+#full_list li.clicked > .item a:visited,
+#full_list li.clicked > .item small {
+  color: inherit;
+}
+
+[data-theme="dark"] #full_list li.clicked > .item {
+  color: #141414;
 }
 
 #full_list li a.toggle,
