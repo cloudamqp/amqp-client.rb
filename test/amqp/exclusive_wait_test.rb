@@ -21,6 +21,29 @@ class ExclusiveWaitTest < Minitest::Test
     @holder.stop
   end
 
+  def test_subscribe_waits_until_queue_is_released
+    holding = @queue.subscribe(exclusive: true) { |_msg| nil }
+    waiting = @client.queue(QUEUE).subscribe(exclusive: :wait) { |msg| @msgs << msg }
+
+    refute_predicate waiting, :active?
+
+    holding.cancel
+    @queue.publish("after release")
+
+    assert_equal "after release", @msgs.pop(timeout: 5)&.body
+    assert_predicate waiting, :active?
+  end
+
+  def test_waiting_consumer_can_be_cancelled
+    @queue.subscribe(exclusive: true) { |_msg| nil }
+    waiting = @client.queue(QUEUE).subscribe(exclusive: :wait) { |msg| @msgs << msg }
+
+    waiting.cancel
+
+    assert_predicate waiting, :closed?
+    refute_includes @client.instance_variable_get(:@consumers).values, waiting
+  end
+
   def test_consumer_refused_on_reconnect_waits_until_queue_is_released
     restored = Queue.new
     @client.stop

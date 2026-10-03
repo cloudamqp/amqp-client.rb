@@ -41,7 +41,9 @@ module AMQP
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
       #   an exception, the message is rejected and can be optionally requeued.
       #   You can of course handle the ack/reject in the block yourself. (Default: false)
-      # @param exclusive [Boolean] When true only a single consumer can consume from the queue at a time
+      # @param exclusive [Boolean, :wait] When true only a single consumer can consume from the queue at a time.
+      #   With :wait, a queue already in exclusive use returns an inactive consumer that subscribes once
+      #   the queue is released, instead of raising. See {Client#subscribe}
       # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
       # @param worker_threads [Integer] Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked

@@ -98,6 +98,22 @@ amqp = AMQP::Client.new("amqp://localhost",
   on_failed: ->(err) { logger.error("AMQP gave up reconnecting: #{err}") }).start
 ```
 
+#### Exclusive consumers
+
+Subscribing with `exclusive: true` raises `AMQP::Client::Error::AccessRefused`
+if the queue is already in exclusive use. Pass `exclusive: :wait` to get an
+inactive consumer instead, which subscribes once the queue is released, e.g.
+when the previous process of a rolling deploy shuts down:
+
+```ruby
+consumer = amqp.queue("jobs").subscribe(exclusive: :wait) { |msg| process(msg) }
+consumer.active? # => false until the queue is released
+```
+
+The client retries every `reconnect_interval` (default 1 second). Consumers
+refused on reconnect because their queue is in exclusive use wait the same way,
+whichever `exclusive:` value they were subscribed with.
+
 #### Configuration
 
 Configure class-level defaults and enable built-in codecs using the `configure` method:

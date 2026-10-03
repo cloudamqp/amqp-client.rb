@@ -320,6 +320,10 @@ module AMQP
 
     # Consume messages from a queue
     # @param queue [String] Name of the queue to subscribe to
+    # @param exclusive [Boolean, :wait] If true, no other consumer may consume from the queue, and
+    #   {Error::AccessRefused} is raised if it's already in exclusive use. With :wait the consumer
+    #   is returned inactive instead, and subscribes once the queue is released, retrying every
+    #   reconnect_interval. See {Consumer#active?}
     # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected) (default: false)
     # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false (default: 1)
     # @param worker_threads [Integer] Number of threads processing messages (default: 1)
@@ -333,23 +337,27 @@ module AMQP
                   on_cancel: nil, arguments: {}, consumer_tag: nil, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 
-      with_connection do |conn|
-        ch = conn.channel
-        ch.basic_qos(prefetch)
-        consumer_id = @next_consumer_id += 1
-        on_cancel_proc = proc do |tag|
-          @consumers.delete(consumer_id)
-          on_cancel&.call(tag)
-        end
-        tag = consumer_tag.nil? ? "" : consumer_tag
-        basic_consume_args = { tag:, exclusive:, no_ack:, worker_threads:,
-                               on_cancel: on_cancel_proc, arguments: }
-        consume_ok = ch.basic_consume(queue, **basic_consume_args, &blk)
-        consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, block: blk,
-                                queue:, consume_ok:, prefetch:, basic_consume_args:)
-        @consumers[consumer_id] = consumer
-        consumer
+      wait = exclusive == :wait
+      consumer_id = @next_consumer_id += 1
+      on_cancel_proc = proc do |tag|
+        @consumers.delete(consumer_id)
+        on_cancel&.call(tag)
       end
+      tag = consumer_tag.nil? ? "" : consumer_tag
+      basic_consume_args = { tag:, exclusive: wait || exclusive, no_ack:, worker_threads:,
+                             on_cancel: on_cancel_proc, arguments: }
+      consumer = Consumer.new(client: self, channel_id: nil, id: consumer_id, block: blk,
+                              queue:, consume_ok: nil, prefetch:, basic_consume_args:)
+      begin
+        with_connection { |conn| consume(conn, consumer) }
+        @consumers[consumer_id] = consumer
+      rescue Error::AccessRefused => e
+        raise unless wait && e.exclusive_use?
+
+        @consumers[consumer_id] = consumer
+        retry_waiting_consumers
+      end
+      consumer
     end
 
     # Get a message from a queue
