@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "message"
-require "stringio"
 
 module AMQP
   class Client
@@ -563,17 +562,24 @@ module AMQP
           if body_size.zero?
             next_message_finished!
           else
-            @next_body = StringIO.new(String.new(capacity: body_size))
             @next_body_size = body_size
           end
         end
 
+        # @param buf [String] Buffer holding the body frame payload
+        # @param pos [Integer] Position of the payload in the buffer
+        # @param len [Integer] Payload length
         # @api private
-        def body_delivered(body_part)
-          @next_body.write(body_part)
-          return unless @next_body.pos == @next_body_size
+        def body_delivered(buf, pos, len)
+          if len == @next_body_size # the whole body in a single frame
+            @next_body = buf.byteslice(pos, len)
+          else
+            @next_body ||= String.new(capacity: @next_body_size)
+            @next_body.bytesplice(@next_body.bytesize, 0, buf, pos, len)
+          end
+          return unless @next_body.bytesize == @next_body_size
 
-          @next_msg.body = @next_body.string
+          @next_msg.body = @next_body
           next_message_finished!
         end
 
