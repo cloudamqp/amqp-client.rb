@@ -882,6 +882,10 @@ body:has(#full_list) {
     padding: 0.8rem 0.9rem 1.5rem;
   }
 
+  #main {
+    overflow-wrap: break-word;
+  }
+
   #header {
     flex-wrap: wrap;
     padding-right: 2.9rem;
