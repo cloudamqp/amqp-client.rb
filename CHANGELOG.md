@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
+
 ## [2.2.0] - 2026-08-31
 
 - Added: `Client#queue(nil)` and `Client#queue("")` declare a server-named queue and return a `Queue` with the broker-assigned name.
