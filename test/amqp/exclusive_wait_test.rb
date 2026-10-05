@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../test_helper"
+require "logger"
 
 # Consumers waiting for a queue in exclusive use, e.g. during a rolling deploy where the
 # previous process still holds the queue. The waiting client retries every
@@ -68,5 +69,22 @@ class ExclusiveWaitTest < Minitest::Test
 
       assert_equal "after release", @msgs.pop(timeout: 5)&.body
     end
+  end
+
+  def test_stop_ends_the_retry_thread_while_disconnected
+    @queue.subscribe(exclusive: true) { |_msg| nil }
+    @client.stop
+    @client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", reconnect_interval: 0.01, logger: Logger.new(nil)).start
+    @client.queue(QUEUE).subscribe(exclusive: :wait) { |msg| @msgs << msg }
+    retry_thread = Thread.list.find { |t| t.name == "amqp.consumer_retry" }
+
+    # Keep the client disconnected, so the retry thread blocks waiting for a connection
+    @client.stub(:connect, ->(**) { raise AMQP::Client::Error, "broker down" }) do
+      @client.with_connection(&:close)
+      Timeout.timeout(5) { sleep 0.001 until retry_thread.backtrace&.any? { |l| l.include?("Queue#pop") } }
+      @client.stop
+    end
+
+    assert retry_thread.join(5), "retry thread still running after stop"
   end
 end

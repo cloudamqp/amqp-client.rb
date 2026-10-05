@@ -135,6 +135,7 @@ module AMQP
       return if @stopped && !@supervisor_started
 
       @stopped = true
+      stop_retry_thread
       return unless @connq.size.positive?
 
       conn = @connq.pop
@@ -716,6 +717,14 @@ module AMQP
       rescue Error => e
         log_lifecycle(:warn, "consumer retry error: #{e.inspect}")
       end
+    end
+
+    # The retry thread can be blocked waiting for a connection that will never come once the
+    # supervisor has stopped. Joining lets with_connection hand back a connection it holds,
+    # so stop can close it. Not joined from the retry thread itself, e.g. from on_cancel.
+    def stop_retry_thread
+      thread = @retry_thread
+      thread.kill.join if thread && thread != Thread.current
     end
 
     def reconnect_interval
