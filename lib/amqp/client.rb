@@ -686,6 +686,9 @@ module AMQP
     # in exclusive use. A consumer subscribed with `exclusive: :wait` keeps waiting while the
     # queue is in exclusive use, any other refusal drops the consumer and is returned.
     def resubscribe(conn, consumer)
+      # Held across the basic.qos and basic.consume round trips on purpose: a cancel_consumer in
+      # between would otherwise leave a consumer on the broker that the client no longer tracks.
+      # A cancel waits for the subscribe to finish instead.
       @consumer_lock.synchronize do
         return if consumer.active? || !@consumers.key?(consumer.id)
 
