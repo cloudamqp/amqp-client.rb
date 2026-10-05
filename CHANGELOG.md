@@ -3,7 +3,7 @@
 - Added: `exclusive: :wait` on `Client#subscribe` and `Queue#subscribe` returns an inactive consumer that subscribes once the queue is no longer in exclusive use, instead of raising `AccessRefused` (#134)
 - Added: `Consumer#active?`, false while a consumer waits for its queue or for a reconnect
 - Added: `Error::AccessRefused#exclusive_use?` and `Error::ChannelClosed#reason`
-- Fixed: consumers refused on reconnect because their queue is in exclusive use are retried every `reconnect_interval` instead of being dropped
+- Fixed: consumers that can't be resubscribed after a reconnect call their `on_cancel` and are logged at error level, instead of being dropped with only a warning. Consumers subscribed with `exclusive: :wait` wait for their queue instead
 
 ## [2.2.0] - 2026-08-31
 

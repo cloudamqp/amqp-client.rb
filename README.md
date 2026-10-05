@@ -110,9 +110,15 @@ consumer = amqp.queue("jobs").subscribe(exclusive: :wait) { |msg| process(msg) }
 consumer.active? # => false until the queue is released
 ```
 
-The client retries every `reconnect_interval` (default 1 second). Consumers
-refused on reconnect because their queue is in exclusive use wait the same way,
-whichever `exclusive:` value they were subscribed with.
+The client retries every `reconnect_interval` (default 1 second). A consumer
+subscribed with `exclusive: :wait` also waits like that if it's refused on
+reconnect, e.g. because another process took the queue while this one was
+disconnected. Any other consumer that can't be resubscribed after a reconnect
+is dropped, logged at error level, and its `on_cancel` is called:
+
+```ruby
+amqp.queue("jobs").subscribe(exclusive: true, on_cancel: ->(tag) { shutdown }) { |msg| process(msg) }
+```
 
 #### Configuration
 
