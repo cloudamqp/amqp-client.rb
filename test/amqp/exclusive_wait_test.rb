@@ -81,11 +81,22 @@ class ExclusiveWaitTest < Minitest::Test
     @client.queue(QUEUE).subscribe(exclusive: :wait) { |msg| @msgs << msg }
     retry_thread = Thread.list.find { |t| t.name == "amqp.consumer_retry" }
 
-    # Keep the client disconnected, so the retry thread blocks waiting for a connection
+    # Keep the client disconnected, and wait for the retry thread to ask for a connection after
+    # it's gone: from then on it blocks waiting for one
+    with_connection = @client.method(:with_connection)
+    disconnected = false
+    blocked = Queue.new
     @client.stub(:connect, ->(**) { raise AMQP::Client::Error, "broker down" }) do
-      @client.with_connection(&:close)
-      Timeout.timeout(5) { sleep 0.001 until retry_thread.backtrace&.any? { |l| l.include?("Queue#pop") } }
-      @client.stop
+      @client.stub(:with_connection, lambda { |&blk|
+        blocked << true if disconnected && Thread.current == retry_thread
+        with_connection.call(&blk)
+      }) do
+        disconnected = true
+        with_connection.call(&:close)
+
+        assert blocked.pop(timeout: 5), "retry thread never asked for a connection while disconnected"
+        @client.stop
+      end
     end
 
     assert retry_thread.join(5), "retry thread still running after stop"
