@@ -41,13 +41,17 @@ module AMQP
       #   If false, messages are acknowledged only after the block completes successfully; if the block raises
       #   an exception, the message is rejected and can be optionally requeued.
       #   You can of course handle the ack/reject in the block yourself. (Default: false)
-      # @param exclusive [Boolean] When true only a single consumer can consume from the queue at a time
+      # @param exclusive [Boolean, :wait] When true only a single consumer can consume from the queue at a time.
+      #   With :wait, a queue already in exclusive use returns an inactive consumer that subscribes once
+      #   the queue is released, instead of raising, and waits the same way if refused on reconnect.
+      #   See {Client#subscribe}
       # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false
       # @param worker_threads [Integer] Number of threads processing messages,
       #   0 means that the thread calling this method will be blocked
       # @param requeue_on_reject [Boolean] If true, messages that are rejected due to an exception in the block
       #   will be requeued. Only relevant if no_ack is false. (Default: true)
-      # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
+      # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker,
+      #   or dropped because it couldn't be resubscribed after a reconnect.
       #   The proc will be called with the consumer tag as the only argument
       # @param arguments [Hash] Custom arguments to the consumer
       # @param consumer_tag [String, nil] Custom consumer tag. Pass nil or "" to let the broker generate one.
