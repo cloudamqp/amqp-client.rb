@@ -15,9 +15,12 @@ namespace :test do
   end
 end
 
-require "rubocop/rake_task"
-
-RuboCop::RakeTask.new
+begin
+  require "rubocop/rake_task"
+  RuboCop::RakeTask.new
+rescue LoadError
+  # the rubocop group isn't installed, BUNDLE_WITHOUT=rubocop
+end
 
 require "yard"
 
@@ -194,4 +197,4 @@ namespace :release do
   end
 end
 
-task default: [:test, *(:rubocop if ENV["CI"] != "true")]
+task default: [:test, *(:rubocop if Rake::Task.task_defined?(:rubocop))]

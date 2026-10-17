@@ -224,6 +224,8 @@ Or install it yourself as:
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
+The gem requires json and openssl without depending on them. Testing every version isn't reasonable, so CI tests with the latest and with the ones Ruby ships. The bundle has the latest. To test with the shipped ones, run `BUNDLE_WITHOUT="benchmark default_gems rubocop" bundle exec rake`.
+
 To install this gem onto your local machine, run `bundle exec rake install`.
 
 ### RabbitMQ Connection.Blocked tests
