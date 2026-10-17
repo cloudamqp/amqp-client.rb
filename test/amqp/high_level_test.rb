@@ -110,21 +110,22 @@ class HighLevelTest < Minitest::Test
   def test_server_named_queue_consumer_is_dropped_on_reconnect
     q = @client.queue(nil)
     consumer = q.subscribe(no_ack: true) { |_msg| nil }
-    result = Queue.new
-
-    thread = Thread.new do
-      q2 = @client.queue("test.server.named.after.reconnect", auto_delete: true)
-      q2.publish("ok")
-      result << q2.get(no_ack: true)&.body
-    ensure
-      q2&.delete
-    end
     @client.with_connection(&:close)
 
-    assert_equal "ok", result.pop(timeout: 5)
-    refute_includes @client.instance_variable_get(:@consumers).values, consumer
+    q2 = @client.queue("test.server.named.after.reconnect", auto_delete: true)
+    q2.publish("ok")
+
+    assert_equal "ok", q2.get(no_ack: true)&.body
+
+    # The broker deletes the queue when the connection closes, but recovery can resubscribe
+    # before that, then the consumer is dropped when the broker cancels it
+    consumers = @client.instance_variable_get(:@consumers)
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 5
+    sleep 0.01 while consumers.value?(consumer) && Process.clock_gettime(Process::CLOCK_MONOTONIC) < deadline
+
+    refute_includes consumers.values, consumer
   ensure
-    thread&.kill&.join
+    q2&.delete
   end
 
   def test_consumer_survives_reconnect_and_can_be_cancelled
