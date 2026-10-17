@@ -16,11 +16,6 @@ module AMQP
   # AMQP 0-9-1 Client
   # @see Connection
   class Client
-    # Class-level codec registry
-    @codec_registry = MessageCodecRegistry.new
-    # Class-level configuration
-    @config = Configuration.new(@codec_registry)
-
     # Create a new Client object, this won't establish a connection yet, use {#connect} or {#start} for that
     # @param uri [String] URL on the format amqp://username:password@hostname/vhost,
     #   use amqps:// for encrypted connection
@@ -59,10 +54,11 @@ module AMQP
       @consumers = {}
       @next_consumer_id = 0
       @connq = SizedQueue.new(1)
-      @codec_registry = self.class.codec_registry.dup
-      @strict_coding = self.class.config.strict_coding
-      @default_content_encoding = self.class.config.default_content_encoding
-      @default_content_type = self.class.config.default_content_type
+      config = self.class.current_config
+      @codec_registry = config.codec_registry.dup
+      @strict_coding = config.strict_coding
+      @default_content_encoding = config.default_content_encoding
+      @default_content_type = config.default_content_type
       @start_lock = Mutex.new
       @supervisor_started = false
       @stopped = false
@@ -532,20 +528,52 @@ module AMQP
       # @return [MessageCodecRegistry]
       attr_reader :codec_registry
 
+      # The class-level configuration, or in Ractors other than the main one a frozen copy of it
+      # @api private
+      # @return [Configuration]
+      # @raise [Error] if the configuration can't be shared with other Ractors
+      def current_config
+        return @config if !defined?(Ractor) || Ractor.current == Ractor.main
+
+        @shared_config || raise(Error, "#{self} can't be used in Ractors other than the main one: #{@unshared_reason}")
+      end
+
       # We need to set the subclass's configuration and codec registry
       # because these are class instance variables, hence not inherited.
       # @api private
       def inherited(subclass)
         super
-        subclass_codec_registry = @codec_registry.dup
-        subclass.instance_variable_set(:@codec_registry, subclass_codec_registry)
-        subclass.instance_variable_set(:@config, Configuration.new(subclass_codec_registry))
+        subclass.send(:setup_config)
+        subclass.codec_registry.register_all(@codec_registry)
         # Copy configuration settings from parent
         subclass.config.strict_coding = @config.strict_coding
         subclass.config.default_content_type = @config.default_content_type
         subclass.config.default_content_encoding = @config.default_content_encoding
       end
+
+      private
+
+      def setup_config
+        @codec_registry = MessageCodecRegistry.new { share_config }
+        @config = Configuration.new(@codec_registry) { share_config }
+        share_config
+      end
+
+      # Ractors other than the main one can only read class instance variables that hold shareable objects,
+      # so they get a frozen copy of the configuration, renewed on every change
+      def share_config
+        return unless defined?(Ractor)
+
+        @shared_config = @config.shareable_copy
+        @unshared_reason = nil
+      rescue Error => e
+        @shared_config = nil
+        @unshared_reason = e.message.freeze
+      end
     end
+
+    # Class-level codec registry and configuration
+    setup_config
 
     # Get the codec registry for this instance
     # @return [MessageCodecRegistry]
