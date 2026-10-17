@@ -22,6 +22,17 @@ class AMQPRactorTest < Minitest::Test
     assert_equal "hello", ractor_value(ractor)
   end
 
+  def test_builtin_codecs_in_a_ractor
+    ractor = Ractor.new do
+      json = AMQP::Client::Parsers::JSONParser
+      [AMQP::Client::Coders::Gzip, AMQP::Client::Coders::Deflate, AMQP::Client::Coders::DeflateRaw].map do |coder|
+        json.parse(coder.decode(coder.encode(json.serialize({ greeting: "hello" }, {}), {}), {}), {})
+      end
+    end
+
+    assert_equal [{ greeting: "hello" }] * 3, ractor_value(ractor)
+  end
+
   private
 
   # Ractor#take was replaced by Ractor#value in Ruby 3.5

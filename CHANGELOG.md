@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 - Fixed: Connecting from a Ractor other than the main one failed in the handshake, reading `$PROGRAM_NAME` and the not fully frozen `CLIENT_PROPERTIES`
+- Changed: The built-in parsers and coders are frozen, so they can be shared between Ractors, and the JSON parser serializes with `JSON.generate` instead of `JSON.dump`, which in json < 3 reads global options
 
 ## [2.2.0] - 2026-08-31
 

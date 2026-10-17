@@ -10,12 +10,13 @@ module AMQP
       Plain = Class.new do
         def parse(data, _properties) = data
         def serialize(obj, _properties) = obj.is_a?(String) ? obj : obj.to_s
-      end.new
+      end.new.freeze
 
       JSONParser = Class.new do
         def parse(data, _properties) = ::JSON.parse(data, symbolize_names: true)
-        def serialize(obj, _properties) = ::JSON.dump(obj)
-      end.new
+        # JSON.dump's options, json < 3 reads them from a class instance variable that other Ractors can't read
+        def serialize(obj, _properties) = ::JSON.generate(obj, max_nesting: false, allow_nan: true)
+      end.new.freeze
     end
 
     module Coders
@@ -27,7 +28,7 @@ module AMQP
         end
 
         def decode(data, _properties) = Zlib.gunzip(data)
-      end.new
+      end.new.freeze
 
       Deflate = Class.new do
         def encode(data, _properties)
@@ -37,7 +38,7 @@ module AMQP
         end
 
         def decode(data, _properties) = Zlib.inflate(data)
-      end.new
+      end.new.freeze
 
       # Raw DEFLATE coder (RFC 1951 -- no zlib header, no Adler-32 checksum).
       # Not registered by default. Use to interoperate with producers that emit
@@ -71,7 +72,7 @@ module AMQP
             inflater.close
           end
         end
-      end.new
+      end.new.freeze
     end
   end
 end
