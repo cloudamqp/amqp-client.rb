@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+- Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
+- Fixed: Heartbeats are now sent by connections that only receive, e.g. a `no_ack` consumer. Received frames counted as activity, so such a connection never sent heartbeats and could be closed by the broker for missing them
+- Improved: The socket is read in 64 KiB chunks and frames are sliced out of that buffer, instead of three reads (header, payload, frame end) per frame
+- Improved: A message body that fits in one frame is used as is, and larger bodies are copied straight from the read buffer, instead of going through a `StringIO`
+- Improved: Frames, message properties and header tables are decoded with fewer allocations, properties are skipped entirely when none are set
+- Improved: Acking, and any other single-frame write, is about 1.7x faster on CRuby. It is written with `write_nonblock`, which does not release the GVL, so the consumer no longer hands over to the read loop thread on every ack
+- Improved: Publishing writes the body as is, instead of first copying it into a body frame
+
 ## [2.2.0] - 2026-08-31
 
 - Added: `Client#queue(nil)` and `Client#queue("")` declare a server-named queue and return a `Queue` with the broker-assigned name.
