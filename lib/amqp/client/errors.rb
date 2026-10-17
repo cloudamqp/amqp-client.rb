@@ -94,7 +94,11 @@ module AMQP
 
       # Raised if channel is already closed
       class ChannelClosed < Error
+        # @return [String] The reply text the broker closed the channel with
+        attr_reader :reason
+
         def initialize(id, code, reason, classid = 0, methodid = 0)
+          @reason = reason
           super("Channel[#{id}] closed (#{code}) #{reason} (#{classid}/#{methodid})")
         end
       end
@@ -106,7 +110,17 @@ module AMQP
         end
       end
 
-      class AccessRefused < ChannelClosed; end
+      # Raised when the broker refuses access, e.g. missing permissions or a queue in exclusive use
+      class AccessRefused < ChannelClosed
+        # True if refused because the queue is in exclusive use by another consumer,
+        # rather than for missing permissions. Both are reply code 403, so the reply text
+        # is the only way to tell them apart (RabbitMQ and LavinMQ word it the same).
+        # @return [Boolean]
+        def exclusive_use?
+          reason.match?(/in exclusive use/i)
+        end
+      end
+
       class NotFound < ChannelClosed; end
       class ResourceLocked < ChannelClosed; end
       class PreconditionFailed < ChannelClosed; end

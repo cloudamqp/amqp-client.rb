@@ -57,6 +57,7 @@ module AMQP
       @queues = {}
       @exchanges = {}
       @consumers = {}
+      @consumer_lock = Mutex.new
       @next_consumer_id = 0
       @connq = SizedQueue.new(1)
       @codec_registry = self.class.codec_registry.dup
@@ -117,7 +118,7 @@ module AMQP
             break if give_up_reconnecting?(reconnect_attempts, e)
 
             log_reconnect_error(e)
-            sleep @options[:reconnect_interval] || 1
+            sleep reconnect_interval
           ensure
             @connq.clear
             conn = nil
@@ -134,6 +135,7 @@ module AMQP
       return if @stopped && !@supervisor_started
 
       @stopped = true
+      stop_retry_thread
       return unless @connq.size.positive?
 
       conn = @connq.pop
@@ -319,10 +321,16 @@ module AMQP
 
     # Consume messages from a queue
     # @param queue [String] Name of the queue to subscribe to
+    # @param exclusive [Boolean, :wait] If true, no other consumer may consume from the queue, and
+    #   {Error::AccessRefused} is raised if it's already in exclusive use. With :wait the consumer
+    #   is returned inactive instead, and subscribes once the queue is released, retrying every
+    #   reconnect_interval. It also waits like that if refused on reconnect, where other consumers
+    #   are dropped and on_cancel is called. See {Consumer#active?}
     # @param no_ack [Boolean] When false messages have to be manually acknowledged (or rejected) (default: false)
     # @param prefetch [Integer] Specify how many messages to prefetch for consumers with no_ack is false (default: 1)
     # @param worker_threads [Integer] Number of threads processing messages (default: 1)
-    # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker
+    # @param on_cancel [Proc] Optional proc that will be called if the consumer is cancelled by the broker,
+    #   or dropped because it couldn't be resubscribed after a reconnect.
     #   The proc will be called with the consumer tag as the only argument
     # @param arguments [Hash] Custom arguments to the consumer
     # @param consumer_tag [String, nil] Custom consumer tag. Pass nil or "" to let the broker generate one.
@@ -332,23 +340,27 @@ module AMQP
                   on_cancel: nil, arguments: {}, consumer_tag: nil, &blk)
       raise ArgumentError, "worker_threads have to be > 0" if worker_threads <= 0
 
-      with_connection do |conn|
-        ch = conn.channel
-        ch.basic_qos(prefetch)
-        consumer_id = @next_consumer_id += 1
-        on_cancel_proc = proc do |tag|
-          @consumers.delete(consumer_id)
-          on_cancel&.call(tag)
-        end
-        tag = consumer_tag.nil? ? "" : consumer_tag
-        basic_consume_args = { tag:, exclusive:, no_ack:, worker_threads:,
-                               on_cancel: on_cancel_proc, arguments: }
-        consume_ok = ch.basic_consume(queue, **basic_consume_args, &blk)
-        consumer = Consumer.new(client: self, channel_id: ch.id, id: consumer_id, block: blk,
-                                queue:, consume_ok:, prefetch:, basic_consume_args:)
-        @consumers[consumer_id] = consumer
-        consumer
+      wait = exclusive == :wait
+      consumer_id = @next_consumer_id += 1
+      on_cancel_proc = proc do |tag|
+        @consumers.delete(consumer_id)
+        on_cancel&.call(tag)
       end
+      tag = consumer_tag.nil? ? "" : consumer_tag
+      basic_consume_args = { tag:, exclusive: wait || exclusive, no_ack:, worker_threads:,
+                             on_cancel: on_cancel_proc, arguments: }
+      consumer = Consumer.new(client: self, channel_id: nil, id: consumer_id, block: blk, queue:,
+                              consume_ok: nil, prefetch:, basic_consume_args:, wait_for_exclusive_use: wait)
+      begin
+        with_connection { |conn| consume(conn, consumer) }
+        @consumers[consumer_id] = consumer
+      rescue Error::AccessRefused => e
+        raise unless wait && e.exclusive_use?
+
+        @consumers[consumer_id] = consumer
+        retry_waiting_consumers
+      end
+      consumer
     end
 
     # Get a message from a queue
@@ -583,7 +595,12 @@ module AMQP
 
     # @api private
     def cancel_consumer(consumer)
-      @consumers.delete(consumer.id)
+      active = @consumer_lock.synchronize do
+        @consumers.delete(consumer.id)
+        consumer.active?
+      end
+      return unless active
+
       with_connection do |conn|
         ch = conn.channel(consumer.channel_id)
         begin
@@ -642,20 +659,106 @@ module AMQP
     def restore_connection(conn)
       conn.channel(1)
       # Snapshot because @consumers can mutate while recovery is running.
-      @consumers.values.each do |consumer| # rubocop:disable Style/HashEachMethods
-        ch = conn.channel
-        ch.basic_qos(consumer.prefetch)
-        consume_ok = ch.basic_consume(consumer.queue,
-                                      **consumer.basic_consume_args,
-                                      &consumer.block)
-        consumer.update_consume_ok(consume_ok, ch.id)
-        @consumers.delete(consumer.id) if consumer.closed?
-      rescue Error::ChannelClosed => e
-        log_lifecycle(:warn, "failed to resubscribe consumer for #{consumer.queue}: #{e.message}")
-        @consumers.delete(consumer.id)
-      end
+      dropped = resubscribe_all(conn, @consumers.values)
+      retry_waiting_consumers unless @consumers.values.all?(&:active?)
       run_on_connect_hook(conn)
       @connq << conn
+      report_dropped(dropped)
+    end
+
+    def consume(conn, consumer)
+      ch = conn.channel
+      ch.basic_qos(consumer.prefetch)
+      consume_ok = ch.basic_consume(consumer.queue, **consumer.basic_consume_args, &consumer.block)
+      consumer.update_consume_ok(consume_ok, ch.id)
+    end
+
+    # Resubscribes the consumers that aren't active, returning the dropped ones with the error
+    # that dropped them, to report with #report_dropped once the connection is handed back.
+    def resubscribe_all(conn, consumers)
+      consumers.filter_map do |consumer|
+        error = resubscribe(conn, consumer)
+        [consumer, error] if error
+      end
+    end
+
+    # Subscribes a consumer that isn't active, after a reconnect or while it waits for a queue
+    # in exclusive use. A consumer subscribed with `exclusive: :wait` keeps waiting while the
+    # queue is in exclusive use, any other refusal drops the consumer and is returned.
+    def resubscribe(conn, consumer)
+      # Held across the basic.qos and basic.consume round trips on purpose: a cancel_consumer in
+      # between would otherwise leave a consumer on the broker that the client no longer tracks.
+      # A cancel waits for the subscribe to finish instead.
+      @consumer_lock.synchronize do
+        return if consumer.active? || !@consumers.key?(consumer.id)
+
+        consume(conn, consumer)
+        @consumers.delete(consumer.id) if consumer.closed?
+      end
+      nil
+    rescue Error::ChannelClosed => e
+      if consumer.wait_for_exclusive_use? && e.is_a?(Error::AccessRefused) && e.exclusive_use?
+        consumer.wait_for_queue
+        nil
+      else
+        @consumers.delete(consumer.id)
+        consumer.closed!
+        e
+      end
+    end
+
+    # Reports dropped consumers through the log and their on_cancel callback. Called without
+    # holding a connection, so that the callback can use the client, e.g. to subscribe again.
+    def report_dropped(dropped)
+      dropped.each do |consumer, error|
+        message = "dropped consumer for #{consumer.queue}, resubscribe failed: #{error.message}"
+        @logger ? log_lifecycle(:error, message) : warn("AMQP-Client #{message}")
+        begin
+          consumer.basic_consume_args[:on_cancel]&.call(consumer.tag)
+        rescue StandardError => e
+          warn "AMQP-Client consumer on_cancel callback error: #{e.class}: #{e.message}"
+        end
+      end
+    end
+
+    # Retries inactive consumers every reconnect_interval in a single background thread,
+    # which exits once all consumers are active again.
+    def retry_waiting_consumers
+      @consumer_lock.synchronize do
+        return if @retry_thread&.alive?
+
+        @retry_thread = Thread.new { retry_waiting_consumers_loop }
+        @retry_thread.name = thread_name("consumer_retry")
+      end
+    end
+
+    def retry_waiting_consumers_loop
+      loop do
+        sleep reconnect_interval
+        break if @stopped
+
+        waiting = @consumer_lock.synchronize do
+          @consumers.values.reject(&:active?).tap { |w| @retry_thread = nil if w.empty? }
+        end
+        break if waiting.empty?
+
+        dropped = with_connection { |conn| resubscribe_all(conn, waiting) }
+        report_dropped(dropped)
+      rescue Error => e
+        log_lifecycle(:warn, "consumer retry error: #{e.inspect}")
+      end
+    end
+
+    # The retry thread can be blocked waiting for a connection that will never come once the
+    # supervisor has stopped. Joining lets with_connection hand back a connection it holds,
+    # so stop can close it. Not joined from the retry thread itself, e.g. from on_cancel.
+    def stop_retry_thread
+      thread = @retry_thread
+      thread.kill.join if thread && thread != Thread.current
+    end
+
+    def reconnect_interval
+      @options[:reconnect_interval] || 1
     end
 
     def server_named_queue?(name)
