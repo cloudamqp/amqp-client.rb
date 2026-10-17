@@ -23,10 +23,11 @@ jobs:
         run: bundle exec rake rubocop
 
   lavinmq-tests:
-    name: LavinMQ / ${{ matrix.ruby }}
+    name: LavinMQ / ${{ matrix.ruby }}${{ matrix.default-gems == 'latest' && ' / latest json, openssl' || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
+      BUNDLE_WITHOUT: ${{ matrix.default-gems == 'latest' && 'benchmark rubocop' || 'benchmark default_gems rubocop' }}
       RUN_LAVINMQ_FLOW_CONTROL_TESTS: "1"
     strategy:
       fail-fast: false
@@ -35,9 +36,14 @@ jobs:
           - "3.3"
           - "3.4"
           - "4.0"
+          - jruby
+          - truffleruby
+        # A key of its own, or include would turn the 3.3 job into the latest one
+        default-gems:
+          - shipped
         include:
-          - ruby: jruby
-          - ruby: truffleruby
+          - ruby: "3.3"
+            default-gems: latest
     steps:
       - name: Install LavinMQ
         uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
@@ -56,9 +62,11 @@ jobs:
         run: bundle exec rake
 
   lavinmq-tls:
-    name: LavinMQ TLS / ${{ matrix.ruby }}
+    name: LavinMQ TLS / ${{ matrix.ruby }}${{ matrix.default-gems == 'latest' && ' / latest json, openssl' || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      BUNDLE_WITHOUT: ${{ matrix.default-gems == 'latest' && 'benchmark rubocop' || 'benchmark default_gems rubocop' }}
     strategy:
       fail-fast: false
       matrix:
@@ -66,6 +74,12 @@ jobs:
           - "ruby"
           - "jruby"
           - "truffleruby"
+        # A key of its own, or include would turn the 3.3 job into the latest one
+        default-gems:
+          - shipped
+        include:
+          - ruby: "3.3"
+            default-gems: latest
     steps:
       - name: Install LavinMQ
         uses: cloudamqp/lavinmq-action@df2d45f4374c5afe2d536fd78c26c4e394315035 # v1.1.0
@@ -87,6 +101,8 @@ jobs:
     name: LavinMQ / macOS
     runs-on: macos-latest
     timeout-minutes: 10
+    env:
+      BUNDLE_WITHOUT: benchmark default_gems rubocop
     strategy:
       fail-fast: false
       matrix:
@@ -115,6 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
+      BUNDLE_WITHOUT: benchmark default_gems rubocop
       RUN_RABBITMQ_CONNECTION_BLOCKED_TESTS: ${{ matrix.connection_blocked_tests }}
     strategy:
       fail-fast: false
@@ -161,6 +178,8 @@ jobs:
     name: RabbitMQ TLS / ${{ matrix.ruby }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      BUNDLE_WITHOUT: benchmark default_gems rubocop
     strategy:
       fail-fast: false
       matrix:
@@ -193,6 +212,8 @@ jobs:
     name: RabbitMQ / macOS
     runs-on: macos-latest
     timeout-minutes: 10
+    env:
+      BUNDLE_WITHOUT: benchmark default_gems rubocop
     strategy:
       fail-fast: false
       matrix:
