@@ -571,7 +571,7 @@ module AMQP
 
               case method_id
               when 10 # connection#start
-                conn_name = options[:connection_name] || $PROGRAM_NAME
+                conn_name = options[:connection_name] || program_name
                 properties = CLIENT_PROPERTIES.merge({ connection_name: conn_name })
                 socket.write FrameBytes.connection_start_ok "\u0000#{user}\u0000#{password}", properties
               when 30 # connection#tune
@@ -624,6 +624,18 @@ module AMQP
         warn "AMQP-Client could not enable TCP keepalive on socket. #{e.inspect}"
       end
 
+      PROGRAM_NAME = $PROGRAM_NAME.dup.freeze
+      private_constant :PROGRAM_NAME
+
+      # The default connection name, Ractors other than the main one can't read global variables so they get
+      # $PROGRAM_NAME as it was when the library was loaded
+      # @return [String]
+      def program_name
+        $PROGRAM_NAME
+      rescue Ractor::IsolationError
+        PROGRAM_NAME
+      end
+
       # Fetch the AMQP port number from ENV
       # @return [Integer] A port number
       # @return [nil] When the environment variable AMQP_PORT isn't set
@@ -641,7 +653,7 @@ module AMQP
           exchange_exchange_bindings: true,
           "basic.nack": true,
           "connection.blocked": true
-        },
+        }.freeze,
         product: "amqp-client.rb",
         platform: RUBY_DESCRIPTION,
         version: VERSION,
