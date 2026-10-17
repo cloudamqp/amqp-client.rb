@@ -168,6 +168,28 @@ The exception is AMQP flow control. If you publish faster than the broker accept
 
 To stay decoupled, use a separate `AMQP::Client` (its own connection) for heavy publishing and another for consuming, and watch for back-pressure with `Connection#on_blocked`/`#on_unblocked`.
 
+#### Ractors
+
+Clients work in any Ractor. With a client per Ractor, consumers and publishers run in parallel instead of taking turns on the GVL:
+
+```ruby
+AMQP::Client.config.enable_builtin_codecs
+
+consumers = Array.new(4) do
+  Ractor.new do
+    client = AMQP::Client.new("amqp://localhost").start
+    client.queue("orders").subscribe(prefetch: 100) do |msg|
+      Order.process(msg.parse)
+    end
+    sleep
+  end
+end
+```
+
+Configure the client in the main Ractor, other Ractors use a frozen copy of the configuration that follows every change. A client, and its connection, can't be passed between Ractors, so give each Ractor its own.
+
+Parsers and coders have to be shareable to be used in other Ractors, the built-in ones are. Make a custom one shareable, e.g. with `Ractor.make_shareable(MsgPackParser)`, before registering it. Otherwise `AMQP::Client.new` raises an error naming it, outside the main Ractor.
+
 ### Low level API
 
 This API matches the AMQP protocol very well, it can do everything the protocol allows, but requires some knowledge about the protocol, and doesn't handle reconnects.

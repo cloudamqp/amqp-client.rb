@@ -33,6 +33,38 @@ class AMQPRactorTest < Minitest::Test
     assert_equal [{ greeting: "hello" }] * 3, ractor_value(ractor)
   end
 
+  def test_client_in_a_ractor
+    klass = Class.new(AMQP::Client)
+    klass.config.enable_builtin_codecs
+    ractor = Ractor.new(klass, "amqp://#{TEST_AMQP_HOST}:#{TEST_AMQP_PORT}") do |client_class, url|
+      client = client_class.new(url).start
+      queue = client.queue("")
+      queue.publish({ greeting: "hello" }, content_type: "application/json")
+      msg = queue.get
+      queue.delete
+      client.stop
+      msg.parse
+    end
+
+    assert_equal({ greeting: "hello" }, ractor_value(ractor))
+  end
+
+  def test_unshareable_codec_in_a_ractor
+    parser = Object.new
+    def parser.parse(data, _properties) = data
+    def parser.serialize(obj, _properties) = obj
+    klass = Class.new(AMQP::Client)
+    klass.config.register_parser(content_type: "text/x-test", parser:)
+    ractor = Ractor.new(klass) do |client_class|
+      client_class.new
+    rescue AMQP::Client::Error => e
+      e.message
+    end
+
+    assert_match %r{parser for content_type text/x-test .* Ractor.make_shareable}, ractor_value(ractor)
+    assert_instance_of klass, klass.new, "the main Ractor isn't affected"
+  end
+
   private
 
   # Ractor#take was replaced by Ractor#value in Ruby 3.5

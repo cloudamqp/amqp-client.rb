@@ -5,9 +5,11 @@ module AMQP
     # Internal registry that stores content_type parsers and content_encoding coders.
     # Only exact content_type and content_encoding matches are supported.
     class MessageCodecRegistry
-      def initialize
+      # @yield Called on every change to the registry
+      def initialize(&on_change)
         @parsers = {} # content_type => handler
         @coders = {} # content_encoding => handler
+        @on_change = on_change
       end
 
       # Register a parser for a content_type
@@ -18,7 +20,7 @@ module AMQP
       def register_parser(content_type:, parser:)
         validate_parser!(parser)
         @parsers[content_type] = parser
-        self
+        changed
       end
 
       # Register a coder for a specific content_encoding
@@ -29,7 +31,7 @@ module AMQP
       def register_coder(content_encoding:, coder:)
         validate_coder!(coder)
         @coders[content_encoding] = coder
-        self
+        changed
       end
 
       # Find parser handler based on message properties
@@ -80,15 +82,46 @@ module AMQP
         enable_builtin_parsers.enable_builtin_coders
       end
 
-      # Lightweight cloning: registry contents duplicated (shallow copy of handler references)
-      def dup
-        copy = self.class.new
-        @parsers.each { |k, v| copy.register_parser(content_type: k, parser: v) }
-        @coders.each { |k, v| copy.register_coder(content_encoding: k, coder: v) }
-        copy
+      # Register all parsers and coders of another registry
+      # @param other [MessageCodecRegistry]
+      # @return [self]
+      def register_all(other)
+        @parsers.merge!(other.parsers)
+        @coders.merge!(other.coders)
+        changed
       end
 
+      # Lightweight cloning: registry contents duplicated (shallow copy of handler references)
+      def dup
+        self.class.new.register_all(self)
+      end
+
+      # A deeply frozen copy, that can be shared with other Ractors
+      # @api private
+      # @return [MessageCodecRegistry]
+      # @raise [Error] if a parser or coder isn't shareable
+      def shareable_copy
+        { "parser for content_type" => @parsers, "coder for content_encoding" => @coders }.each do |kind, codecs|
+          codecs.each do |name, codec|
+            next if Ractor.shareable?(codec)
+
+            raise Error, "the #{kind} #{name} (#{codec.inspect}) isn't shareable, " \
+                         "make it so with Ractor.make_shareable before registering it"
+          end
+        end
+        Ractor.make_shareable(dup)
+      end
+
+      protected
+
+      attr_reader :parsers, :coders
+
       private
+
+      def changed
+        @on_change&.call
+        self
+      end
 
       def validate_parser!(parser)
         return if parser.respond_to?(:parse) && parser.respond_to?(:serialize)
