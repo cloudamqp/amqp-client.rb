@@ -29,6 +29,25 @@ class AMQPBodyTest < Minitest::Test
     end
   end
 
+  # A body is sliced out of the read buffer, which the read loop then reuses for
+  # the next frames. Each body must still be a string of its own, that can be
+  # kept and modified without affecting the others.
+  def test_consumed_bodies_are_not_shared
+    ch = @connection.channel
+    q = ch.queue_declare ""
+    bodies = %w[first second third]
+    msgs = Queue.new
+    ch.basic_consume(q.queue_name) do |msg|
+      msg.body << "!"
+      msgs << msg
+    end
+    bodies.each { |body| ch.basic_publish body, exchange: "", routing_key: q.queue_name }
+
+    received = Array.new(bodies.size) { msgs.pop.body }
+
+    assert_equal bodies.map { |body| "#{body}!" }, received
+  end
+
   # Frames are binary, a body in another encoding still has to go out byte for byte
   def test_it_can_publish_non_ascii_utf8_bodies
     ch = @connection.channel
