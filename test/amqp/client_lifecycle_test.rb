@@ -306,7 +306,8 @@ class AMQPClientLifecycleTest < Minitest::Test
   def test_it_can_select_confirm
     channel = @connection.channel
     channel.confirm_select
-    channel.basic_publish "foo", exchange: "amq.direct", routing_key: "bar"
+    q = channel.queue_declare ""
+    channel.basic_publish "foo", exchange: "", routing_key: q.queue_name
     success = channel.wait_for_confirms
 
     assert success, "Message was not confirmed by the server"
