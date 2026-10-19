@@ -515,8 +515,19 @@ module AMQP
         t.name = thread_name(role: "heartbeat")
       end
 
+      # Skipped while another thread writes, as that write can be stuck on a broker
+      # that's gone, and the heartbeat thread has to keep checking for that
       def send_heartbeat
-        write_bytes FrameBytes.heartbeat
+        return unless @write_lock.try_lock
+
+        begin
+          @socket.write FrameBytes.heartbeat
+          update_last_activity
+        ensure
+          @write_lock.unlock
+        end
+      rescue *READ_EXCEPTIONS => e
+        raise Error, "Could not write heartbeat, #{e.message}"
       end
 
       # Shutting down the socket makes the read loop, and any write blocked on the

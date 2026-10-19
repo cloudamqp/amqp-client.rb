@@ -29,6 +29,26 @@ class AMQPHeartbeatTest < Minitest::Test
     server&.close
   end
 
+  # A publish stuck on a full socket holds the write lock, and the heartbeat
+  # thread mustn't wait for it, or it never notices that the broker is gone
+  def test_stuck_publish_fails_when_the_broker_goes_silent
+    server, broker = silent_broker(channels: 1)
+    channel = AMQP::Client.new("amqp://127.0.0.1:#{server.addr[1]}", heartbeat: 1).connect.channel
+    publisher = Thread.new do
+      channel.basic_publish "x" * 32_000_000, exchange: "", routing_key: "q" # more than the socket buffers hold
+    rescue AMQP::Client::Error => e
+      e
+    end
+    publisher.join(10)
+    broker.kill.join # a publish still stuck then fails for another reason, instead of hanging below
+
+    assert_kind_of AMQP::Client::Error::ConnectionClosed, publisher.value
+    assert_match "heartbeat timeout", publisher.value.message
+  ensure
+    broker&.kill&.join
+    server&.close
+  end
+
   # The broker only sees what the client sends, so a consumer that never writes
   # (no_ack) still has to send heartbeats while messages keep arriving
   def test_receiving_consumer_sends_heartbeats
@@ -65,9 +85,9 @@ class AMQPHeartbeatTest < Minitest::Test
 
   private
 
-  # A broker that completes the handshake, with heartbeats, and then neither
-  # reads nor writes anything
-  def silent_broker
+  # A broker that completes the handshake, with heartbeats, opens channels, and
+  # then neither reads nor writes anything
+  def silent_broker(channels: 0)
     server = TCPServer.new("127.0.0.1", 0)
     broker = Thread.new do
       socket = server.accept
@@ -77,6 +97,11 @@ class AMQPHeartbeatTest < Minitest::Test
       socket.write method_frame(10, 30, [2047, 131_072, 1].pack("S> L> S>")) # tune
       2.times { read_frame(socket) } # tune-ok, open
       socket.write method_frame(10, 41, "\x00") # open-ok
+      channels.times do
+        channel_id = 0
+        channel_id = read_frame(socket) while channel_id.zero? # skips heartbeats
+        socket.write method_frame(20, 11, [0].pack("L>"), channel_id) # channel open-ok
+      end
       sleep
     ensure
       socket&.close
@@ -84,13 +109,15 @@ class AMQPHeartbeatTest < Minitest::Test
     [server, broker]
   end
 
-  def method_frame(class_id, method_id, args)
+  def method_frame(class_id, method_id, args, channel_id = 0)
     payload = [class_id, method_id].pack("S> S>") + args
-    [1, 0, payload.bytesize].pack("C S> L>") + payload + "\xCE".b
+    [1, channel_id, payload.bytesize].pack("C S> L>") + payload + "\xCE".b
   end
 
+  # @return [Integer] The frame's channel
   def read_frame(socket)
-    _type, _channel_id, size = socket.read(7).unpack("C S> L>")
+    _type, channel_id, size = socket.read(7).unpack("C S> L>")
     socket.read(size + 1)
+    channel_id
   end
 end
