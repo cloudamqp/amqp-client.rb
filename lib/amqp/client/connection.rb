@@ -24,7 +24,8 @@ module AMQP
       #   the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
       # @option options [Float] connect_timeout (30) TCP connection timeout
-      # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
+      # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead.
+      #   With heartbeats, the connection is closed if nothing is received from the broker for twice the timeout
       # @option options [Integer] frame_max (131_072) Maximum frame size,
       #    the smallest of the client's and the broker's values will be used
       # @option options [Integer] channel_max (2048) Maxium number of channels the client will be allowed to have open.
@@ -65,6 +66,7 @@ module AMQP
 
         # Only used with heartbeats
         @last_activity_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        @frames_received = 0
 
         return unless read_loop_thread
 
@@ -244,6 +246,8 @@ module AMQP
           # make sure that the frame end is correct
           frame_end = socket.readchar.ord
           raise Error::UnexpectedFrameEnd, frame_end if frame_end != 206
+
+          @frames_received += 1 # tells the heartbeat thread the broker is alive
 
           # parse the frame, will return false if a close frame was received
           parse_frame(type, channel_id, frame_buffer) || return
@@ -479,10 +483,22 @@ module AMQP
         t = Thread.new do
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
           interval = period / 2.0
+          frames_received = nil
+          silent_intervals = 0
           loop do
             sleep interval
             break if @closed
             next if @socket.nil?
+
+            # The broker sends something at least every interval, so four intervals
+            # (two heartbeat timeouts) without a frame means it's gone
+            received = @frames_received
+            silent_intervals = received == frames_received ? silent_intervals + 1 : 0
+            frames_received = received
+            if silent_intervals == 4
+              heartbeat_timeout(period)
+              break
+            end
 
             now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
             # If we haven't sent anything recently, send a heartbeat
@@ -501,6 +517,15 @@ module AMQP
 
       def send_heartbeat
         write_bytes FrameBytes.heartbeat
+      end
+
+      # Shutting down the socket makes the read loop, and any write blocked on the
+      # socket, fail with the reason, closing the connection as usual
+      def heartbeat_timeout(period)
+        @closed ||= [400, "heartbeat timeout, nothing received from the broker for #{period * 2} s"]
+        @socket.to_io.shutdown(Socket::SHUT_RDWR)
+      rescue *READ_EXCEPTIONS
+        nil # the read loop already closed the socket
       end
 
       def expect(expected_frame_type)
