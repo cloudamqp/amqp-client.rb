@@ -3,6 +3,7 @@
 - Added: Clients can be used in Ractors other than the main one. They use a frozen copy of the class-level configuration, renewed on every change, and raise an error naming any registered parser or coder that isn't shareable
 - Fixed: Connecting from a Ractor other than the main one failed in the handshake, reading `$PROGRAM_NAME` and the not fully frozen `CLIENT_PROPERTIES`
 - Changed: The built-in parsers and coders are frozen, so they can be shared between Ractors, and the JSON parser serializes with `JSON.generate` instead of `JSON.dump`, which in json < 3 reads global options
+- Fixed: Heartbeats are now sent by idle connections and by connections that only receive, e.g. a `no_ack` consumer. Received frames, including the broker's own heartbeats, counted as activity, so such a connection rarely or never sent heartbeats and could be closed by the broker for missing them
 
 ## [2.2.0] - 2026-08-31
 
