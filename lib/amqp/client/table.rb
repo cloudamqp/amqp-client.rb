@@ -119,9 +119,9 @@ module AMQP
         when "B"
           [1, bytes.byteslice(pos, 1).unpack1("C")]
         when "s"
-          [2, bytes.byteslice(pos, 2).unpack1("s")]
+          [2, bytes.byteslice(pos, 2).unpack1("s>")]
         when "u"
-          [2, bytes.byteslice(pos, 2).unpack1("S")]
+          [2, bytes.byteslice(pos, 2).unpack1("S>")]
         when "I"
           [4, bytes.byteslice(pos, 4).unpack1("l>")]
         when "i"
@@ -140,7 +140,7 @@ module AMQP
           [5, d]
         when "x"
           len = bytes.byteslice(pos, 4).unpack1("L>")
-          [4 + len, bytes.byteslice(pos, len)]
+          [4 + len, bytes.byteslice(pos + 4, len)]
         when "T"
           [8, Time.at(bytes.byteslice(pos, 8).unpack1("Q>"))]
         when "V"
