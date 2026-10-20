@@ -313,6 +313,21 @@ class AMQPClientLifecycleTest < Minitest::Test
     assert success, "Message was not confirmed by the server"
   end
 
+  # The broker returns an unroutable mandatory message and then acks it,
+  # both have to reach the client on the same channel
+  def test_it_can_confirm_a_returned_message
+    channel = @connection.channel
+    channel.confirm_select
+    returned = Queue.new
+    channel.on_return { |msg| returned << msg }
+    channel.basic_publish "foo", exchange: "", routing_key: "no-such-queue", mandatory: true
+
+    assert channel.wait_for_confirms, "Returned message was not confirmed by the server"
+    msg = returned.pop(timeout: 5)
+
+    assert_equal 312, msg&.reply_code # NO_ROUTE
+  end
+
   def test_wait_for_confirms_returns_false_on_nack
     queue_name = "ml-q"
     channel = @connection.channel
