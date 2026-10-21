@@ -6,14 +6,21 @@ require "stringio"
 
 # Specs that does not use connection setup/teardown (see client_lifecycle_test.rb)
 class AMQPClientLifecycleTest < Minitest::Test
-  def wait_for_log(io, pattern, timeout: 2) # rubocop:disable Naming/PredicateMethod
+  # Waits for a line that another thread logs, such as the supervisor. A busy CI runner
+  # can keep a thread from running for seconds, so the wait is long, and the log is
+  # checked once more when a sleep overran the deadline.
+  def wait_for_log(io, pattern, timeout: 10) # rubocop:disable Naming/PredicateMethod
     deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
-    until Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
-      return true if io.string.match?(pattern)
+    until io.string.match?(pattern)
+      return false if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
 
       sleep 0.01
     end
-    false
+    true
+  end
+
+  def thread_dump(threads)
+    threads.map { |t| "#{t.name} #{t.status}\n  #{t.backtrace&.first(8)&.join("\n  ")}" }.join("\n")
   end
 
   def test_that_it_has_a_version_number
@@ -91,12 +98,15 @@ class AMQPClientLifecycleTest < Minitest::Test
     logger = Logger.new(io)
     logger.formatter = ->(severity, _time, _progname, msg) { "#{severity} #{msg}\n" }
 
+    threads = Thread.list
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", logger:).start
     client.with_connection { _1 } # wait until supervisor's read_loop is engaged
     client.stop
+    # The supervisor thread logs the disconnect, if it never does, show where that thread is
+    message = -> { "missing disconnected log: #{io.string.inspect}\n#{thread_dump(Thread.list - threads)}" }
 
     assert wait_for_log(io, /^INFO AMQP::Client: connected$/), "missing connected log: #{io.string.inspect}"
-    assert wait_for_log(io, /^WARN AMQP::Client: disconnected$/), "missing disconnected log: #{io.string.inspect}"
+    assert wait_for_log(io, /^WARN AMQP::Client: disconnected$/), message
   end
 
   def test_logger_prefix_includes_name_from_uri
