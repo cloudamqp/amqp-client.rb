@@ -49,6 +49,19 @@ class AMQPHeartbeatTest < Minitest::Test
     server&.close
   end
 
+  # Closing waits for the broker's close-ok, which a broker that's gone never sends
+  def test_close_returns_when_the_broker_goes_silent
+    server, broker = silent_broker
+    connection = AMQP::Client.new("amqp://127.0.0.1:#{server.addr[1]}", heartbeat: 1).connect
+    closer = Thread.new { connection.close }
+
+    refute_nil closer.join(10), "Close didn't return"
+  ensure
+    broker&.kill&.join # a close still waiting then returns
+    closer&.join
+    server&.close
+  end
+
   # The broker only sees what the client sends, so a consumer that never writes
   # (no_ack) still has to send heartbeats while messages keep arriving
   def test_receiving_consumer_sends_heartbeats

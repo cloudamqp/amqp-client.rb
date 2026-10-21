@@ -487,8 +487,8 @@ module AMQP
           silent_intervals = 0
           loop do
             sleep interval
-            break if @closed
             next if @socket.nil?
+            break if @socket.closed? # the read loop is done, a close waiting for close-ok isn't
 
             # The broker sends something at least every interval, so four intervals
             # (two heartbeat timeouts) without a frame means it's gone
@@ -499,6 +499,7 @@ module AMQP
               heartbeat_timeout(period)
               break
             end
+            next if @closed # closing, no more heartbeats
 
             now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
             # If we haven't sent anything recently, send a heartbeat

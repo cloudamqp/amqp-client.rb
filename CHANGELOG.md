@@ -5,7 +5,7 @@
 - Changed: The built-in parsers and coders are frozen, so they can be shared between Ractors, and the JSON parser serializes with `JSON.generate` instead of `JSON.dump`, which in json < 3 reads global options
 - Fixed: Heartbeats are now sent by idle connections and by connections that only receive, e.g. a `no_ack` consumer. Received frames, including the broker's own heartbeats, counted as activity, so such a connection rarely or never sent heartbeats and could be closed by the broker for missing them
 - Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
-- Added: With heartbeats, the connection is closed when nothing has been received from the broker for two heartbeat timeouts. Before, nothing noticed a broker that was hung, and the client's own heartbeats kept TCP keepalive from noticing one that was unreachable
+- Added: With heartbeats, the connection is closed when nothing has been received from the broker for two heartbeat timeouts, which also ends a `Connection#close` or `Client#stop` waiting for the broker's reply. Before, nothing noticed a broker that was hung, and the client's own heartbeats kept TCP keepalive from noticing one that was unreachable
 
 ## [2.2.0] - 2026-08-31
 
