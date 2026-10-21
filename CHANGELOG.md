@@ -5,6 +5,11 @@
 - Changed: The built-in parsers and coders are frozen, so they can be shared between Ractors, and the JSON parser serializes with `JSON.generate` instead of `JSON.dump`, which in json < 3 reads global options
 - Fixed: Heartbeats are now sent by idle connections and by connections that only receive, e.g. a `no_ack` consumer. Received frames, including the broker's own heartbeats, counted as activity, so such a connection rarely or never sent heartbeats and could be closed by the broker for missing them
 - Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
+- Improved: The socket is read in 64 KiB chunks and frames are sliced out of that buffer, instead of three reads (header, payload, frame end) per frame
+- Improved: A message body that fits in one frame is copied out of the read buffer in one step, and larger bodies frame by frame, instead of going through a `StringIO`
+- Improved: Frames, message properties and header tables are decoded with fewer allocations, properties are skipped entirely when none are set
+- Improved: Acking, and any other single-frame write, is about 1.7x faster on CRuby. It is written with `write_nonblock`, which does not release the GVL, so the consumer no longer hands over to the read loop thread on every ack
+- Improved: Publishing writes the body as is, instead of first copying it into a body frame
 
 ## [2.2.0] - 2026-08-31
 

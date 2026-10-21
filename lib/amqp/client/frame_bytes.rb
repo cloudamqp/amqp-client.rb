@@ -345,6 +345,38 @@ module AMQP
         ].pack("C S> L> S> S> S> Ca* Ca* C C")
       end
 
+      FRAME_END = "\xCE".b.freeze
+
+      # basic.publish, the content header and the start of a single body frame,
+      # all in one string. The body and FRAME_END are to be written right after
+      # it, so the body isn't copied into a frame of its own.
+      def self.basic_publish_with_header(id, exchange, routing_key, mandatory, body_size, properties)
+        props = Properties.encode(properties)
+        [
+          1, # type: method
+          id, # channel id
+          2 + 2 + 2 + 1 + exchange.bytesize + 1 + routing_key.bytesize + 1, # frame size
+          60, # class: basic
+          40, # method: publish
+          0, # reserved1
+          exchange.bytesize, exchange,
+          routing_key.bytesize, routing_key,
+          mandatory ? 1 : 0, # bits, mandatory/immediate
+          206, # frame end
+          2, # type: header
+          id, # channel id
+          2 + 2 + 8 + props.bytesize, # frame size
+          60, # class: basic
+          0, # weight
+          body_size,
+          props, # properties
+          206, # frame end
+          3, # type: body
+          id, # channel id
+          body_size # frame size, the body and frame end follow
+        ].pack("C S> L> S> S> S> Ca* Ca* C C C S> L> S> S> Q> a* C C S> L>")
+      end
+
       def self.header(id, body_size, properties)
         props = Properties.encode(properties)
         frame_size = 2 + 2 + 8 + props.bytesize

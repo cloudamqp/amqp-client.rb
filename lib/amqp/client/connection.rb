@@ -213,7 +213,15 @@ module AMQP
       # @api private
       def write_bytes(*bytes)
         @write_lock.synchronize do
-          @socket.write(*bytes)
+          if bytes.size == 1 && GVL
+            # write_nonblock doesn't release the GVL, so unlike #write it doesn't hand over
+            # to the read loop thread on every write (e.g. acks), only block if the socket buffer is full
+            data = bytes.first
+            written = @socket.write_nonblock(data, exception: false)
+            @socket.write(written.is_a?(Integer) ? data.byteslice(written..) : data) if written != data.bytesize
+          else
+            @socket.write(*bytes) # writev, without copying the strings together
+          end
           update_last_activity
         end
       rescue *READ_EXCEPTIONS => e
@@ -230,23 +238,38 @@ module AMQP
         Thread.current.priority += 1
         socket = @socket
         frame_max = @frame_max
-        frame_start = String.new(capacity: 7)
-        frame_buffer = String.new(capacity: frame_max)
+        # Read the socket in large chunks and slice frames out of the buffer,
+        # far fewer IO calls than reading each frame header, payload and end separately
+        buf_size = [READ_BUFFER_SIZE, frame_max + 8].max # always room for a whole frame
+        buf = String.new(capacity: buf_size, encoding: Encoding::BINARY)
+        chunk = String.new(capacity: buf_size, encoding: Encoding::BINARY)
+        pos = 0
         loop do
-          socket.read(7, frame_start) || raise(IOError)
-          type, channel_id, frame_size = frame_start.unpack("C S> L>")
+          if buf.bytesize - pos < 7
+            fill_read_buffer(socket, buf, pos, 7, buf_size, chunk)
+            pos = 0
+          end
+          type = buf.getbyte(pos)
+          channel_id = buf.unpack1("S>", offset: pos + 1)
+          frame_size = buf.unpack1("L>", offset: pos + 3)
           frame_max >= frame_size ||
             raise(Error, "Frame size #{frame_size} larger than negotiated max frame size #{frame_max}")
 
-          # read the frame content
-          socket.read(frame_size, frame_buffer) || raise(IOError)
+          if buf.bytesize - pos < frame_size + 8
+            fill_read_buffer(socket, buf, pos, frame_size + 8, buf_size, chunk)
+            pos = 0
+          end
 
           # make sure that the frame end is correct
-          frame_end = socket.readchar.ord
+          frame_end = buf.getbyte(pos + 7 + frame_size)
           raise Error::UnexpectedFrameEnd, frame_end if frame_end != 206
 
-          # parse the frame, will return false if a close frame was received
-          parse_frame(type, channel_id, frame_buffer) || return
+          if type == 3 # body, copied straight from the buffer into the message body
+            @channels[channel_id].body_delivered(buf, pos + 7, frame_size)
+          elsif !parse_frame(type, channel_id, buf.byteslice(pos + 7, frame_size))
+            return # a close frame was received
+          end
+          pos += frame_size + 8
         end
         nil
       rescue *READ_EXCEPTIONS => e
@@ -277,11 +300,31 @@ module AMQP
       READ_EXCEPTIONS = [IOError, OpenSSL::OpenSSLError, SystemCallError,
                          RUBY_ENGINE == "jruby" ? java.lang.NullPointerException : nil].compact.freeze
 
-      def parse_frame(type, channel_id, buf) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
+      READ_BUFFER_SIZE = 64 * 1024
+
+      # Only CRuby has a GVL to keep. On JRuby write_nonblock even deadlocks, switching
+      # the socket to non-blocking waits for the read loop's blocking read to finish.
+      GVL = RUBY_ENGINE == "ruby"
+
+      # Move the unconsumed bytes, from pos, to the start of the buffer and read from
+      # the socket until at least min_bytes are buffered. The buffer is modified in
+      # place and never grows past buf_size, so it's never reallocated.
+      # @return [nil]
+      def fill_read_buffer(socket, buf, pos, min_bytes, buf_size, chunk)
+        buf.bytesplice(0, pos, "") if pos.positive?
+        while buf.bytesize < min_bytes
+          socket.readpartial(buf_size - buf.bytesize, chunk)
+          buf << chunk
+        end
+        nil
+      end
+
+      def parse_frame(type, channel_id, buf) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
         channel = @channels[channel_id]
         case type
         when 1 # method frame
-          class_id, method_id = buf.unpack("S> S>")
+          class_id = buf.unpack1("S>")
+          method_id = buf.unpack1("S>", offset: 2)
           case class_id
           when 10 # connection
             raise Error, "Unexpected channel id #{channel_id} for Connection frame" if channel_id != 0
@@ -289,7 +332,7 @@ module AMQP
             case method_id
             when 50 # connection#close
               code, text_len = buf.unpack("@4 S> C")
-              text = buf.byteslice(7, text_len).force_encoding("utf-8")
+              text = buf.byteslice(7, text_len).force_encoding(Encoding::UTF_8)
               error_class_id, error_method_id = buf.byteslice(7 + text_len, 4).unpack("S> S>")
               @closed = [code, text, error_class_id, error_method_id]
               @channels.each_value { |ch| ch.closed!(:connection, code, text, error_class_id, error_method_id) }
@@ -304,7 +347,7 @@ module AMQP
               return false
             when 60 # connection#blocked
               reason_len = buf.getbyte(4)
-              reason = buf.byteslice(5, reason_len).force_encoding("utf-8")
+              reason = buf.byteslice(5, reason_len).force_encoding(Encoding::UTF_8)
               @blocked = reason
               @on_blocked.call(reason)
             when 61 # connection#unblocked
@@ -320,7 +363,7 @@ module AMQP
               channel.reply [:channel_open_ok]
             when 40 # channel#close
               reply_code, reply_text_len = buf.unpack("@4 S> C")
-              reply_text = buf.byteslice(7, reply_text_len).force_encoding("utf-8")
+              reply_text = buf.byteslice(7, reply_text_len).force_encoding(Encoding::UTF_8)
               classid, methodid = buf.byteslice(7 + reply_text_len, 4).unpack("S> S>")
               @channels_lock.synchronize do
                 channel = @channels.delete(channel_id)
@@ -348,7 +391,7 @@ module AMQP
             case method_id
             when 11 # declare-ok
               queue_name_len = buf.getbyte(4)
-              queue_name = buf.byteslice(5, queue_name_len).force_encoding("utf-8")
+              queue_name = buf.byteslice(5, queue_name_len).force_encoding(Encoding::UTF_8)
               message_count, consumer_count = buf.byteslice(5 + queue_name_len, 8).unpack("L> L>")
               channel.reply [:queue_declare_ok, queue_name, message_count, consumer_count]
             when 21 # bind-ok
@@ -369,51 +412,53 @@ module AMQP
               channel.reply [:basic_qos_ok]
             when 21 # consume-ok
               tag_len = buf.getbyte(4)
-              tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
+              tag = buf.byteslice(5, tag_len).force_encoding(Encoding::UTF_8)
               channel.reply [:basic_consume_ok, tag]
             when 30 # cancel
               tag_len = buf.getbyte(4)
-              tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
+              tag = buf.byteslice(5, tag_len).force_encoding(Encoding::UTF_8)
               no_wait = buf.getbyte(5 + tag_len) == 1
               channel.cancel_consumer(tag)
               write_bytes FrameBytes.basic_cancel_ok(@id, tag) unless no_wait
             when 31 # cancel-ok
               tag_len = buf.getbyte(4)
-              tag = buf.byteslice(5, tag_len).force_encoding("utf-8")
+              tag = buf.byteslice(5, tag_len).force_encoding(Encoding::UTF_8)
               channel.reply [:basic_cancel_ok, tag]
             when 50 # return
               reply_code, reply_text_len = buf.unpack("@4 S> C")
               pos = 7
-              reply_text = buf.byteslice(pos, reply_text_len).force_encoding("utf-8")
+              reply_text = buf.byteslice(pos, reply_text_len).force_encoding(Encoding::UTF_8)
               pos += reply_text_len
               exchange_len = buf.getbyte(pos)
               pos += 1
-              exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
+              exchange = buf.byteslice(pos, exchange_len).force_encoding(Encoding::UTF_8)
               pos += exchange_len
               routing_key_len = buf.getbyte(pos)
               pos += 1
-              routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
+              routing_key = buf.byteslice(pos, routing_key_len).force_encoding(Encoding::UTF_8)
               channel.message_returned(reply_code, reply_text, exchange, routing_key)
             when 60 # deliver
               ctag_len = buf.getbyte(4)
-              consumer_tag = buf.byteslice(5, ctag_len).force_encoding("utf-8")
+              consumer_tag = buf.byteslice(5, ctag_len).force_encoding(Encoding::UTF_8)
               pos = 5 + ctag_len
-              delivery_tag, redelivered, exchange_len = buf.byteslice(pos, 10).unpack("Q> C C")
+              delivery_tag = buf.unpack1("Q>", offset: pos)
+              redelivered = buf.getbyte(pos + 8)
+              exchange_len = buf.getbyte(pos + 9)
               pos += 8 + 1 + 1
-              exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
+              exchange = buf.byteslice(pos, exchange_len).force_encoding(Encoding::UTF_8)
               pos += exchange_len
               rk_len = buf.getbyte(pos)
               pos += 1
-              routing_key = buf.byteslice(pos, rk_len).force_encoding("utf-8")
+              routing_key = buf.byteslice(pos, rk_len).force_encoding(Encoding::UTF_8)
               channel.message_delivered(consumer_tag, delivery_tag, redelivered == 1, exchange, routing_key)
             when 71 # get-ok
               delivery_tag, redelivered, exchange_len = buf.unpack("@4 Q> C C")
               pos = 14
-              exchange = buf.byteslice(pos, exchange_len).force_encoding("utf-8")
+              exchange = buf.byteslice(pos, exchange_len).force_encoding(Encoding::UTF_8)
               pos += exchange_len
               routing_key_len = buf.getbyte(pos)
               pos += 1
-              routing_key = buf.byteslice(pos, routing_key_len).force_encoding("utf-8")
+              routing_key = buf.byteslice(pos, routing_key_len).force_encoding(Encoding::UTF_8)
               # pos += routing_key_len
               # message_count = buf.byteslice(pos, 4).unpack1("L>")
               channel.message_delivered(nil, delivery_tag, redelivered == 1, exchange, routing_key)
@@ -448,11 +493,9 @@ module AMQP
           else raise Error::UnsupportedMethodFrame.new class_id, method_id
           end
         when 2 # header
-          body_size = buf.unpack1("@4 Q>")
+          body_size = buf.unpack1("Q>", offset: 4)
           properties = Properties.decode(buf, 12)
           channel.header_delivered body_size, properties
-        when 3 # body
-          channel.body_delivered buf
         when 8 # heartbeat
           handle_server_heartbeat(channel_id)
         else raise Error::UnsupportedFrameType, type
