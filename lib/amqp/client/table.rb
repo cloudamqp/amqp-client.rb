@@ -45,12 +45,12 @@ module AMQP
       def self.encode_field(value, arr, fmt)
         case value
         when Integer
-          if value > 2**31
-            arr.push("l", value)
-            fmt << "aq>"
-          else
+          if value.between?(-0x80000000, 0x7fffffff)
             arr.push("I", value)
             fmt << "al>"
+          else
+            arr.push("l", value)
+            fmt << "aq>"
           end
         when Float
           arr.push("d", value)
