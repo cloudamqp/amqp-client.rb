@@ -48,9 +48,11 @@ module AMQP
           if value.between?(-0x80000000, 0x7fffffff)
             arr.push("I", value)
             fmt << "al>"
-          else
+          elsif value.between?(-0x8000000000000000, 0x7fffffffffffffff)
             arr.push("l", value)
             fmt << "aq>"
+          else
+            raise ArgumentError, "integer too big for a table field: #{value}"
           end
         when Float
           arr.push("d", value)

@@ -25,6 +25,12 @@ class AMQPTableTest < Minitest::Test
     end
   end
 
+  def test_it_raises_for_integers_outside_the_64_bit_range
+    [2**63, -(2**63) - 1].each do |value|
+      assert_raises(ArgumentError) { AMQP::Client::Table.encode({ "k" => value }) }
+    end
+  end
+
   private
 
   def field(key, type, value)
