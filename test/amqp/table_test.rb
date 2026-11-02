@@ -14,12 +14,13 @@ class AMQPTableTest < Minitest::Test
 
   def test_it_roundtrips_integers_outside_the_32_bit_range
     [
-      2**31,           # smallest value that overflows a signed 32-bit int
-      -(2**31) - 1,    # largest-magnitude negative value that overflows it
-      -(2**53 - 1),    # a large negative 64-bit value, e.g. a JS-originated number
-      2**32,
+      2**31,          # smallest value that overflows a signed 32-bit int
+      -(2**31) - 1,   # largest-magnitude negative value that overflows it
+      -((2**53) - 1), # a large negative 64-bit value, e.g. a JS-originated number
+      2**32
     ].each do |value|
       bytes = AMQP::Client::Table.encode({ "k" => value })
+
       assert_equal({ "k" => value }, AMQP::Client::Table.decode(bytes), "failed to roundtrip #{value}")
     end
   end
