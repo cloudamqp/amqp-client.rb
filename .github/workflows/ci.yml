@@ -36,6 +36,7 @@ jobs:
           - "3.3"
           - "3.4"
           - "4.0"
+          - "4.1.0-preview1"
           - jruby
           - truffleruby
         # A key of its own, or include would turn the 3.3 job into the latest one
@@ -142,6 +143,7 @@ jobs:
           - "3.3"
           - "3.4"
           - "4.0"
+          - "4.1.0-preview1"
         include:
           - ruby: jruby
             allow-failure: false
