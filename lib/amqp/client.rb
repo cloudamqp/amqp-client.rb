@@ -59,7 +59,9 @@ module AMQP
       @strict_coding = config.strict_coding
       @default_content_encoding = config.default_content_encoding
       @default_content_type = config.default_content_type
-      @start_lock = Mutex.new
+      @lifecycle_lock = Mutex.new
+      @supervisor = nil
+      @conn = nil # the supervised connection, whether it's in @connq or borrowed by with_connection
       @supervisor_started = false
       @stopped = false
     end
@@ -85,21 +87,23 @@ module AMQP
     def start
       return self if started?
 
-      @start_lock.synchronize do # rubocop:disable Metrics/BlockLength
+      @lifecycle_lock.synchronize do # rubocop:disable Metrics/BlockLength
         return self if started?
 
         @supervisor_started = true
         @stopped = false
-        initial_conn = connect(read_loop_thread: false)
+        @conn = initial_conn = connect(read_loop_thread: false)
         log_lifecycle(:info, "connected")
-        supervisor = Thread.new(initial_conn) do |conn|
+        @supervisor = Thread.new(initial_conn) do |conn|
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
           reconnect_attempts = 0
           loop do
-            break if @stopped
-
+            # No @stopped check between publishing a connection and its read_loop:
+            # #stop's close waits for a close-ok that only the read_loop can receive.
             unless conn
-              conn = connect(read_loop_thread: false)
+              conn = reconnect
+              break unless conn
+
               reconnect_attempts = 0
               log_lifecycle(:info, "reconnected")
             end
@@ -116,24 +120,27 @@ module AMQP
             sleep @options[:reconnect_interval] || 1
           ensure
             @connq.clear
-            conn = nil
+            @conn = conn = nil
           end
         end
-        supervisor.name = thread_name("supervisor")
+        @supervisor.name = thread_name("supervisor")
       end
       self
     end
 
     # Close the currently open connection and stop the supervision / reconnection logic.
+    # The connection is closed even if other threads are using it, their operations raise
+    # {Error::ConnectionClosed}.
     # @return [nil]
     def stop
       return if @stopped && !@supervisor_started
 
-      @stopped = true
-      return unless @connq.size.positive?
-
-      conn = @connq.pop
-      conn.close
+      conn = @lifecycle_lock.synchronize do
+        @stopped = true
+        @conn
+      end
+      conn&.close
+      @supervisor&.join unless Thread.current == @supervisor
       nil
     end
 
@@ -684,6 +691,17 @@ module AMQP
       end
       run_on_connect_hook(conn)
       @connq << conn
+    rescue Error::ConnectionClosed
+      nil # closed by #stop or the broker, the supervisor's read_loop handles both
+    end
+
+    # Connects while holding the lifecycle lock, so that #stop either sees the
+    # connection and closes it, or prevents it from being opened.
+    # @return [Connection, nil] nil when stopped
+    def reconnect
+      @lifecycle_lock.synchronize do
+        @conn = connect(read_loop_thread: false) unless @stopped
+      end
     end
 
     def server_named_queue?(name)
