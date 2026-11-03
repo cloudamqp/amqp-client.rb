@@ -108,7 +108,8 @@ module AMQP
               log_lifecycle(:info, "reconnected")
             end
 
-            setup = Thread.new { restore_connection(conn) }
+            # conn is passed, not captured, as the ensure below may reset it before the thread runs
+            setup = Thread.new(conn) { |c| restore_connection(c) }
             setup.name = thread_name("reconnect_setup")
             conn.read_loop # blocks until connection is closed, then reconnect
             log_lifecycle(:warn, "disconnected")
