@@ -15,7 +15,7 @@ class AMQPTableTest < Minitest::Test
   def test_it_roundtrips_integers_outside_the_32_bit_range
     [
       2**31,          # smallest value that overflows a signed 32-bit int
-      -(2**31) - 1,   # largest-magnitude negative value that overflows it
+      -(2**31) - 1,   # negative value closest to zero that overflows it
       -((2**53) - 1), # a large negative 64-bit value, e.g. a JS-originated number
       2**32
     ].each do |value|
@@ -28,6 +28,16 @@ class AMQPTableTest < Minitest::Test
   def test_it_raises_for_integers_outside_the_64_bit_range
     [2**63, -(2**63) - 1].each do |value|
       assert_raises(ArgumentError) { AMQP::Client::Table.encode({ "k" => value }) }
+    end
+  end
+
+  def test_it_picks_the_smallest_signed_integer_type
+    { -(2**31) => "I", (2**31) - 1 => "I", 2**31 => "l", -(2**31) - 1 => "l",
+      -(2**63) => "l", (2**63) - 1 => "l" }.each do |value, type|
+      bytes = AMQP::Client::Table.encode({ "k" => value })
+
+      assert_equal type, bytes[2], "wrong type for #{value}"
+      assert_equal({ "k" => value }, AMQP::Client::Table.decode(bytes))
     end
   end
 

@@ -4,7 +4,7 @@ module AMQP
   class Client
     # Encode and decode an AMQP table to/from hash, only used internally
     # @api private
-    module Table
+    module Table # rubocop:disable Metrics/ModuleLength
       # Encodes a hash into a byte array
       # @param hash [Hash]
       # @return [String] Byte array
@@ -45,10 +45,10 @@ module AMQP
       def self.encode_field(value, arr, fmt)
         case value
         when Integer
-          if value.between?(-0x80000000, 0x7fffffff)
+          if value.bit_length < 32
             arr.push("I", value)
             fmt << "al>"
-          elsif value.between?(-0x8000000000000000, 0x7fffffffffffffff)
+          elsif value.bit_length < 64
             arr.push("l", value)
             fmt << "aq>"
           else
