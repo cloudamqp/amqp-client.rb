@@ -110,6 +110,25 @@ class ChannelTest < Minitest::Test
     assert channel.wait_for_confirms, "outstanding publish should still confirm successfully"
   end
 
+  # Regression test: a publish that raises while encoding (e.g. an unsupported
+  # header value) sends nothing, so it must not track a delivery tag. Otherwise
+  # the client's tags run one ahead of the broker's, and #wait_for_confirms
+  # blocks forever on a tag that is never confirmed.
+  def test_publish_that_fails_to_encode_does_not_track_a_delivery_tag
+    channel = AMQP::Client::Connection::Channel.new(FakeConnection.new, 1)
+    channel.confirm_select(no_wait: true)
+
+    assert_raises(ArgumentError) do
+      channel.basic_publish("bad", exchange: "x", headers: { "unsupported" => :symbol })
+    end
+    channel.basic_publish("good", exchange: "x") # the broker's delivery tag 1
+    channel.confirm([:ack, 1, false])
+
+    Timeout.timeout(5, Timeout::Error, "wait_for_confirms blocked on an untracked delivery tag") do
+      assert channel.wait_for_confirms
+    end
+  end
+
   private
 
   # #warn is silenced by the test helper's $VERBOSE = nil; re-enable warnings so
