@@ -5,6 +5,7 @@
 - Changed: The built-in parsers and coders are frozen, so they can be shared between Ractors, and the JSON parser serializes with `JSON.generate` instead of `JSON.dump`, which in json < 3 reads global options
 - Fixed: Heartbeats are now sent by idle connections and by connections that only receive, e.g. a `no_ack` consumer. Received frames, including the broker's own heartbeats, counted as activity, so such a connection rarely or never sent heartbeats and could be closed by the broker for missing them
 - Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
+- Fixed: A publish on a channel in confirm mode that raised while encoding, e.g. on an unsupported header value, left behind a delivery tag the broker never confirmed. Every later `wait_for_confirms` on the channel, and so `Client#publish`, then blocked forever
 
 ## [2.2.0] - 2026-08-31
 
