@@ -52,7 +52,7 @@ module AMQP
             arr.push("l", value)
             fmt << "aq>"
           else
-            raise ArgumentError, "integer too big for a table field: #{value}"
+            raise ArgumentError, "integer out of range for a table field: #{value}"
           end
         when Float
           arr.push("d", value)
