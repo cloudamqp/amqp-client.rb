@@ -142,7 +142,7 @@ client.default_content_type = "text/plain"  # Override for this instance
 
 #### Lifecycle logging and thread names
 
-Pass `?name=` in the connection URL to identify a client instance. The same identifier appears in both lifecycle log lines and `Thread#name` for every thread the library spawns:
+Pass `name:` or `?name=` in the connection URL to identify a client instance. `name:` wins if you give both. The name appears in lifecycle log lines, in `Thread#name` for every thread the library spawns, and as the connection name on the broker (unless you set `connection_name:`):
 
 ```ruby
 require "logger"
@@ -156,7 +156,7 @@ client.start
 #   "amqp.heartbeat[worker-1] broker:5672"  (when heartbeat > 0)
 ```
 
-Without `?name=`, threads use the shorter form (`amqp.read_loop broker:5672`) and the log prefix is plain `AMQP::Client:`. The `amqp` segment is kept short so `amqp.read_loop` (14 chars) still fits the 15-char `comm` field used by `ps -L` and `top -H`.
+Without a name, the log prefix is the socket's local and remote address, e.g. `AMQP::Client[10.0.0.5:47182 -> 10.0.0.9:5672]:`. RabbitMQ and LavinMQ use the same string to name the connection, so you can find it in the broker logs (unless NAT or a proxy is in between). Threads use the shorter form (`amqp.read_loop broker:5672`) and the broker connection name is `$PROGRAM_NAME`. The `amqp` segment is kept short so `amqp.read_loop` (14 chars) still fits the 15-char `comm` field used by `ps -L` and `top -H`.
 
 When `logger:` is not set, reconnect errors still go to stderr via `Kernel#warn` so existing behavior is preserved.
 

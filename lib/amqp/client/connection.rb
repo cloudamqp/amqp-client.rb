@@ -3,6 +3,7 @@
 require "socket"
 require "uri"
 require "openssl"
+require "securerandom"
 require_relative "frame_bytes"
 require_relative "channel"
 require_relative "errors"
@@ -19,9 +20,9 @@ module AMQP
       # @param strict_coding [Boolean] Whether to raise errors on unsupported codecs
       # @param name [String, nil] Instance identifier embedded in thread names
       #   (e.g. "amqp.read_loop[name] host:port") and lifecycle log prefixes.
-      #   Usually sourced from the URL's `?name=` query param by {Client}.
-      # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
-      #   the client from the broker
+      #   It is also the default connection_name. Usually sourced from `?name=` or `name:` by {Client}.
+      # @option options [Boolean] connection_name (name or PROGRAM_NAME) Set a name for the connection to be able
+      #   to identify the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
       # @option options [Float] connect_timeout (30) TCP connection timeout
       # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
@@ -32,6 +33,8 @@ module AMQP
       # @option options [String] keepalive (60:10:3) TCP keepalive setting, 60s idle, 10s interval between probes, 3 probes
       # @return [Connection]
       def initialize(uri = "", read_loop_thread: true, codec_registry: nil, strict_coding: false, name: nil, **options)
+        raise ArgumentError, "name must be a String or nil, got #{name.class}" unless name.nil? || name.is_a?(String)
+
         uri = URI.parse(uri)
         tls = uri.scheme == "amqps"
         port = port_from_env || uri.port || (tls ? 5671 : 5672)
@@ -43,10 +46,11 @@ module AMQP
 
         @host = host
         @port = port
-        @name = name
+        @name = [name, options[:name]].find { |n| n && !n.empty? }
 
         socket = open_socket(host, port, tls, options)
         channel_max, frame_max, heartbeat = establish(socket, user, password, vhost, options)
+        @log_name = @name || address_pair(socket)
 
         @socket = socket
         @channel_max = channel_max.zero? ? 65_536 : channel_max
@@ -81,6 +85,11 @@ module AMQP
         base = "amqp.#{role}#{suffix} #{@host}:#{@port}"
         detail ? "#{base} #{detail}" : base
       end
+
+      # Identifies this connection in log lines: the name, else the socket's local and remote address
+      # (the same string RabbitMQ and LavinMQ use to name the connection), else a random id
+      # @return [String]
+      attr_reader :log_name
 
       # Indicates that the server is blocking publishes.
       # If the client keeps publishing the server will stop reading from the socket.
@@ -543,6 +552,14 @@ module AMQP
         raise Error, "Could not open a socket: #{e.message}"
       end
 
+      # @return [String] "local -> remote", e.g. "10.0.0.5:47182 -> 10.0.0.9:5672"
+      def address_pair(socket)
+        io = socket.to_io
+        "#{io.local_address.inspect_sockaddr} -> #{io.remote_address.inspect_sockaddr}"
+      rescue SystemCallError
+        SecureRandom.hex(4)
+      end
+
       # Negotiate a connection
       # @return [Array<Integer, Integer, Integer>] channel_max, frame_max, heartbeat
       def establish(socket, user, password, vhost, options)
@@ -572,7 +589,7 @@ module AMQP
 
               case method_id
               when 10 # connection#start
-                conn_name = options[:connection_name] || program_name
+                conn_name = options[:connection_name] || @name || program_name
                 properties = CLIENT_PROPERTIES.merge({ connection_name: conn_name })
                 socket.write FrameBytes.connection_start_ok "\u0000#{user}\u0000#{password}", properties
               when 30 # connection#tune

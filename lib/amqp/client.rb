@@ -19,8 +19,10 @@ module AMQP
     # Create a new Client object, this won't establish a connection yet, use {#connect} or {#start} for that
     # @param uri [String] URL on the format amqp://username:password@hostname/vhost,
     #   use amqps:// for encrypted connection
-    # @option options [Boolean] connection_name (PROGRAM_NAME) Set a name for the connection to be able to identify
-    #   the client from the broker
+    # @param name [String, nil] Identifies the client in log lines, thread names and, unless
+    #   connection_name is given, on the broker. Defaults to the URL's `?name=` query param.
+    # @option options [Boolean] connection_name (name or PROGRAM_NAME) Set a name for the connection to be able
+    #   to identify the client from the broker
     # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
     # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead
     # @option options [Integer] frame_max (131_072) Maximum frame size,
@@ -37,10 +39,11 @@ module AMQP
     #   stops after calling it, same as after {#stop}.
     # @param max_retries [Integer, nil] Number of consecutive reconnect attempts to allow before
     #   giving up and calling on_failed. Defaults to nil, retrying forever.
-    def initialize(uri = "", on_connect: nil, on_failed: nil, max_retries: nil, **options)
+    def initialize(uri = "", name: nil, on_connect: nil, on_failed: nil, max_retries: nil, **options)
       if max_retries && (!max_retries.is_a?(Integer) || max_retries.negative?)
         raise ArgumentError, "max_retries must be a non-negative Integer or nil"
       end
+      raise ArgumentError, "name must be a String or nil, got #{name.class}" unless name.nil? || name.is_a?(String)
 
       @uri = uri
       @options = options
@@ -48,7 +51,7 @@ module AMQP
       @on_failed = on_failed
       @max_retries = max_retries
       @logger = options[:logger]
-      @name = parse_name(uri)
+      @name = [name, parse_name(uri)].find { |n| n && !n.empty? }
       @queues = {}
       @exchanges = {}
       @consumers = {}
@@ -91,6 +94,7 @@ module AMQP
         @supervisor_started = true
         @stopped = false
         initial_conn = connect(read_loop_thread: false)
+        @log_name = initial_conn.log_name
         log_lifecycle(:info, "connected")
         supervisor = Thread.new(initial_conn) do |conn|
           Thread.current.abort_on_exception = true # Raising an unhandled exception is a bug
@@ -101,6 +105,7 @@ module AMQP
             unless conn
               conn = connect(read_loop_thread: false)
               reconnect_attempts = 0
+              @log_name = conn.log_name
               log_lifecycle(:info, "reconnected")
             end
 
@@ -636,10 +641,10 @@ module AMQP
       nil
     end
 
-    def log_lifecycle(level, event)
+    def log_lifecycle(level, event, log_name = @log_name)
       return unless @logger
 
-      @logger.public_send(level, "#{lifecycle_prefix}: #{event}")
+      @logger.public_send(level, "#{lifecycle_prefix(log_name)}: #{event}")
     end
 
     def log_reconnect_error(err)
@@ -663,8 +668,9 @@ module AMQP
       @name ? "amqp.#{role}[#{@name}]" : "amqp.#{role}"
     end
 
-    def lifecycle_prefix
-      @name ? "AMQP::Client[#{@name}]" : "AMQP::Client"
+    # Without a name, reconnect errors carry the address of the last connection
+    def lifecycle_prefix(log_name = @log_name)
+      "AMQP::Client[#{log_name}]"
     end
 
     def restore_connection(conn)
@@ -679,7 +685,7 @@ module AMQP
         consumer.update_consume_ok(consume_ok, ch.id)
         @consumers.delete(consumer.id) if consumer.closed?
       rescue Error::ChannelClosed => e
-        log_lifecycle(:warn, "failed to resubscribe consumer for #{consumer.queue}: #{e.message}")
+        log_lifecycle(:warn, "failed to resubscribe consumer for #{consumer.queue}: #{e.message}", conn.log_name)
         @consumers.delete(consumer.id)
       end
       run_on_connect_hook(conn)
@@ -699,7 +705,7 @@ module AMQP
       @on_connect.call(self)
     rescue StandardError => e
       if @logger
-        log_lifecycle(:warn, "on_connect raised: #{e.class}: #{e.message}")
+        log_lifecycle(:warn, "on_connect raised: #{e.class}: #{e.message}", conn.log_name)
       else
         warn "AMQP-Client on_connect error: #{e.inspect}"
       end

@@ -247,7 +247,7 @@ class HighLevelTest < Minitest::Test
     sleep 0.01 until io.string.include?("on_connect raised") ||
                      Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
 
-    assert_includes io.string, "AMQP::Client: on_connect raised: RuntimeError: forced setup failure"
+    assert_includes io.string, "]: on_connect raised: RuntimeError: forced setup failure"
   ensure
     q&.delete
   end
