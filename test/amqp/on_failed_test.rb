@@ -68,7 +68,7 @@ class OnFailedTest < Minitest::Test
                        Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
     end
 
-    assert_includes io.string, "AMQP::Client: on_failed raised: RuntimeError: forced on_failed failure"
+    assert_includes io.string, "]: on_failed raised: RuntimeError: forced on_failed failure"
   end
 
   def test_reconnect_attempts_reset_after_a_successful_reconnect

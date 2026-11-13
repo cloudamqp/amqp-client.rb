@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Added: `name:` option on `AMQP::Client.new`, same as `?name=` in the URL. `name:` wins if both are set
+- Changed: `name` is the default `connection_name` sent to the broker, so the name in your logs and in the management UI match. `connection_name:` still wins, and `$PROGRAM_NAME` is the fallback when neither is set
+- Changed: Without a name, the lifecycle log prefix is the socket's local and remote address, e.g. `AMQP::Client[10.0.0.5:47182 -> 10.0.0.9:5672]`, so 2 unnamed clients in one process log differently. RabbitMQ and LavinMQ name the connection with the same string. `Connection#log_name` returns it
 - Added: Clients can be used in Ractors other than the main one. They use a frozen copy of the class-level configuration, renewed on every change, and raise an error naming any registered parser or coder that isn't shareable
 - Fixed: Connecting from a Ractor other than the main one failed in the handshake, reading `$PROGRAM_NAME` and the not fully frozen `CLIENT_PROPERTIES`
 - Changed: The built-in parsers and coders are frozen, so they can be shared between Ractors, and the JSON parser serializes with `JSON.generate` instead of `JSON.dump`, which in json < 3 reads global options
