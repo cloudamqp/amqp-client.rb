@@ -127,6 +127,10 @@ module AMQP
         raise ArgumentError, "Channel ID higher than connection's channel max #{@channel_max}" if id && id > @channel_max
 
         ch = @channels_lock.synchronize do
+          # Checked under the lock read_loop takes to close all channels, so a channel
+          # added after that would otherwise never be closed and #open would hang
+          raise Error::ConnectionClosed.new(*@closed) if @closed
+
           if id
             @channels[id] ||= Channel.new(self, id)
           else

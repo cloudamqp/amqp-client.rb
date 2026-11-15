@@ -61,6 +61,25 @@ class AMQPClientLifecycleTest < Minitest::Test
     assert client
   end
 
+  def test_stop_closes_connection_borrowed_by_another_thread
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").start
+    borrowed = Queue.new
+    release = Queue.new
+    borrower = Thread.new do
+      client.with_connection do |conn|
+        borrowed << conn
+        release.pop
+      end
+    end
+    conn = borrowed.pop
+    client.stop
+
+    assert_predicate conn, :closed?
+  ensure
+    release << true
+    borrower&.join
+  end
+
   def test_set_connection_name
     skip "slow, polls HTTP mgmt API"
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", connection_name: "foobar")
@@ -100,7 +119,6 @@ class AMQPClientLifecycleTest < Minitest::Test
 
     threads = Thread.list
     client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", logger:).start
-    client.with_connection { _1 } # wait until supervisor's read_loop is engaged
     client.stop
     # The supervisor thread logs the disconnect, if it never does, show where that thread is
     message = -> { "missing disconnected log: #{io.string.inspect}\n#{thread_dump(Thread.list - threads)}" }
