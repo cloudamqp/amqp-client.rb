@@ -279,20 +279,21 @@ module AMQP
           when true then properties[:delivery_mode] = 2
           when false then properties[:delivery_mode] = 1
           end
+          # Encode before tracking the delivery tag: if encoding raises, nothing is
+          # published, and a tracked tag would never be confirmed.
+          method_frame = FrameBytes.basic_publish(id, exchange, routing_key, mandatory)
+          header_frame = FrameBytes.header(id, body.bytesize, properties)
           if @confirm
             @unconfirmed_lock.synchronize do
               @unconfirmed.push @confirm += 1
             end
           end
           if body.bytesize.between?(1, body_max)
-            write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
-                        FrameBytes.header(id, body.bytesize, properties),
-                        FrameBytes.body(id, body)
+            write_bytes method_frame, header_frame, FrameBytes.body(id, body)
             return
           end
 
-          write_bytes FrameBytes.basic_publish(id, exchange, routing_key, mandatory),
-                      FrameBytes.header(id, body.bytesize, properties)
+          write_bytes method_frame, header_frame
           pos = 0
           while pos < body.bytesize # split body into multiple frame_max frames
             len = [body_max, body.bytesize - pos].min
