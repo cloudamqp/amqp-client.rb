@@ -223,78 +223,80 @@ module AMQP
       # @return [Properties]
       def self.decode(bytes, pos = 0)
         p = new
-        flags = bytes.byteslice(pos, 2).unpack1("S>")
+        flags = bytes.unpack1("S>", offset: pos)
+        return p if flags.zero?
+
         pos += 2
-        if (flags & 0x8000).positive?
+        if flags.anybits?(0x8000)
           len = bytes.getbyte(pos)
           pos += 1
-          p.content_type = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.content_type = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x4000).positive?
+        if flags.anybits?(0x4000)
           len = bytes.getbyte(pos)
           pos += 1
-          p.content_encoding = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.content_encoding = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x2000).positive?
-          len = bytes.byteslice(pos, 4).unpack1("L>")
+        if flags.anybits?(0x2000)
+          len = bytes.unpack1("L>", offset: pos)
           pos += 4
-          p.headers = Table.decode(bytes.byteslice(pos, len))
+          p.headers = Table.decode(bytes, pos, len)
           pos += len
         end
-        if (flags & 0x1000).positive?
+        if flags.anybits?(0x1000)
           p.delivery_mode = bytes.getbyte(pos)
           pos += 1
         end
-        if (flags & 0x0800).positive?
+        if flags.anybits?(0x0800)
           p.priority = bytes.getbyte(pos)
           pos += 1
         end
-        if (flags & 0x0400).positive?
+        if flags.anybits?(0x0400)
           len = bytes.getbyte(pos)
           pos += 1
-          p.correlation_id = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.correlation_id = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x0200).positive?
+        if flags.anybits?(0x0200)
           len = bytes.getbyte(pos)
           pos += 1
-          p.reply_to = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.reply_to = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x0100).positive?
+        if flags.anybits?(0x0100)
           len = bytes.getbyte(pos)
           pos += 1
-          p.expiration = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.expiration = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x0080).positive?
+        if flags.anybits?(0x0080)
           len = bytes.getbyte(pos)
           pos += 1
-          p.message_id = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.message_id = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x0040).positive?
-          p.timestamp = Time.at(bytes.byteslice(pos, 8).unpack1("Q>"))
+        if flags.anybits?(0x0040)
+          p.timestamp = Time.at(bytes.unpack1("Q>", offset: pos))
           pos += 8
         end
-        if (flags & 0x0020).positive?
+        if flags.anybits?(0x0020)
           len = bytes.getbyte(pos)
           pos += 1
-          p.type = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.type = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x0010).positive?
+        if flags.anybits?(0x0010)
           len = bytes.getbyte(pos)
           pos += 1
-          p.user_id = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.user_id = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
           pos += len
         end
-        if (flags & 0x0008).positive?
+        if flags.anybits?(0x0008)
           len = bytes.getbyte(pos)
           pos += 1
-          p.app_id = bytes.byteslice(pos, len).force_encoding("utf-8")
+          p.app_id = bytes.byteslice(pos, len).force_encoding(Encoding::UTF_8)
         end
         p
       end
