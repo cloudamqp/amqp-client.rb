@@ -5,6 +5,7 @@
 - Changed: The built-in parsers and coders are frozen, so they can be shared between Ractors, and the JSON parser serializes with `JSON.generate` instead of `JSON.dump`, which in json < 3 reads global options
 - Fixed: Heartbeats are now sent by idle connections and by connections that only receive, e.g. a `no_ack` consumer. Received frames, including the broker's own heartbeats, counted as activity, so such a connection rarely or never sent heartbeats and could be closed by the broker for missing them
 - Fixed: Header table fields of type `s` and `u` (16-bit integers) were decoded with native instead of network byte order, and `x` (byte array) returned the length prefix instead of the bytes
+- Fixed: Integer header/argument values outside the signed 32-bit range were encoded as 32-bit, silently wrapping (e.g. `2**31` arrived as `-2**31`, and large negative values like `-(2**53 - 1)` arrived corrupted). Integers now use the smallest signed integer type (32- or 64-bit) that holds them, and encoding raises `ArgumentError` for integers outside the signed 64-bit range instead of sending a wrapped value
 
 ## [2.2.0] - 2026-08-31
 
