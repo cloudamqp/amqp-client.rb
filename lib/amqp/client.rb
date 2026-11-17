@@ -21,7 +21,7 @@ module AMQP
     #   use amqps:// for encrypted connection
     # @param name [String, nil] Identifies the client in log lines, thread names and, unless
     #   connection_name is given, on the broker. Defaults to the URL's `?name=` query param.
-    # @option options [Boolean] connection_name (name or PROGRAM_NAME) Set a name for the connection to be able
+    # @option options [String] connection_name (name or PROGRAM_NAME) Set a name for the connection to be able
     #   to identify the client from the broker
     # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
     # @option options [Integer] heartbeat (0) Heartbeat timeout, defaults to 0 and relies on TCP keepalive instead

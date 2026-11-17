@@ -21,7 +21,7 @@ module AMQP
       # @param name [String, nil] Instance identifier embedded in thread names
       #   (e.g. "amqp.read_loop[name] host:port") and lifecycle log prefixes.
       #   It is also the default connection_name. Usually sourced from `?name=` or `name:` by {Client}.
-      # @option options [Boolean] connection_name (name or PROGRAM_NAME) Set a name for the connection to be able
+      # @option options [String] connection_name (name or PROGRAM_NAME) Set a name for the connection to be able
       #   to identify the client from the broker
       # @option options [Boolean] verify_peer (true) Verify broker's TLS certificate, set to false for self-signed certs
       # @option options [Float] connect_timeout (30) TCP connection timeout
