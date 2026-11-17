@@ -105,8 +105,10 @@ class AMQPClientLifecycleTest < Minitest::Test
     # The supervisor thread logs the disconnect, if it never does, show where that thread is
     message = -> { "missing disconnected log: #{io.string.inspect}\n#{thread_dump(Thread.list - threads)}" }
 
-    assert wait_for_log(io, /^INFO AMQP::Client: connected$/), "missing connected log: #{io.string.inspect}"
-    assert wait_for_log(io, /^WARN AMQP::Client: disconnected$/), message
+    address = /\[\S+:\d+ -> \S+:\d+\]/
+
+    assert wait_for_log(io, /^INFO AMQP::Client#{address}: connected$/), "missing connected log: #{io.string.inspect}"
+    assert wait_for_log(io, /^WARN AMQP::Client#{address}: disconnected$/), message
   end
 
   def test_logger_prefix_includes_name_from_uri
@@ -120,5 +122,81 @@ class AMQPClientLifecycleTest < Minitest::Test
 
     assert wait_for_log(io, /AMQP::Client\[my-worker\]: connected/),
            "missing named connect log: #{io.string.inspect}"
+  end
+
+  def test_logger_prefix_uses_name_keyword_over_uri
+    io = StringIO.new
+    logger = Logger.new(io)
+    logger.formatter = ->(severity, _time, _progname, msg) { "#{severity} #{msg}\n" }
+
+    client = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}?name=from-uri", name: "from-kwarg", logger:).start
+    client.with_connection { _1 }
+    client.stop
+
+    assert wait_for_log(io, /AMQP::Client\[from-kwarg\]: connected/),
+           "missing named connect log: #{io.string.inspect}"
+  end
+
+  def test_log_name_is_the_socket_address_pair_without_name
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}").connect
+
+    assert_match(/\A\S+:\d+ -> \S+:\d+\z/, connection.log_name)
+  ensure
+    connection&.close
+  end
+
+  def test_empty_name_falls_back_to_address_and_program_name
+    assert_equal $PROGRAM_NAME, sent_connection_name("amqp://#{TEST_AMQP_HOST}?name=", name: "")
+    connection = AMQP::Client.new("amqp://#{TEST_AMQP_HOST}?name=").connect
+
+    assert_match(/ -> /, connection.log_name)
+  ensure
+    connection&.close
+  end
+
+  def test_connection_reads_name_from_uri
+    connection = AMQP::Client::Connection.new("amqp://#{TEST_AMQP_HOST}?name=raw-1")
+
+    assert_equal "raw-1", connection.log_name
+  ensure
+    connection&.close
+  end
+
+  def test_name_must_be_a_string
+    error = assert_raises(ArgumentError) { AMQP::Client.new("amqp://#{TEST_AMQP_HOST}", name: :worker) }
+
+    assert_match(/Symbol/, error.message)
+  end
+
+  def test_connection_name_must_be_a_string
+    error = assert_raises(ArgumentError) { AMQP::Client::Connection.new("amqp://#{TEST_AMQP_HOST}", name: 123) }
+
+    assert_match(/Integer/, error.message)
+  end
+
+  def test_connection_name_defaults_to_name
+    assert_equal "worker-1", sent_connection_name("amqp://#{TEST_AMQP_HOST}?name=worker-1")
+    assert_equal "worker-2", sent_connection_name("amqp://#{TEST_AMQP_HOST}", name: "worker-2")
+  end
+
+  def test_connection_name_wins_over_name_and_falls_back_to_program_name
+    assert_equal "explicit", sent_connection_name("amqp://#{TEST_AMQP_HOST}?name=worker-3",
+                                                  connection_name: "explicit")
+    assert_equal $PROGRAM_NAME, sent_connection_name("amqp://#{TEST_AMQP_HOST}")
+  end
+
+  private
+
+  def sent_connection_name(uri, **)
+    original = AMQP::Client::FrameBytes.method(:connection_start_ok)
+    sent = nil
+    spy = lambda do |response, properties|
+      sent = properties[:connection_name]
+      original.call(response, properties)
+    end
+    AMQP::Client::FrameBytes.stub(:connection_start_ok, spy) do
+      AMQP::Client.new(uri, **).connect.close
+    end
+    sent
   end
 end
